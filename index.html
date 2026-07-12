@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.5</title>
+  <title>FOR-e寢具訂購 V4.6</title>
   <style>
 
     :root{
@@ -254,6 +254,7 @@ const paymentTargets = ['工人','雇主','仲介'];
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.6', date:'2026/07/12', title:'品項順序與一般／特殊訂購分類', items:['資料設定可用上移、下移調整品項顯示順序','每個品項可設定為一般訂購項目或特殊訂購項目','特殊訂購項目不綁定工人，同張訂購單只填一次，且不提供拿庫存、加買、退貨']},
   {version:'V4.5', date:'2026/07/12', title:'Supabase 公開共用免登入版', items:['移除登入畫面、帳號及角色權限','開啟正式網址即可直接使用全部功能','Supabase 保留共用資料、Realtime 同步與版本衝突保護']},
   {version:'V4.4', date:'2026/07/12', title:'Supabase 帳號登入版（已由 V4.5 取代）', items:['曾使用 Supabase Auth 登入與 profiles 角色權限','共用資料儲存於 Supabase，支援跨電腦與多人使用','GitHub 版本控管並由 Vercel 自動部署']},
   {version:'V4.3', date:'2026/07/12', title:'工人×品項矩陣與 CSV 匯出篩選', items:['工人 × 訂購項目明細改為品項下方顯示金額','品項列不再顯示規格，畫面更精簡','訂購紀錄與會計對帳 CSV 匯出可選區間、年、月、日']},
@@ -267,23 +268,36 @@ const versionNotes = [
 const KANG_PLACE = '灃康人力';
 const KANG_ADDRESS = '桃園市桃園區經國一路65號2樓';
 const STAFF_CONTACTS = { '貝貝':'貝貝#369', '阿金':'阿金#186', '明明':'明明#186' };
-const INVENTORY_HIDE_CODES = new Set(['SINGLE_BED','ROUND_BUNK','ANGLE_BUNK','WOOD_BED']);
-const BED_ITEM_CODES = new Set(['SINGLE_BED','ROUND_BUNK','ANGLE_BUNK','WOOD_BED']);
-function isBedItem(code){ return BED_ITEM_CODES.has(code); }
+const LEGACY_SPECIAL_ITEM_CODES = new Set(['SINGLE_BED','ROUND_BUNK','ANGLE_BUNK','WOOD_BED']);
+const ITEM_ORDER_TYPES = {general:'一般訂購項目', special:'特殊訂購項目'};
+function normalizeItemOrderType(value, code=''){
+  if(value==='special' || value==='特殊訂購項目') return 'special';
+  if(value==='general' || value==='一般訂購項目') return 'general';
+  return LEGACY_SPECIAL_ITEM_CODES.has(code) ? 'special' : 'general';
+}
+function itemOrderType(itemOrCode){
+  const item = typeof itemOrCode==='string' ? getItem(itemOrCode) : (itemOrCode||{});
+  return normalizeItemOrderType(item.orderType, item.code);
+}
+function isSpecialItem(itemOrCode){ return itemOrderType(itemOrCode)==='special'; }
+function isGeneralItem(itemOrCode){ return !isSpecialItem(itemOrCode); }
+function itemOrderTypeLabel(itemOrCode){ return ITEM_ORDER_TYPES[itemOrderType(itemOrCode)] || ITEM_ORDER_TYPES.general; }
+function itemOrderIndex(code){ const idx=state.settings.items.findIndex(i=>i.code===code); return idx<0 ? Number.MAX_SAFE_INTEGER : idx; }
+function orderedLines(lines){ return (lines||[]).map((line,index)=>({line,index})).sort((a,b)=>itemOrderIndex(a.line.code)-itemOrderIndex(b.line.code) || a.index-b.index).map(x=>x.line); }
 function staffContact(staff){ return STAFF_CONTACTS[staff] || staff || ''; }
 
 const defaultItems = [
-  {code:'MATTRESS', name:'塑膠床墊', spec:'3 x 6 尺', unit:'床', price:400, vendorPrice:400, openingStock:0, active:true},
-  {code:'QUILT', name:'棉被含被套', spec:'4.5 x 6.5 尺', unit:'件', price:600, vendorPrice:600, openingStock:0, active:true},
-  {code:'PILLOW', name:'枕頭', spec:'1.2 x 2.2 尺', unit:'個', price:90, vendorPrice:90, openingStock:0, active:true},
-  {code:'CLOSET', name:'T 型衣櫥', spec:'高160 寬75 深50', unit:'組', price:720, vendorPrice:720, openingStock:0, active:true},
-  {code:'TOILETRIES', name:'盥洗用具', spec:'口杯/牙刷/牙膏/毛巾/香皂/衣架/臉盆/洗衣粉/衛生紙', unit:'組', price:400, vendorPrice:400, openingStock:0, active:true},
-  {code:'SINGLE_BED', name:'單人床', spec:'單人床', unit:'張', price:1785, vendorPrice:1785, openingStock:0, active:true},
-  {code:'ROUND_BUNK', name:'圓管架雙層床', spec:'圓管架雙層床', unit:'組', price:3570, vendorPrice:3570, openingStock:0, active:true},
-  {code:'ANGLE_BUNK', name:'角鋼架雙層床', spec:'角鋼架雙層床', unit:'組', price:3570, vendorPrice:3570, openingStock:0, active:true},
-  {code:'WOOD_BED', name:'木頭床', spec:'木頭床', unit:'張', price:1785, vendorPrice:1785, openingStock:0, active:true},
-  {code:'FAN', name:'電風扇', spec:'依實際需求', unit:'台', price:0, vendorPrice:0, openingStock:0, active:true},
-  {code:'BIKE', name:'腳踏車', spec:'依實際需求', unit:'台', price:3200, vendorPrice:3200, openingStock:0, active:true}
+  {code:'MATTRESS', name:'塑膠床墊', spec:'3 x 6 尺', unit:'床', price:400, vendorPrice:400, openingStock:0, active:true, orderType:'general'},
+  {code:'QUILT', name:'棉被含被套', spec:'4.5 x 6.5 尺', unit:'件', price:600, vendorPrice:600, openingStock:0, active:true, orderType:'general'},
+  {code:'PILLOW', name:'枕頭', spec:'1.2 x 2.2 尺', unit:'個', price:90, vendorPrice:90, openingStock:0, active:true, orderType:'general'},
+  {code:'CLOSET', name:'T 型衣櫥', spec:'高160 寬75 深50', unit:'組', price:720, vendorPrice:720, openingStock:0, active:true, orderType:'general'},
+  {code:'TOILETRIES', name:'盥洗用具', spec:'口杯/牙刷/牙膏/毛巾/香皂/衣架/臉盆/洗衣粉/衛生紙', unit:'組', price:400, vendorPrice:400, openingStock:0, active:true, orderType:'general'},
+  {code:'SINGLE_BED', name:'單人床', spec:'單人床', unit:'張', price:1785, vendorPrice:1785, openingStock:0, active:true, orderType:'special'},
+  {code:'ROUND_BUNK', name:'圓管架雙層床', spec:'圓管架雙層床', unit:'組', price:3570, vendorPrice:3570, openingStock:0, active:true, orderType:'special'},
+  {code:'ANGLE_BUNK', name:'角鋼架雙層床', spec:'角鋼架雙層床', unit:'組', price:3570, vendorPrice:3570, openingStock:0, active:true, orderType:'special'},
+  {code:'WOOD_BED', name:'木頭床', spec:'木頭床', unit:'張', price:1785, vendorPrice:1785, openingStock:0, active:true, orderType:'special'},
+  {code:'FAN', name:'電風扇', spec:'依實際需求', unit:'台', price:0, vendorPrice:0, openingStock:0, active:true, orderType:'general'},
+  {code:'BIKE', name:'腳踏車', spec:'依實際需求', unit:'台', price:3200, vendorPrice:3200, openingStock:0, active:true, orderType:'general'}
 ];
 
 const itemTranslations = {
@@ -319,7 +333,7 @@ const defaultState = () => ({
     employers:['測試雇主股份有限公司'],
     contacts:[],
     vendors:[],
-    items: defaultItems,
+    items: defaultItems.map(i=>Object.assign({},i)),
     orderSerial:1,
     accountingSerial:1
   },
@@ -335,7 +349,7 @@ function mergeDefaultItems(items){
     if(map.has(def.code)) map.set(def.code, Object.assign({}, def, map.get(def.code), {active: map.get(def.code).active!==false}));
     else map.set(def.code, Object.assign({}, def));
   });
-  return Array.from(map.values()).filter(i=>!['BED_SINGLE','BED_DOUBLE'].includes(i.code)).map(i=>Object.assign({}, i, {vendorPrice: num(i.vendorPrice ?? i.price), price: num(i.price)}));
+  return Array.from(map.values()).filter(i=>!['BED_SINGLE','BED_DOUBLE'].includes(i.code)).map(i=>Object.assign({}, i, {vendorPrice: num(i.vendorPrice ?? i.price), price: num(i.price), orderType:normalizeItemOrderType(i.orderType,i.code)}));
 }
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -487,7 +501,7 @@ function normalizeItemLine(line){
   };
 }
 function workerGroupBlank(){
-  return {id:uid('WG'), name:'', nationality:'越南', entryDate:'', items:createEmptyItemLines(i=>!isBedItem(i.code))};
+  return {id:uid('WG'), name:'', nationality:'越南', entryDate:'', items:createEmptyItemLines(i=>isGeneralItem(i))};
 }
 function orderWorkerGroups(o){
   if(!o || o.isStockOrder) return [];
@@ -501,7 +515,7 @@ function orderWorkerGroups(o){
     }));
   }
   const names = String(o.worker||'').split(/[\n、,，;；]+/).map(x=>x.trim()).filter(Boolean);
-  const baseItems = (o.items||[]).length ? mergeGroupItems(o.items) : createEmptyItemLines(i=>!isBedItem(i.code));
+  const baseItems = (o.items||[]).length ? mergeGroupItems(o.items) : createEmptyItemLines(i=>isGeneralItem(i));
   if(names.length){
     return names.map((name,idx)=>({
       id:uid('WG'), name,
@@ -509,11 +523,11 @@ function orderWorkerGroups(o){
       items: baseItems.map(l=>Object.assign({}, l, idx===0 ? {} : {returnQty:0, returnToStockQty:0}))
     }));
   }
-  return [{id:uid('WG'), name:o.worker||'', nationality:o.nationality||'越南', entryDate:o.entryDate||'', items:baseItems.filter(l=>!isBedItem(l.code))}];
+  return [{id:uid('WG'), name:o.worker||'', nationality:o.nationality||'越南', entryDate:o.entryDate||'', items:baseItems.filter(l=>isGeneralItem(l.code))}];
 }
 function mergeGroupItems(items){
   const old = new Map((items||[]).map(l=>[l.code,l]));
-  return state.settings.items.filter(i=>i.active!==false && !isBedItem(i.code)).map(i=>normalizeItemLine(old.get(i.code) || {code:i.code, price:i.price}));
+  return state.settings.items.filter(i=>i.active!==false && isGeneralItem(i)).map(i=>normalizeItemLine(old.get(i.code) || {code:i.code, price:i.price}));
 }
 function aggregateWorkerItems(groups, oldItems=[]){
   const oldMap = new Map((oldItems||[]).map(l=>[l.code,l]));
@@ -539,7 +553,7 @@ function aggregateWorkerItems(groups, oldItems=[]){
 }
 function groupAmount(g){ return (g.items||[]).reduce((sum,l)=>sum+lineAmount(l),0); }
 function orderWorkers(o){ return orderWorkerGroups(o).map(g=>g.name).filter(Boolean); }
-function isSpecialOnlyOrder(o){ return !o.isStockOrder && !orderWorkers(o).length && (o.items||[]).some(l=>isBedItem(l.code) && positiveLineQty(l)); }
+function isSpecialOnlyOrder(o){ return !o.isStockOrder && !orderWorkers(o).length && (o.items||[]).some(l=>isSpecialItem(l.code) && positiveLineQty(l)); }
 function normalizeState(s){
   const d = defaultState();
   s = Object.assign(d, s || {});
@@ -654,24 +668,31 @@ function makeAccountingBatchNo(order, billingDate){
   return head + String(max+1).padStart(3,'0');
 }
 
-function getItem(code){ return state.settings.items.find(i=>i.code===code) || {code,name:code,spec:'',unit:'',price:0,vendorPrice:0,openingStock:0,active:true}; }
+function getItem(code){ return state.settings.items.find(i=>i.code===code) || {code,name:code,spec:'',unit:'',price:0,vendorPrice:0,openingStock:0,active:true,orderType:normalizeItemOrderType('',code)}; }
 function itemVendorPrice(code){ const item=getItem(code); return num(item.vendorPrice ?? item.price); }
 function itemWorkerPrice(code){ const item=getItem(code); return num(item.price); }
 function itemLabel(code){ const item=getItem(code); return item.name || code; }
-function lineQty(line){ return Math.max(0, num(line.orderQty) + num(line.addQty) + num(line.useStockQty) - num(line.returnQty)); }
-function supplierQty(line){ return Math.max(0, num(line.orderQty) + num(line.addQty) + num(line.replenishQty) - num(line.returnQty)); }
+function lineQty(line){
+  if(isSpecialItem(line?.code)) return Math.max(0, num(line?.orderQty));
+  return Math.max(0, num(line?.orderQty) + num(line?.addQty) + num(line?.useStockQty) - num(line?.returnQty));
+}
+function supplierQty(line){
+  if(isSpecialItem(line?.code)) return Math.max(0, num(line?.orderQty));
+  return Math.max(0, num(line?.orderQty) + num(line?.addQty) + num(line?.replenishQty) - num(line?.returnQty));
+}
 function lineAmount(line){ return lineQty(line) * num(line.price); }
-function orderAmount(order){ return (order.items||[]).reduce((sum,l)=>sum+lineAmount(l),0); }
-function orderSupplierAmount(order){ return (order.items||[]).reduce((sum,l)=>sum+supplierQty(l)*itemVendorPrice(l.code),0); }
-function hasReturn(order){ return (order.items||[]).some(l=>num(l.returnQty)>0); }
+function orderAmount(order){ return orderedLines(order.items||[]).reduce((sum,l)=>sum+lineAmount(l),0); }
+function orderSupplierAmount(order){ return orderedLines(order.items||[]).reduce((sum,l)=>sum+supplierQty(l)*itemVendorPrice(l.code),0); }
+function hasReturn(order){ return (order.items||[]).some(l=>isGeneralItem(l.code) && num(l.returnQty)>0); }
 function itemSummary(order){
-  const parts = (order.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || num(l.useStockQty)>0).map(l=>{
+  const parts = orderedLines(order.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || (isGeneralItem(l.code) && num(l.useStockQty)>0)).map(l=>{
     const item=getItem(l.code);
     const tags=[];
-    if(num(l.orderQty)>0) tags.push(`訂${num(l.orderQty)}`);
-    if(num(l.useStockQty)>0) tags.push(`庫${num(l.useStockQty)}`);
-    if(num(l.returnQty)>0) tags.push(`退${num(l.returnQty)}`);
-    if(num(l.addQty)>0) tags.push(`加${num(l.addQty)}`);
+    const orderQty=isSpecialItem(l.code)?lineQty(l):num(l.orderQty);
+    if(orderQty>0) tags.push(`訂${orderQty}`);
+    if(isGeneralItem(l.code) && num(l.useStockQty)>0) tags.push(`庫${num(l.useStockQty)}`);
+    if(isGeneralItem(l.code) && num(l.returnQty)>0) tags.push(`退${num(l.returnQty)}`);
+    if(isGeneralItem(l.code) && num(l.addQty)>0) tags.push(`加${num(l.addQty)}`);
     return `${item.name} ${tags.join('/')}`;
   });
   return parts.length ? parts.join('、') : '尚未填品項';
@@ -680,16 +701,17 @@ function itemSummary(order){
 function purchaseItemsHTML(order){
   const isAddBuyOrder = String(order.note||'').includes('加買來源：');
   const rows = [];
-  (order.items||[]).forEach(l=>{
-    if(num(l.orderQty)>0){
-      const label = isAddBuyOrder ? `加購 ${itemLabel(l.code)} ${num(l.orderQty)}` : `${itemLabel(l.code)} ${num(l.orderQty)}`;
+  orderedLines(order.items||[]).forEach(l=>{
+    const orderQty=isSpecialItem(l.code)?lineQty(l):num(l.orderQty);
+    if(orderQty>0){
+      const label = isAddBuyOrder ? `加購 ${itemLabel(l.code)} ${orderQty}` : `${itemLabel(l.code)} ${orderQty}`;
       rows.push(`<span class="summary-chip ${isAddBuyOrder?'warn':''}">${esc(label)}</span>`);
     }
-    if(num(l.useStockQty)>0){
+    if(isGeneralItem(l.code) && num(l.useStockQty)>0){
       const label = isAddBuyOrder ? `加購拿庫存 ${itemLabel(l.code)} ${num(l.useStockQty)}` : `拿庫存 ${itemLabel(l.code)} ${num(l.useStockQty)}`;
       rows.push(`<span class="summary-chip ${isAddBuyOrder?'add-stock':'stock'}">${esc(label)}</span>`);
     }
-    if(num(l.addQty)>0){
+    if(isGeneralItem(l.code) && num(l.addQty)>0){
       rows.push(`<span class="summary-chip warn">${esc('加購 '+itemLabel(l.code)+' '+num(l.addQty))}</span>`);
     }
   });
@@ -697,10 +719,11 @@ function purchaseItemsHTML(order){
 }
 function hasOrderLineForPrint(line){ return supplierQty(line)>0 || num(line.useStockQty)>0; }
 function hasReceiptLine(line){ return lineQty(line)>0; }
-function returnableQty(line){ return Math.max(0, num(line.orderQty) + num(line.addQty) + num(line.useStockQty) - num(line.returnQty)); }
-function hasReturnableItems(order){ return (order.items||[]).some(l=>returnableQty(l)>0); }
+function returnableQty(line){ return isSpecialItem(line?.code) ? 0 : Math.max(0, num(line.orderQty) + num(line.addQty) + num(line.useStockQty) - num(line.returnQty)); }
+function hasReturnableItems(order){ return (order.items||[]).some(l=>isGeneralItem(l.code) && returnableQty(l)>0); }
 function currentStock(code){
   const item = getItem(code);
+  if(isSpecialItem(item)) return 0;
   let stock = num(item.openingStock);
   for(const order of state.orders){
     for(const l of (order.items||[])){
@@ -734,7 +757,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand">FOR-e寢具訂購<small>V4.5 Supabase 公開共用版</small></div>
+        <div class="brand">FOR-e寢具訂購<small>V4.6 Supabase 公開共用版</small></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -1082,17 +1105,22 @@ function workerGroupFormHTML(g, index){
       <div><label>國籍</label><select class="wg-nationality">${countryOptions.map(c=>`<option ${group.nationality===c?'selected':''}>${c}</option>`).join('')}</select></div>
       <div><label>入境日</label><input type="date" class="wg-entryDate" value="${esc(group.entryDate||'')}"></div>
     </div>
-    <div class="table-wrap" style="margin-top:8px"><table class="item-table"><thead><tr><th>品項</th><th>單位</th><th>工人訂購價</th><th>訂購</th><th>拿庫存</th><th>加買</th><th>備註</th></tr></thead><tbody>${itemRowsHTML(group.items, i=>!isBedItem(i.code))}</tbody></table></div>
+    <div class="table-wrap" style="margin-top:8px"><table class="item-table"><thead><tr><th>品項</th><th>單位</th><th>工人訂購價</th><th>訂購</th><th>拿庫存</th><th>加買</th><th>備註</th></tr></thead><tbody>${itemRowsHTML(group.items, i=>isGeneralItem(i))}</tbody></table></div>
   </div>`;
 }
 
-function specialBedRowsHTML(items){
+function normalizeSpecialLine(line){
+  const l=normalizeItemLine(line||{});
+  const qty=Math.max(0,num(l.orderQty)+num(l.addQty)+num(l.useStockQty)-num(l.returnQty));
+  return Object.assign(l,{orderQty:qty,addQty:0,returnQty:0,useStockQty:0,stockInQty:0,replenishQty:0,returnToStockQty:0,receivedQty:0});
+}
+function specialItemRowsHTML(items){
   const itemMap = new Map((items||[]).map(l=>[l.code,l]));
-  const bedItems = state.settings.items.filter(i=>i.active!==false && isBedItem(i.code));
-  return bedItems.map(item=>{
-    const l = normalizeItemLine(itemMap.get(item.code) || {code:item.code,price:item.price});
+  const specialItems = state.settings.items.filter(i=>i.active!==false && isSpecialItem(i));
+  return specialItems.map(item=>{
+    const l = normalizeSpecialLine(itemMap.get(item.code) || {code:item.code,price:item.price});
     return `<tr data-code="${esc(item.code)}">
-      <td><b>${esc(item.name)}</b><br><span class="muted">${esc(item.spec||'')}｜只 FOR 雇主，不需工人姓名</span></td>
+      <td><b>${esc(item.name)}</b><br><span class="muted">${esc(item.spec||'')}｜不綁定工人，同張訂購單只填一次</span></td>
       <td class="nowrap">${esc(item.unit||'')}</td>
       <td><input type="number" step="1" class="line-price" value="${num(l.price)}"></td>
       <td><input type="number" step="1" min="0" class="line-order" value="${num(l.orderQty)}"></td>
@@ -1100,24 +1128,23 @@ function specialBedRowsHTML(items){
     </tr>`;
   }).join('');
 }
-function positiveLineQty(line){ return supplierQty(line)>0 || num(line.useStockQty)>0 || num(line.addQty)>0 || num(line.orderQty)>0; }
-function mergeSpecialBedLines(baseLines, bedLines){
+function positiveLineQty(line){ return isSpecialItem(line?.code) ? num(line?.orderQty)>0 : (supplierQty(line)>0 || num(line.useStockQty)>0 || num(line.addQty)>0 || num(line.orderQty)>0); }
+function mergeSpecialLines(baseLines, specialLines){
   const map = new Map((baseLines||[]).map(l=>[l.code, normalizeItemLine(l)]));
-  (bedLines||[]).forEach(raw=>{
-    const l = normalizeItemLine(raw);
-    if(!isBedItem(l.code)) return;
-    map.set(l.code, l);
+  (specialLines||[]).forEach(raw=>{
+    if(!isSpecialItem(raw?.code)) return;
+    map.set(raw.code, normalizeSpecialLine(raw));
   });
-  state.settings.items.filter(i=>i.active!==false).forEach(i=>{
-    if(!map.has(i.code)) map.set(i.code, normalizeItemLine({code:i.code, price:i.price}));
-  });
-  return Array.from(map.values());
+  const ordered=state.settings.items.filter(i=>i.active!==false).map(i=>map.get(i.code) || normalizeItemLine({code:i.code,price:i.price}));
+  const known=new Set(ordered.map(l=>l.code));
+  (baseLines||[]).forEach(raw=>{ if(!known.has(raw.code)) ordered.push(normalizeItemLine(raw)); });
+  return ordered;
 }
 function orderFormHTML(o){
   const groups = orderWorkerGroups(o);
   const workerCards = (groups.length?groups:[workerGroupBlank()]).map((g,i)=>workerGroupFormHTML(g,i)).join('');
-  const stockRows = itemRowsHTML(o.items||[], i=>!isBedItem(i.code));
-  const bedRows = specialBedRowsHTML(o.items||[]);
+  const stockRows = itemRowsHTML(o.items||[], i=>isGeneralItem(i));
+  const specialRows = specialItemRowsHTML(o.items||[]);
   const isAddBuyOrder = String(o.note||'').includes('加買來源：');
   return `
     <div class="form-section">
@@ -1131,7 +1158,7 @@ function orderFormHTML(o){
         <div><label>訂購日期</label><input type="date" id="f_orderDate" value="${esc(o.orderDate||todayInput())}"></div>
         <div class="employer-field"><label>雇主名稱</label><input id="f_employer" list="employerList" value="${esc(o.employer||'')}" placeholder="請輸入或選擇雇主名稱"><datalist id="employerList">${state.settings.employers.map(x=>`<option value="${esc(x)}">`).join('')}</datalist></div>
       </div>
-      <div class="mini-note" style="margin-top:10px">同一雇主可在同一張訂購單新增多位工人；每位工人可填不同品項。床類請填在「特殊訂購項目」，只 FOR 雇主，不需工人姓名。</div>
+      <div class="mini-note" style="margin-top:10px">同一雇主可在同一張訂購單新增多位工人；一般訂購項目依工人分別填寫，特殊訂購項目不綁定工人且同張訂購單只填一次。</div>
     </div>
 
     <div class="form-section">
@@ -1158,19 +1185,19 @@ function orderFormHTML(o){
 
     <div class="form-section worker-order-section">
       <h3>工人批次訂購明細</h3>
-      <div class="toolbar"><div class="toolbar-left"><button id="applyBasicSet" type="button">套用基本寢具</button><button id="addWorkerGroupBtn" type="button">＋新增工人</button></div><div class="subtle">每位工人可個別填訂購、拿庫存、加買與備註；可移除全部工人，只保留特殊訂購項目。退貨請至訂購紀錄處理。</div></div>
+      <div class="toolbar"><div class="toolbar-left"><button id="applyBasicSet" type="button">套用基本寢具</button><button id="addWorkerGroupBtn" type="button">＋新增工人</button></div><div class="subtle">一般訂購項目依每位工人填寫，可使用拿庫存、加買與退貨；可移除全部工人，只保留特殊訂購項目。</div></div>
       <div id="workerCards">${workerCards}</div>
     </div>
 
     ${isAddBuyOrder ? '' : `<div class="form-section special-bed-section">
-      <h3>特殊訂購項目｜床類</h3>
-      <div class="mini-note" style="margin-bottom:8px">床類只 FOR 雇主，不需填工人姓名；加買不提供床類選項。</div>
-      <div class="table-wrap"><table class="item-table"><thead><tr><th>品項</th><th>單位</th><th>工人訂購價</th><th>訂購</th><th>備註</th></tr></thead><tbody>${bedRows}</tbody></table></div>
+      <h3>特殊訂購項目</h3>
+      <div class="mini-note" style="margin-bottom:8px">不綁定工人，同一張訂購單只填寫一次；不提供拿庫存、加買及退貨欄位。</div>
+      <div class="table-wrap"><table class="item-table"><thead><tr><th>品項</th><th>單位</th><th>工人訂購價</th><th>訂購</th><th>備註</th></tr></thead><tbody>${specialRows}</tbody></table></div>
     </div>`}
 
     <div class="form-section stock-item-section hidden">
       <h3>庫存訂購明細</h3>
-      <div class="toolbar"><div class="toolbar-left"><button id="applyBasicSet" type="button">套用基本寢具</button></div><div class="subtle">訂庫存收貨後會直接增加庫存；床類不列入庫存訂購。</div></div>
+      <div class="toolbar"><div class="toolbar-left"><button id="applyBasicSet" type="button">套用基本寢具</button></div><div class="subtle">訂庫存收貨後會直接增加庫存；特殊訂購項目不列入庫存訂購。</div></div>
       <div class="table-wrap"><table class="item-table"><thead><tr><th>品項</th><th>單位</th><th>工人訂購價</th><th>訂購</th><th>拿庫存</th><th>加買</th><th>備註</th></tr></thead><tbody>${stockRows}</tbody></table></div>
     </div>
 
@@ -1227,16 +1254,16 @@ function saveOrderFromModal(id, isExisting, modal){
     order.items = readLinesFromRoot($('.stock-item-section', modal));
   }else{
     const groups = readWorkerGroupsFromModal(modal);
-    const bedLines = $('.special-bed-section', modal) ? readLinesFromRoot($('.special-bed-section', modal)) : [];
+    const specialLines = $('.special-bed-section', modal) ? readLinesFromRoot($('.special-bed-section', modal)).map(normalizeSpecialLine) : [];
     const hasWorkerItems = groups.some(g=>(g.items||[]).some(l=>positiveLineQty(l)));
-    const hasBedItems = bedLines.some(l=>positiveLineQty(l));
-    if(!groups.length && !hasBedItems) return toast('請至少輸入一位工人或特殊床類訂購項目');
-    if(groups.length && !hasWorkerItems && !hasBedItems) return toast('請輸入至少一個訂購品項');
+    const hasSpecialItems = specialLines.some(l=>positiveLineQty(l));
+    if(!groups.length && !hasSpecialItems) return toast('請至少輸入一位工人或特殊訂購項目');
+    if(groups.length && !hasWorkerItems && !hasSpecialItems) return toast('請輸入至少一個訂購品項');
     order.workerGroups = groups;
     order.worker = groups.map(g=>g.name).filter(Boolean).join('\n');
     order.nationality = groups[0]?.nationality || '';
     order.entryDate = groups[0]?.entryDate || '';
-    order.items = mergeSpecialBedLines(aggregateWorkerItems(groups, oldItems), bedLines);
+    order.items = mergeSpecialLines(aggregateWorkerItems(groups, oldItems), specialLines);
   }
   if(!isExisting || !order.orderNo || String(order.orderNo).startsWith('BO')) order.orderNo = makeOrderNo(order.companyTitle, order.dept, order.orderDate, isExisting ? order.id : '');
   order.batchNo = '';
@@ -1296,7 +1323,7 @@ function workerRecordHTML(o){
 function openReturnToStockModal(orderId){
   const o=state.orders.find(x=>x.id===orderId); if(!o) return;
   if(!can('orderWrite')) return toast('目前無法辦理退貨');
-  const lines=(o.items||[]).filter(l=>returnableQty(l)>0);
+  const lines=orderedLines(o.items||[]).filter(l=>isGeneralItem(l.code) && returnableQty(l)>0);
   if(!lines.length) return toast('此筆沒有可退貨入庫的品項');
   const rows=lines.map(l=>{
     const it=getItem(l.code);
@@ -1356,11 +1383,11 @@ function openAddPurchaseFlow(orderId){
   addOrder.orderNo=makeOrderNo(addOrder.companyTitle, addOrder.dept, addOrder.orderDate);
   if(!o.isStockOrder){
     addOrder.isStockOrder=false;
-    addOrder.workerGroups=orderWorkerGroups(o).map(g=>({id:uid('WG'), name:g.name, nationality:g.nationality, entryDate:g.entryDate, items:createEmptyItemLines(i=>!isBedItem(i.code))}));
+    addOrder.workerGroups=orderWorkerGroups(o).map(g=>({id:uid('WG'), name:g.name, nationality:g.nationality, entryDate:g.entryDate, items:createEmptyItemLines(i=>isGeneralItem(i))}));
     addOrder.worker=addOrder.workerGroups.map(g=>g.name).join('\n');
     addOrder.nationality=addOrder.workerGroups[0]?.nationality||'';
     addOrder.entryDate=addOrder.workerGroups[0]?.entryDate||'';
-    addOrder.items=createEmptyItemLines(i=>!isBedItem(i.code));
+    addOrder.items=createEmptyItemLines(i=>isGeneralItem(i));
   }
   state.orders.push(addOrder); save(); closeModal(); toast('已建立加買訂購單，請填寫加買品項'); openOrderModal(addOrder.id);
 }
@@ -1368,7 +1395,7 @@ function openAddFromStockModal(orderId){
   const o=state.orders.find(x=>x.id===orderId); if(!o) return;
   const groups=orderWorkerGroups(o);
   const targetSelect = (!o.isStockOrder && groups.length>1) ? `<div style="margin-bottom:10px"><label>加買對象</label><select id="add_stock_worker">${groups.map((g,i)=>`<option value="${i}">${esc(g.name||('工人'+(i+1)))}</option>`).join('')}</select></div>` : '';
-  const rows=state.settings.items.filter(i=>i.active!==false && !isBedItem(i.code)).map(i=>`<tr data-add-code="${esc(i.code)}"><td><b>${esc(i.name)}</b><br><span class="muted">庫存 ${currentStock(i.code)}｜${esc(i.spec||'')}</span></td><td class="right">${money(i.price)}</td><td><input type="number" min="0" step="1" class="add-stock-qty" value="0"></td><td><input class="add-stock-note" placeholder="備註"></td></tr>`).join('');
+  const rows=state.settings.items.filter(i=>i.active!==false && isGeneralItem(i)).map(i=>`<tr data-add-code="${esc(i.code)}"><td><b>${esc(i.name)}</b><br><span class="muted">庫存 ${currentStock(i.code)}｜${esc(i.spec||'')}</span></td><td class="right">${money(i.price)}</td><td><input type="number" min="0" step="1" class="add-stock-qty" value="0"></td><td><input class="add-stock-note" placeholder="備註"></td></tr>`).join('');
   showModal(`加買拿庫存｜${o.orderNo}`, `${targetSelect}<div class="scroll-x"><table class="item-table"><thead><tr><th>品項</th><th class="right">工人訂購價</th><th>拿庫存數量</th><th>備註</th></tr></thead><tbody>${rows}</tbody></table></div>`,{
     width:'880px',
     footer:`<button id="cancelModalBtn">取消</button><button class="primary" id="saveAddStockBtn">儲存加買拿庫存</button>`,
@@ -1431,9 +1458,17 @@ function openRecordDetailModal(orderId){
     }
   });
 }
+function specialRecordItemRow(l){
+  const it=getItem(l.code);
+  return `<tr><td><b>${esc(it.name)}</b><br><span class="muted">${esc(it.spec||'')}</span></td><td class="right">${money(l.price)}</td><td class="right">${num(l.orderQty)}</td><td class="right"><b>${money(lineAmount(l))}</b></td><td>${esc(l.note||'')}</td></tr>`;
+}
 function recordDetailHTML(o){
-  const lines = (o.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || num(l.useStockQty)>0 || num(l.returnQty)>0 || num(l.addQty)>0);
-  const itemTable = lines.length ? `<div class="scroll-x"><table class="item-table"><thead><tr><th>品項</th><th class="right">工人訂購價</th><th class="right">訂購</th><th class="right">拿庫存</th><th class="right">退貨</th><th class="right">加買</th><th class="right">小計</th><th>備註</th></tr></thead><tbody>${lines.map(l=>recordItemRow(l)).join('')}</tbody></table></div>` : `<div class="empty">此筆尚未填寫品項。</div>`;
+  const lines = orderedLines(o.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || (isGeneralItem(l.code) && (num(l.useStockQty)>0 || num(l.returnQty)>0 || num(l.addQty)>0)));
+  const generalLines=lines.filter(l=>isGeneralItem(l.code));
+  const specialLines=lines.filter(l=>isSpecialItem(l.code));
+  const generalTable = generalLines.length ? `<div class="section-title">一般訂購項目</div><div class="scroll-x"><table class="item-table"><thead><tr><th>品項</th><th class="right">工人訂購價</th><th class="right">訂購</th><th class="right">拿庫存</th><th class="right">退貨</th><th class="right">加買</th><th class="right">小計</th><th>備註</th></tr></thead><tbody>${generalLines.map(l=>recordItemRow(l)).join('')}</tbody></table></div>` : '';
+  const specialTable = specialLines.length ? `<div class="section-title">特殊訂購項目</div><div class="scroll-x"><table class="item-table"><thead><tr><th>品項</th><th class="right">工人訂購價</th><th class="right">訂購數量</th><th class="right">小計</th><th>備註</th></tr></thead><tbody>${specialLines.map(l=>specialRecordItemRow(l)).join('')}</tbody></table></div>` : '';
+  const itemTable = generalTable || specialTable ? generalTable+specialTable : `<div class="empty">此筆尚未填寫品項。</div>`;
   const err = o.errorNotice ? `<span class="pill bad">${esc(o.errorNotice.type)}｜${esc(o.errorNotice.note||'')}</span>` : '<span class="muted">無</span>';
   const groupHTML = (!o.isStockOrder && orderWorkerGroups(o).length>1) ? workerItemMatrixHTML(o) : '';
   return `<div class="record-meta">
@@ -1477,10 +1512,9 @@ function matrixItemPrice(groups, code){
 function workerItemMatrixHTML(o){
   const groups = orderWorkerGroups(o).filter(g=>g.name || (g.items||[]).some(l=>positiveLineQty(l)));
   if(groups.length <= 1) return '';
-  const codes = [];
-  groups.forEach(g=>(g.items||[]).forEach(l=>{
-    if(positiveLineQty(l) && !codes.includes(l.code)) codes.push(l.code);
-  }));
+  const codeSet = new Set();
+  groups.forEach(g=>(g.items||[]).forEach(l=>{ if(positiveLineQty(l) && isGeneralItem(l.code)) codeSet.add(l.code); }));
+  const codes = state.settings.items.filter(i=>codeSet.has(i.code)).map(i=>i.code);
   if(!codes.length) return '';
   const header = codes.map(code=>{
     const it=getItem(code);
@@ -1517,16 +1551,16 @@ function recordItemRow(l){
   </tr>`;
 }
 function returnSummary(o){
-  const rows=(o.items||[]).filter(l=>num(l.returnQty)>0).map(l=>`${itemLabel(l.code)} 退${num(l.returnQty)}`);
+  const rows=orderedLines(o.items||[]).filter(l=>isGeneralItem(l.code) && num(l.returnQty)>0).map(l=>`${itemLabel(l.code)} 退${num(l.returnQty)}`);
   return rows.length ? rows.map(x=>`<span class="pill bad">${esc(x)}</span>`).join('') : '<span class="muted">無退貨</span>';
 }
 
 function renderInventory(root){
-  const items = state.settings.items.filter(i=>i.active!==false && !INVENTORY_HIDE_CODES.has(i.code));
+  const items = state.settings.items.filter(i=>i.active!==false && isGeneralItem(i));
   root.innerHTML = `
     <div class="toolbar"><div class="toolbar-left"><button class="primary" id="addItemBtn" ${can('stockWrite')?'':'disabled'}>＋新增品項</button></div><div class="toolbar-right"><button id="exportInventoryBtn">匯出庫存 CSV</button></div></div>
     <div class="card plain">
-      <div class="card-title"><h2>目前庫存</h2><span class="subtle">庫存 = 期初庫存 + 已收貨的訂庫存 - 拿庫存 + 手動調整；床類品項不顯示於庫存管理</span></div>
+      <div class="card-title"><h2>目前庫存</h2><span class="subtle">庫存 = 期初庫存 + 已收貨的訂庫存 - 拿庫存 + 手動調整；特殊訂購項目不列入庫存管理</span></div>
       <div class="table-wrap"><table>
         <thead><tr><th>品項</th><th>規格</th><th>單位</th><th class="right">廠商訂購價</th><th class="right">工人訂購價</th><th class="right">期初</th><th class="right">目前庫存</th><th>快速調整</th><th class="nowrap">操作</th></tr></thead>
         <tbody>${items.map(i=>`<tr>
@@ -1555,7 +1589,7 @@ function addStockAdjustment(code){
 }
 function openItemModal(code){
   if(!can('stockWrite')) return toast('目前無法修改庫存');
-  const item = code ? JSON.parse(JSON.stringify(getItem(code))) : {code:'ITEM_'+Date.now().toString(36).toUpperCase(), name:'', spec:'', unit:'', price:0, vendorPrice:0, openingStock:0, active:true};
+  const item = code ? JSON.parse(JSON.stringify(getItem(code))) : {code:'ITEM_'+Date.now().toString(36).toUpperCase(), name:'', spec:'', unit:'', price:0, vendorPrice:0, openingStock:0, active:true, orderType:'general'};
   showModal(code?'修改品項 / 庫存':'新增品項', `
     <div class="grid two">
       <div><label>品項代碼</label><input id="i_code" value="${esc(item.code)}" ${code?'readonly':''}></div>
@@ -1564,20 +1598,24 @@ function openItemModal(code){
       <div><label>單位</label><input id="i_unit" value="${esc(item.unit||'')}"></div>
       <div><label>廠商訂購價</label><input type="number" id="i_vendorPrice" value="${num(item.vendorPrice ?? item.price)}" placeholder="向廠商訂購的價格"></div>
       <div><label>工人訂購價</label><input type="number" id="i_price" value="${num(item.price)}" placeholder="工人簽收/請款價格"></div>
+      <div><label>訂購項目類型</label><select id="i_orderType"><option value="general" ${itemOrderType(item)==='general'?'selected':''}>一般訂購項目</option><option value="special" ${itemOrderType(item)==='special'?'selected':''}>特殊訂購項目</option></select><div class="mini-note" style="margin-top:5px">特殊項目不綁定工人，且不提供拿庫存、加買、退貨。</div></div>
       <div><label>期初庫存</label><input type="number" id="i_openingStock" value="${num(item.openingStock)}"></div>
       <div><label>啟用</label><select id="i_active"><option value="true" ${item.active!==false?'selected':''}>啟用</option><option value="false" ${item.active===false?'selected':''}>停用</option></select></div>
     </div>`,{
     width:'720px',
     footer:`<button id="cancelModalBtn">取消</button><button class="primary" id="saveItemBtn">儲存</button>`,
     onOpen:(modal)=>{
+      const updateItemTypeFields=()=>{ const special=$('#i_orderType',modal)?.value==='special'; const opening=$('#i_openingStock',modal); if(opening){ opening.disabled=special; if(special) opening.value='0'; } };
+      $('#i_orderType',modal)?.addEventListener('change',updateItemTypeFields);
+      updateItemTypeFields();
       modal.querySelector('#cancelModalBtn').addEventListener('click',closeModal);
       modal.querySelector('#saveItemBtn').addEventListener('click',()=>{
-        const next={code:$('#i_code',modal).value.trim(), name:$('#i_name',modal).value.trim(), spec:$('#i_spec',modal).value.trim(), unit:$('#i_unit',modal).value.trim(), vendorPrice:num($('#i_vendorPrice',modal).value), price:num($('#i_price',modal).value), openingStock:num($('#i_openingStock',modal).value), active:$('#i_active',modal).value==='true'};
+        const next={code:$('#i_code',modal).value.trim(), name:$('#i_name',modal).value.trim(), spec:$('#i_spec',modal).value.trim(), unit:$('#i_unit',modal).value.trim(), vendorPrice:num($('#i_vendorPrice',modal).value), price:num($('#i_price',modal).value), openingStock:$('#i_orderType',modal).value==='special'?0:num($('#i_openingStock',modal).value), active:$('#i_active',modal).value==='true', orderType:normalizeItemOrderType($('#i_orderType',modal).value,$('#i_code',modal).value.trim())};
         if(!next.code || !next.name) return toast('請輸入品項代碼與品名');
         const idx=state.settings.items.findIndex(i=>i.code===next.code);
         const beforeItem = idx>=0 ? JSON.parse(JSON.stringify(state.settings.items[idx])) : null;
-        if(idx>=0) state.settings.items[idx]=next; else state.settings.items.push(next);
-        audit(idx>=0?'修改品項':'新增品項','品項',next.code,next.name,`廠商訂購價 ${money(next.vendorPrice)}｜工人訂購價 ${money(next.price)}`,beforeItem);
+        if(idx>=0) state.settings.items[idx]=Object.assign({},state.settings.items[idx],next); else state.settings.items.push(next);
+        audit(idx>=0?'修改品項':'新增品項','品項',next.code,next.name,`類型 ${itemOrderTypeLabel(next)}｜廠商訂購價 ${money(next.vendorPrice)}｜工人訂購價 ${money(next.price)}`,beforeItem);
         save(); closeModal(); toast('品項已儲存'); render();
       });
     }
@@ -1614,7 +1652,7 @@ function renderAccounting(root){
 }
 function accountingAmount(o){ return orderAmount(o) + num(o.accountingAdjust || 0); }
 function lineSummaryByKey(o, key, cls=''){
-  const rows=(o.items||[]).filter(l=>num(l[key])>0).map(l=>`<span class="summary-chip ${cls}">${esc(itemLabel(l.code))} ${num(l[key])}</span>`);
+  const rows=orderedLines(o.items||[]).filter(l=>(key==='orderQty' || isGeneralItem(l.code)) && (key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]))>0).map(l=>{ const qty=key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]); return `<span class="summary-chip ${cls}">${esc(itemLabel(l.code))} ${qty}</span>`; });
   return rows.length ? rows.join('') : '<span class="muted">-</span>';
 }
 function accountingBatchHTML(batch, orders){
@@ -1846,20 +1884,20 @@ function yearlyStatsHTML(orders=state.orders){
   return rows.length?`<table><thead><tr><th>年度</th><th class="right">訂購筆數</th><th class="right">訂購總數</th><th class="right">總金額</th></tr></thead><tbody>${rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="right">${v.orders||0}</td><td class="right"><b>${v.count}</b></td><td class="right">${money(v.total)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無統計資料。</div>';
 }
 function itemStatsHTML(orders=state.orders){
-  const map={};
-  for(const item of state.settings.items) map[item.code]={name:item.name, qty:0, orderQty:0, addQty:0, useStockQty:0, returnQty:0, amount:0};
-  orders.forEach(o=>{(o.items||[]).forEach(l=>{ const m=map[l.code]||(map[l.code]={name:itemLabel(l.code),qty:0,orderQty:0,addQty:0,useStockQty:0,returnQty:0,amount:0}); m.qty+=lineQty(l); m.orderQty+=num(l.orderQty); m.addQty+=num(l.addQty); m.useStockQty+=num(l.useStockQty); m.returnQty+=num(l.returnQty); m.amount+=lineAmount(l); });});
-  const rows=Object.values(map).filter(x=>x.qty||x.orderQty||x.addQty||x.useStockQty||x.returnQty).sort((a,b)=>b.amount-a.amount);
-  return rows.length?`<table><thead><tr><th>品項</th><th class="right">訂購</th><th class="right">加買</th><th class="right">拿庫存</th><th class="right">退貨</th><th class="right">統計數量</th><th class="right">金額</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.name)}</td><td class="right">${r.orderQty}</td><td class="right">${r.addQty}</td><td class="right">${r.useStockQty}</td><td class="right">${r.returnQty}</td><td class="right"><b>${r.qty}</b></td><td class="right"><b>${money(r.amount)}</b></td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無品項統計資料。</div>';
+  const map=new Map();
+  state.settings.items.forEach(item=>map.set(item.code,{code:item.code,name:item.name,type:itemOrderType(item),qty:0,orderQty:0,addQty:0,useStockQty:0,returnQty:0,amount:0}));
+  orders.forEach(o=>{orderedLines(o.items||[]).forEach(l=>{ const m=map.get(l.code)||{code:l.code,name:itemLabel(l.code),type:itemOrderType(l.code),qty:0,orderQty:0,addQty:0,useStockQty:0,returnQty:0,amount:0}; m.qty+=lineQty(l); m.orderQty+=isSpecialItem(l.code)?lineQty(l):num(l.orderQty); if(isGeneralItem(l.code)){m.addQty+=num(l.addQty);m.useStockQty+=num(l.useStockQty);m.returnQty+=num(l.returnQty);} m.amount+=lineAmount(l); map.set(l.code,m); });});
+  const rows=Array.from(map.values()).filter(x=>x.qty||x.orderQty||x.addQty||x.useStockQty||x.returnQty);
+  return rows.length?`<table><thead><tr><th>品項</th><th>訂購類型</th><th class="right">訂購</th><th class="right">加買</th><th class="right">拿庫存</th><th class="right">退貨</th><th class="right">統計數量</th><th class="right">金額</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(ITEM_ORDER_TYPES[r.type]||ITEM_ORDER_TYPES.general)}</td><td class="right">${r.orderQty}</td><td class="right">${r.type==='special'?'<span class="muted">-</span>':r.addQty}</td><td class="right">${r.type==='special'?'<span class="muted">-</span>':r.useStockQty}</td><td class="right">${r.type==='special'?'<span class="muted">-</span>':r.returnQty}</td><td class="right"><b>${r.qty}</b></td><td class="right"><b>${money(r.amount)}</b></td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無品項統計資料。</div>';
 }
 
 
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.5｜Supabase 公開共用正式版</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.6｜品項分類與順序正式版</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.5 開啟網址即可直接使用，不需要建立帳號或設定角色權限。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.6 新增品項順序調整，以及一般／特殊訂購項目分類；特殊項目同張訂購單只填一次。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -1929,8 +1967,8 @@ function renderSettings(root){
     <div class="card plain"><div class="card-title"><h2>寢具廠商資訊</h2><button id="settingsAddVendorBtn" ${can('settings')?'':'disabled'}>＋新增廠商</button></div>
       <div class="table-wrap"><table><thead><tr><th>公司名稱</th><th>公司地址</th><th>聯絡窗口</th><th>電話</th><th>手機</th><th>傳真</th><th>LINE</th><th>eMAIL</th><th>操作</th></tr></thead><tbody>${(state.settings.vendors||[]).length ? state.settings.vendors.map(v=>`<tr><td><b>${esc(v.companyName)}</b></td><td>${esc(v.companyAddress)}</td><td>${esc(v.contactPerson)}</td><td>${esc(v.phone)}</td><td>${esc(v.mobile)}</td><td>${esc(v.fax)}</td><td>${esc(v.line)}</td><td>${esc(v.email)}</td><td><div class="actions"><button class="small" data-settings-edit-vendor="${esc(v.id)}" ${can('settings')?'':'disabled'}>修改</button><button class="small danger" data-settings-delete-vendor="${esc(v.id)}" ${can('settings')?'':'disabled'}>刪除</button></div></td></tr>`).join('') : `<tr><td colspan="9" class="center muted">尚未建立寢具廠商資訊</td></tr>`}</tbody></table></div>
     </div>
-    <div class="card plain"><div class="card-title"><h2>品項資料</h2><button id="settingsAddItemBtn" ${can('settings')?'':'disabled'}>＋新增品項</button></div>
-      <div class="table-wrap"><table><thead><tr><th>代碼</th><th>品名</th><th>規格</th><th>單位</th><th class="right">廠商訂購價</th><th class="right">工人訂購價</th><th class="right">期初庫存</th><th>狀態</th><th>操作</th></tr></thead><tbody>${state.settings.items.map(i=>`<tr><td>${esc(i.code)}</td><td><b>${esc(i.name)}</b></td><td>${esc(i.spec)}</td><td>${esc(i.unit)}</td><td class="right">${money(i.vendorPrice ?? i.price)}</td><td class="right">${money(i.price)}</td><td class="right">${num(i.openingStock)}</td><td>${i.active!==false?'啟用':'停用'}</td><td><button class="small" data-settings-edit-item="${esc(i.code)}" ${can('settings')?'':'disabled'}>修改</button></td></tr>`).join('')}</tbody></table></div>
+    <div class="card plain"><div class="card-title"><div><h2>品項資料</h2><div class="mini-note" style="margin-top:5px">使用上移／下移調整順序；此順序會套用於訂購、訂購單、明細、庫存、統計與 CSV。</div></div><button id="settingsAddItemBtn" ${can('settings')?'':'disabled'}>＋新增品項</button></div>
+      <div class="table-wrap"><table><thead><tr><th class="center">順序</th><th>代碼</th><th>品名</th><th>訂購類型</th><th>規格</th><th>單位</th><th class="right">廠商訂購價</th><th class="right">工人訂購價</th><th class="right">期初庫存</th><th>狀態</th><th>操作</th></tr></thead><tbody>${state.settings.items.map((i,idx)=>`<tr><td><div class="actions" style="justify-content:center"><button class="small" data-item-move="up" data-item-code="${esc(i.code)}" ${idx===0?'disabled':''} title="上移">↑</button><button class="small" data-item-move="down" data-item-code="${esc(i.code)}" ${idx===state.settings.items.length-1?'disabled':''} title="下移">↓</button></div></td><td>${esc(i.code)}</td><td><b>${esc(i.name)}</b></td><td><span class="pill ${itemOrderType(i)==='special'?'warn':'ok'}">${esc(itemOrderTypeLabel(i))}</span></td><td>${esc(i.spec)}</td><td>${esc(i.unit)}</td><td class="right">${money(i.vendorPrice ?? i.price)}</td><td class="right">${money(i.price)}</td><td class="right">${isSpecialItem(i)?'<span class="muted">不適用</span>':num(i.openingStock)}</td><td>${i.active!==false?'啟用':'停用'}</td><td><button class="small" data-settings-edit-item="${esc(i.code)}" ${can('settings')?'':'disabled'}>修改</button></td></tr>`).join('')}</tbody></table></div>
     </div>`;
   $('#saveBasicSettingsBtn')?.addEventListener('click',saveBasicSettings);
   $('#exportJsonBtn')?.addEventListener('click',exportJSON);
@@ -1939,9 +1977,20 @@ function renderSettings(root){
   $('#loadDemoBtn')?.addEventListener('click',loadDemoData);
   $('#settingsAddItemBtn')?.addEventListener('click',()=>openItemModal());
   $all('[data-settings-edit-item]').forEach(btn=>btn.addEventListener('click',()=>openItemModal(btn.dataset.settingsEditItem)));
+  $all('[data-item-move]').forEach(btn=>btn.addEventListener('click',()=>moveSettingItem(btn.dataset.itemCode,btn.dataset.itemMove)));
   $('#settingsAddVendorBtn')?.addEventListener('click',()=>openVendorModal());
   $all('[data-settings-edit-vendor]').forEach(btn=>btn.addEventListener('click',()=>openVendorModal(btn.dataset.settingsEditVendor)));
   $all('[data-settings-delete-vendor]').forEach(btn=>btn.addEventListener('click',()=>deleteVendor(btn.dataset.settingsDeleteVendor)));
+}
+function moveSettingItem(code,direction){
+  const idx=state.settings.items.findIndex(i=>i.code===code);
+  if(idx<0) return;
+  const target=direction==='up'?idx-1:idx+1;
+  if(target<0 || target>=state.settings.items.length) return;
+  const [item]=state.settings.items.splice(idx,1);
+  state.settings.items.splice(target,0,item);
+  audit('調整品項順序','品項',code,item.name,`${direction==='up'?'上移':'下移'}至第 ${target+1} 順位`);
+  save(); toast('品項順序已更新'); renderSettings($('#content'));
 }
 function linesFrom(id){ return ($('#'+id)?.value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean); }
 function saveBasicSettings(){
@@ -2085,11 +2134,11 @@ function receiptProductHTML(code, langKey, lang){
   return `<b>${esc(it.name)}</b><br><span>${esc(tname)}</span>${details}`;
 }
 function purchaseOrderHTML(o){
-  const lines = (o.items||[]).filter(l=>hasOrderLineForPrint(l));
+  const lines = orderedLines(o.items||[]).filter(l=>hasOrderLineForPrint(l));
   const itemRows = lines.length ? lines.map((l,idx)=>{
     const it = getItem(l.code);
-    const note=[l.note||'', num(l.returnQty)>0?`退貨 ${num(l.returnQty)}`:'', num(l.addQty)>0?`加買 ${num(l.addQty)}`:''].filter(Boolean).join(' / ');
-    return `<tr><td>${idx+1}</td><td><b>${esc(it.name)}</b></td><td class="spec-cell">${esc(it.spec||'')}</td><td>${esc(it.unit||'')}</td><td>${supplierQty(l)||''}</td><td>${num(l.useStockQty)||''}</td><td>${esc(note)}</td></tr>`;
+    const note=[l.note||'', isGeneralItem(l.code)&&num(l.returnQty)>0?`退貨 ${num(l.returnQty)}`:'', isGeneralItem(l.code)&&num(l.addQty)>0?`加買 ${num(l.addQty)}`:''].filter(Boolean).join(' / ');
+    return `<tr><td>${idx+1}</td><td><b>${esc(it.name)}</b></td><td class="spec-cell">${esc(it.spec||'')}</td><td>${esc(it.unit||'')}</td><td>${supplierQty(l)||''}</td><td>${isGeneralItem(l.code)?(num(l.useStockQty)||''):''}</td><td>${esc(note)}</td></tr>`;
   }).join('') : `<tr><td colspan="7" class="center">尚無有訂購數量的品項</td></tr>`;
   const deadline = formatDeliveryDeadline(o) || '未填寫';
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境外國人寢具訂購單</title><style>
@@ -2119,7 +2168,7 @@ function printReceipt(orderId){
   const pageHTML = pages.map(g=>{
     const langKey = g.nationality || o.nationality || '其他';
     const lang = itemTranslations[langKey] || itemTranslations['其他'];
-    const receiptLines = (g.items||[]).filter(l=>hasReceiptLine(l) && !isBedItem(l.code));
+    const receiptLines = orderedLines(g.items||[]).filter(l=>hasReceiptLine(l) && isGeneralItem(l.code));
     const rows = receiptLines.length ? receiptLines.map((l,idx)=>{
       const qty=lineQty(l);
       return `<tr><td class="center">${idx+1}</td><td>${receiptProductHTML(l.code, langKey, lang)}</td><td class="right">${money(l.price)}</td><td class="center"><b>${qty}</b></td><td>${esc(l.note||'')}</td></tr>`;
@@ -2194,7 +2243,7 @@ function drawSmallInfo(ctx, x, y, w, h, label, value){
 }
 function downloadOrderImage(orderId){
   const o=state.orders.find(x=>x.id===orderId); if(!o) return;
-  const rows=(o.items||[]).filter(l=>hasOrderLineForPrint(l));
+  const rows=orderedLines(o.items||[]).filter(l=>hasOrderLineForPrint(l));
   const width=1400; const margin=70;
   const headers=['項目','品名','規格','單位','訂購數量','使用庫存','備註'];
   const widths=[70,230,430,80,120,120,210];
@@ -2204,7 +2253,7 @@ function downloadOrderImage(orderId){
   measureCtx.font='20px Noto Sans TC, Arial';
   const rowHeights=useRows.map((l,r)=>{
     const it=l?getItem(l.code):{};
-    const vals=l?[String(r+1),it.name||'',it.spec||'',it.unit||'',String(supplierQty(l)||''),String(num(l.useStockQty)||''),[l.note||'',num(l.returnQty)>0?`退貨${num(l.returnQty)}`:'',num(l.addQty)>0?`加買${num(l.addQty)}`:''].filter(Boolean).join(' / ')]:['1','尚無有訂購數量的品項','','','','',''];
+    const vals=l?[String(r+1),it.name||'',it.spec||'',it.unit||'',String(supplierQty(l)||''),isGeneralItem(l.code)?String(num(l.useStockQty)||''):'',[l.note||'',isGeneralItem(l.code)&&num(l.returnQty)>0?`退貨${num(l.returnQty)}`:'',isGeneralItem(l.code)&&num(l.addQty)>0?`加買${num(l.addQty)}`:''].filter(Boolean).join(' / ')]:['1','尚無有訂購數量的品項','','','','',''];
     const maxLines=Math.max(...vals.map((v,i)=>canvasWrapLines(measureCtx, v, widths[i]-12).length));
     return Math.max(48, maxLines*22+18);
   });
@@ -2250,7 +2299,7 @@ function downloadOrderImage(orderId){
     cx=margin;
     const rowH=rowHeights[r] || 48;
     const it=l?getItem(l.code):{};
-    const vals=l?[String(r+1),it.name||'',it.spec||'',it.unit||'',String(supplierQty(l)||''),String(num(l.useStockQty)||''),[l.note||'',num(l.returnQty)>0?`退貨${num(l.returnQty)}`:'',num(l.addQty)>0?`加買${num(l.addQty)}`:''].filter(Boolean).join(' / ')]:['1','尚無有訂購數量的品項','','','','',''];
+    const vals=l?[String(r+1),it.name||'',it.spec||'',it.unit||'',String(supplierQty(l)||''),isGeneralItem(l.code)?String(num(l.useStockQty)||''):'',[l.note||'',isGeneralItem(l.code)&&num(l.returnQty)>0?`退貨${num(l.returnQty)}`:'',isGeneralItem(l.code)&&num(l.addQty)>0?`加買${num(l.addQty)}`:''].filter(Boolean).join(' / ')]:['1','尚無有訂購數量的品項','','','','',''];
     vals.forEach((v,i)=>{ctx.strokeRect(cx,y,widths[i],rowH); drawCenteredWrapFull(ctx,v,cx+6,y,widths[i]-12,rowH,21); cx+=widths[i];});
     y+=rowH;
   });
@@ -2331,22 +2380,22 @@ function exportDateLabel(){
 }
 
 function exportRecordsCSV(){
-  const rows=[['訂購單','部門','承辦','雇主','工人','國籍','入境日','訂購日','收貨日','請款日','公司別','支付對象','送貨地點','收貨聯絡人','送貨地址','品項','廠商訂購價','工人訂購價','訂購','拿庫存','退貨','加買','小計','狀態','會計狀態','備註']];
+  const rows=[['訂購單','部門','承辦','雇主','工人','國籍','入境日','訂購日','收貨日','請款日','公司別','支付對象','送貨地點','收貨聯絡人','送貨地址','品項','訂購類型','廠商訂購價','工人訂購價','訂購','拿庫存','退貨','加買','小計','狀態','會計狀態','備註']];
   filteredOrdersForCSV(state.orders).forEach(o=>{
-    const lines=(o.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || num(l.returnQty)>0 || num(l.useStockQty)>0 || num(l.addQty)>0);
-    if(!lines.length){ rows.push([o.orderNo,o.dept,o.staff,o.employer,o.worker,o.nationality,dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),'',0,0,0,0,0,0,0,o.status,o.accountingStatus,o.note||'']); }
-    lines.forEach(l=>rows.push([o.orderNo,o.dept,o.staff,o.employer,o.isStockOrder?'':o.worker,o.isStockOrder?'':o.nationality,o.isStockOrder?'':dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),itemLabel(l.code),itemVendorPrice(l.code),num(l.price),num(l.orderQty),num(l.useStockQty),num(l.returnQty),num(l.addQty),lineAmount(l),o.status,o.accountingStatus,o.note||'']));
+    const lines=orderedLines(o.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || (isGeneralItem(l.code) && (num(l.returnQty)>0 || num(l.useStockQty)>0 || num(l.addQty)>0)));
+    if(!lines.length){ rows.push([o.orderNo,o.dept,o.staff,o.employer,o.worker,o.nationality,dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),'','',0,0,0,'','','',0,o.status,o.accountingStatus,o.note||'']); }
+    lines.forEach(l=>{ const special=isSpecialItem(l.code); rows.push([o.orderNo,o.dept,o.staff,o.employer,o.isStockOrder?'':o.worker,o.isStockOrder?'':o.nationality,o.isStockOrder?'':dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),itemLabel(l.code),itemOrderTypeLabel(l.code),itemVendorPrice(l.code),num(l.price),special?lineQty(l):num(l.orderQty),special?'':num(l.useStockQty),special?'':num(l.returnQty),special?'':num(l.addQty),lineAmount(l),o.status,o.accountingStatus,o.note||'']); });
   });
   downloadCSV('訂購紀錄詳細_'+exportDateLabel()+'.csv',rows);
 }
 function exportInventoryCSV(){
-  const rows=[['品項代碼','品名','規格','單位','廠商訂購價','工人訂購價','期初庫存','目前庫存']];
-  state.settings.items.filter(i=>i.active!==false).forEach(i=>rows.push([i.code,i.name,i.spec,i.unit,i.vendorPrice ?? i.price,i.price,i.openingStock,currentStock(i.code)]));
+  const rows=[['品項代碼','品名','訂購類型','規格','單位','廠商訂購價','工人訂購價','期初庫存','目前庫存']];
+  state.settings.items.filter(i=>i.active!==false && isGeneralItem(i)).forEach(i=>rows.push([i.code,i.name,itemOrderTypeLabel(i),i.spec,i.unit,i.vendorPrice ?? i.price,i.price,i.openingStock,currentStock(i.code)]));
   downloadCSV('寢具庫存.csv',rows);
 }
 
 function plainQtySummary(o, key){
-  return (o.items||[]).filter(l=>num(l[key])>0).map(l=>`${itemLabel(l.code)} ${num(l[key])}`).join('、');
+  return orderedLines(o.items||[]).filter(l=>(key==='orderQty' || isGeneralItem(l.code)) && (key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]))>0).map(l=>`${itemLabel(l.code)} ${key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key])}`).join('、');
 }
 function exportAccountingCSV(){
   const rows=[['對帳批次','訂購單','雇主','工人','支付對象','訂購日','請款日','海外承辦','購買品項','拿庫存','退貨入庫','加買','原金額','調整金額','對帳金額','會計狀態','對帳人','會計備註','錯誤通知']];
@@ -2366,7 +2415,7 @@ function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v;
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.5 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.6 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }

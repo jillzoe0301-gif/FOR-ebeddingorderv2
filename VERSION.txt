@@ -1,6 +1,5 @@
-FOR-e 寢具訂購系統 V4.5
-版本日期：2026/07/12
-架構：Supabase Database + Realtime / GitHub / Vercel / Vite
-登入：不需要
-權限：不區分角色，全部功能皆可使用
+FOR-e 寢具訂購系統 V4.6
+Supabase 公開共用免登入版
+品項順序與一般／特殊訂購分類正式版
 狀態：official-stable
+更新日期：2026/07/12

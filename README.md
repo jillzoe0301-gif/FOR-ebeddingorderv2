@@ -1,20 +1,44 @@
-# FOR-e 寢具訂購系統 V4.5
+# FOR-e 寢具訂購系統 V4.6
 
-架構：Vite + Supabase Database / Realtime + GitHub + Vercel。
+Supabase 公開共用免登入版，使用 GitHub 版本控管並由 Vercel 自動部署。
 
-本版不使用登入、帳號或角色權限。開啟正式網址後直接進入系統，所有人都能使用全部功能並共用同一份 Supabase 資料。
+## V4.6 更新內容
 
-## 上線順序
+1. 資料設定中的品項可使用「上移／下移」調整顯示順序。
+2. 每個品項可設定為「一般訂購項目」或「特殊訂購項目」。
+3. 一般訂購項目綁定工人，保留拿庫存、加買、退貨功能。
+4. 特殊訂購項目不綁定工人，同一張訂購單只填寫一次，不提供拿庫存、加買、退貨欄位。
+5. 品項順序同步套用到訂購、訂購單、訂購明細、統計與 CSV 匯出。
+6. 特殊訂購項目不列入庫存管理。
 
-1. Supabase 建立 Project。
-2. 在 SQL Editor 執行 `supabase/001_bedding_order_system.sql`。
-3. 複製 `.env.example` 為 `.env.local`，填入 Supabase URL 與 anon key。
-4. 本機執行 `npm install`、`npm run dev` 測試。
-5. 將專案檔案推送到 GitHub。
-6. Vercel 匯入 GitHub Repository，加入環境變數後 Deploy。
+## 架構
 
-完整操作請看 `上線步驟.md`。
+- 前端：Vite 單頁應用程式
+- 資料庫：Supabase
+- 程式碼：GitHub
+- 部署：Vercel
+- 登入／權限：無，開啟網址直接使用
 
-## 重要提醒
+## 環境變數
 
-本版沒有登入及權限控管，任何取得正式網址的人都能查看、修改、刪除系統資料。請勿將網址公開，並定期在「資料設定」下載 JSON 備份。
+Vercel 與本機均需設定：
+
+```text
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+```
+
+不得將 Supabase service role key 放在前端或 GitHub。
+
+## 更新既有 V4.5.1
+
+目前 V4.5.1 已可正常連線 Supabase 時：
+
+- 不需要重新建立 Supabase Project。
+- 不需要重新執行 SQL。
+- 不需要修改 Vercel 環境變數。
+- 只需以本版檔案覆蓋 GitHub Repository 根目錄並推送。
+
+既有品項資料會自動相容：原床類品項預設歸為特殊訂購項目，其餘預設歸為一般訂購項目。儲存資料設定後，分類與順序會寫回 Supabase。
+
+完整操作請看 `更新上線步驟.md`。
