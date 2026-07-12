@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.8</title>
+  <title>FOR-e寢具訂購 V4.9</title>
+  <meta name="theme-color" content="#c49767" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
   <style>
 
     :root{
@@ -44,8 +50,11 @@
     label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:650}
     .app{display:flex;min-height:100vh}
     .sidebar{width:238px;background:rgba(47,39,32,.94);border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh;overflow:auto;backdrop-filter:blur(8px)}
-    .brand{font-size:20px;font-weight:900;letter-spacing:.5px;margin:6px 6px 20px;color:#fff2e0}
-    .brand small{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:5px}
+    .brand{display:flex;align-items:center;gap:11px;margin:4px 5px 20px;color:#fff2e0;min-width:0}
+    .brand img{width:48px;height:48px;flex:0 0 48px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,240,223,.26);box-shadow:0 8px 20px rgba(22,16,12,.28);background:#f8f2e9}
+    .brand-copy{min-width:0}
+    .brand strong{display:block;font-size:18px;font-weight:900;letter-spacing:.25px;line-height:1.25;white-space:nowrap}
+    .brand small{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:4px;line-height:1.35}
     .nav button{width:100%;text-align:left;margin:5px 0;border:1px solid transparent;border-radius:14px;padding:12px 13px;background:transparent;box-shadow:none;color:#ddcfbd}
     .nav button.active{background:linear-gradient(180deg,#c49767,#8b613f);color:#211813;border-color:#ddb789;font-weight:900}
     .main{flex:1;min-width:0}
@@ -197,8 +206,41 @@
     .bulk-worker-panel .bulk-actions button{flex:0 0 auto}
     .bulk-worker-panel .name-field{grid-column:span 2}
     .current-status-cell{min-width:94px}
-    @media(max-width:1100px){.grid,.grid.six{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}.sidebar{width:210px}}
-    @media(max-width:760px){.app{display:block}.sidebar{position:relative;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}.topbar{position:relative;top:auto}.content{padding:14px}.grid,.grid.two,.grid.three,.grid.six{grid-template-columns:1fr}.stat-grid{grid-template-columns:1fr}.record-head{display:block}.record-total{text-align:left;margin-top:10px}.record-meta{grid-template-columns:1fr}.table-wrap{overflow:auto;overscroll-behavior:contain}.toolbar input,.toolbar select{width:100%}.toolbar-left,.toolbar-right{width:100%}.toolbar-left>*{flex:1 1 180px}}
+
+    .settings-shell{display:flex;flex-direction:column;gap:18px}
+    .settings-intro{display:flex;justify-content:space-between;gap:20px;align-items:center;border:1px solid rgba(196,151,103,.48);background:linear-gradient(135deg,rgba(196,151,103,.16),rgba(74,58,43,.45));border-radius:20px;padding:20px 22px;box-shadow:var(--shadow)}
+    .settings-intro h2{margin:4px 0 7px;font-size:22px;color:#fff0df}
+    .settings-intro p{margin:0;color:var(--muted);line-height:1.65}
+    .settings-eyebrow{font-size:12px;font-weight:900;letter-spacing:.12em;color:#f2c58e}
+    .settings-sync-card{min-width:210px;border:1px solid var(--line);background:rgba(47,40,34,.74);border-radius:15px;padding:12px 14px}
+    .settings-sync-card b{display:block;color:#ffd49b;margin-bottom:4px}
+    .settings-sync-card span{display:block;font-size:12px;color:var(--muted);line-height:1.55}
+    .settings-nav{display:flex;gap:8px;flex-wrap:wrap}
+    .settings-nav a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#eadbca;border:1px solid var(--line);background:#3b322a;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:800}
+    .settings-nav a:hover{border-color:var(--accent);color:#ffd49b}
+    .settings-section{scroll-margin-top:86px;margin-bottom:0}
+    .settings-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
+    .settings-heading{display:flex;gap:12px;align-items:flex-start}
+    .settings-step{width:34px;height:34px;flex:0 0 34px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(180deg,#d0a16f,#9a6a42);color:#241a12;font-weight:950}
+    .settings-heading h2{margin:0 0 4px;font-size:18px;color:#fff0df}
+    .settings-heading p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}
+    .settings-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .settings-field{border:1px solid rgba(90,76,64,.82);background:rgba(255,255,255,.022);border-radius:14px;padding:12px}
+    .settings-field label{font-size:13px;color:#ead9c5}
+    .settings-field textarea{min-height:112px}
+    .settings-field .field-help{font-size:11px;color:var(--muted);line-height:1.5;margin-top:6px}
+    .settings-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:13px}
+    .settings-table-note{border-left:3px solid var(--accent);padding:7px 10px;margin-bottom:12px;background:rgba(196,151,103,.07);border-radius:0 10px 10px 0;color:var(--muted);font-size:12px;line-height:1.55}
+    .contact-main{font-weight:900;color:#fff0df}
+    .contact-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
+    .settings-backup-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}
+    .backup-panel{border:1px solid var(--line);background:rgba(255,255,255,.022);border-radius:14px;padding:14px}
+    .backup-panel h3{margin:0 0 8px;font-size:15px;color:#f0c28b}
+    .danger-panel{border-color:#8d554d;background:rgba(115,55,47,.17)}
+    .danger-panel h3{color:#efad9f}
+    .settings-anchor-spacer{height:1px}
+    @media(max-width:1100px){.grid,.grid.six{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}.sidebar{width:210px}.settings-backup-grid{grid-template-columns:1fr}}
+    @media(max-width:760px){.app{display:block}.sidebar{position:relative;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line)}.brand{justify-content:center}.nav{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}.topbar{position:relative;top:auto}.content{padding:14px}.grid,.grid.two,.grid.three,.grid.six{grid-template-columns:1fr}.stat-grid{grid-template-columns:1fr}.record-head{display:block}.record-total{text-align:left;margin-top:10px}.record-meta{grid-template-columns:1fr}.table-wrap{overflow:auto;overscroll-behavior:contain}.toolbar input,.toolbar select{width:100%}.toolbar-left,.toolbar-right{width:100%}.toolbar-left>*{flex:1 1 180px}.settings-intro{display:block}.settings-sync-card{margin-top:14px;min-width:0}.settings-form-grid{grid-template-columns:1fr}.settings-section-head{display:block}.settings-section-head>button{margin-top:12px}.settings-actions{justify-content:stretch}.settings-actions button{flex:1}.settings-nav a{flex:1 1 145px;justify-content:center}}
     .auth-shell{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 20% 0%,#3b3027 0,#241f1a 42%,#201c18 100%)}
     .auth-card{width:min(440px,100%);background:linear-gradient(180deg,rgba(58,49,41,.99),rgba(47,40,34,.99));border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:28px}
     .auth-card h1{margin:0 0 7px;color:#fff0df;font-size:26px}.auth-card .auth-subtitle{color:var(--muted);line-height:1.6;margin-bottom:22px}
@@ -260,6 +302,7 @@ const paymentTargets = ['工人','雇主','仲介'];
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.9', date:'2026/07/12', title:'網站圖示、系統 LOGO、收貨聯絡人與資料設定重整', items:['使用指定 Order 圖示作為瀏覽器分頁、我的最愛與主畫面圖示','系統左上角 LOGO 同步更換','資料設定新增可管理的收貨聯絡人、聯絡方式、送貨地點與地址','資料設定依實際使用流程分區，操作與儲存位置更直覺']},
   {version:'V4.8', date:'2026/07/12', title:'腳踏車／電風扇簽收單顯示與腳踏車費用獨立計算', items:['腳踏車與電風扇不列入寢具廠商訂購單及訂購單圖片','腳踏車與電風扇保留顯示於工人簽收單','腳踏車費用與寢具及用品費用分開計算，並於明細、對帳、統計及 CSV 顯示']},
   {version:'V4.7', date:'2026/07/12', title:'入境日與狀態顯示、多工人一鍵批次帶入', items:['寢具訂購清單新增入境日與目前狀態','一部自動帶承辦貝貝，二部自動帶承辦阿金','可一次輸入多位工人姓名並一鍵建立','國籍與入境日可一鍵套用全部工人','第一位工人的購買品項可一鍵套用全部工人']},
   {version:'V4.6', date:'2026/07/12', title:'品項順序與一般／特殊訂購分類', items:['資料設定可用上移、下移調整品項顯示順序','每個品項可設定為一般訂購項目或特殊訂購項目','特殊訂購項目不綁定工人，同張訂購單只填一次，且不提供拿庫存、加買、退貨']},
@@ -277,6 +320,11 @@ const KANG_PLACE = '灃康人力';
 const KANG_ADDRESS = '桃園市桃園區經國一路65號2樓';
 const STAFF_CONTACTS = { '貝貝':'貝貝#369', '阿金':'阿金#186', '明明':'明明#186' };
 const DEPARTMENT_DEFAULT_STAFF = {'一部':'貝貝','二部':'阿金'};
+const DEFAULT_DELIVERY_CONTACTS = [
+  {id:'CONTACT-BEIBEI',name:'貝貝',phone:'#369',deliveryPlace:'灃康人力',address:KANG_ADDRESS,note:'一部預設收貨聯絡人',active:true},
+  {id:'CONTACT-AJIN',name:'阿金',phone:'#186',deliveryPlace:'灃康人力',address:KANG_ADDRESS,note:'二部預設收貨聯絡人',active:true},
+  {id:'CONTACT-MINGMING',name:'明明',phone:'#186',deliveryPlace:'灃康人力',address:KANG_ADDRESS,note:'備用收貨聯絡人',active:true}
+];
 const ORDER_FORM_EXCLUDED_ITEM_CODES = new Set(['FAN','BIKE']);
 const BICYCLE_ITEM_CODES = new Set(['BIKE']);
 function defaultStaffForDepartment(dept){ return DEPARTMENT_DEFAULT_STAFF[dept] || state?.settings?.staff?.[0] || ''; }
@@ -311,7 +359,54 @@ function isGeneralItem(itemOrCode){ return !isSpecialItem(itemOrCode); }
 function itemOrderTypeLabel(itemOrCode){ return ITEM_ORDER_TYPES[itemOrderType(itemOrCode)] || ITEM_ORDER_TYPES.general; }
 function itemOrderIndex(code){ const idx=state.settings.items.findIndex(i=>i.code===code); return idx<0 ? Number.MAX_SAFE_INTEGER : idx; }
 function orderedLines(lines){ return (lines||[]).map((line,index)=>({line,index})).sort((a,b)=>itemOrderIndex(a.line.code)-itemOrderIndex(b.line.code) || a.index-b.index).map(x=>x.line); }
-function staffContact(staff){ return STAFF_CONTACTS[staff] || staff || ''; }
+function normalizeDeliveryContact(raw,index=0){
+  if(typeof raw==='string'){
+    const value=raw.trim();
+    const match=value.match(/^(.*?)(#\d+)?$/);
+    return {id:uid('CONTACT'),name:(match?.[1]||value).trim(),phone:(match?.[2]||'').trim(),deliveryPlace:'',address:'',note:'',active:true};
+  }
+  const data=raw||{};
+  return {
+    id:data.id||uid('CONTACT'),
+    name:String(data.name||data.contactPerson||data.contact||'').trim(),
+    phone:String(data.phone||data.extension||data.tel||'').trim(),
+    deliveryPlace:String(data.deliveryPlace||data.place||'').trim(),
+    address:String(data.address||data.deliveryAddress||'').trim(),
+    note:String(data.note||'').trim(),
+    active:data.active!==false
+  };
+}
+function contactDisplay(contact){
+  if(!contact) return '';
+  const name=String(contact.name||'').trim();
+  const phone=String(contact.phone||'').trim();
+  if(!phone) return name;
+  if(phone.startsWith('#')) return `${name}${phone}`;
+  return [name,phone].filter(Boolean).join(' ');
+}
+function activeDeliveryContacts(place=''){
+  const contacts=(state?.settings?.contacts||[]).filter(c=>c.active!==false && c.name);
+  return place ? contacts.filter(c=>!c.deliveryPlace || c.deliveryPlace===place) : contacts;
+}
+function findDeliveryContact(value,place=''){
+  const keyword=String(value||'').trim();
+  if(!keyword) return null;
+  const contacts=activeDeliveryContacts(place);
+  return contacts.find(c=>contactDisplay(c)===keyword || c.name===keyword || `${c.name}${c.phone||''}`===keyword) || null;
+}
+function staffContactRecord(staff){
+  return activeDeliveryContacts(KANG_PLACE).find(c=>c.name===staff) || activeDeliveryContacts().find(c=>c.name===staff) || null;
+}
+function staffContact(staff){
+  const configured=staffContactRecord(staff);
+  return configured ? contactDisplay(configured) : (STAFF_CONTACTS[staff] || staff || '');
+}
+function staffDeliveryAddress(staff){
+  return staffContactRecord(staff)?.address || KANG_ADDRESS;
+}
+function contactDatalistHTML(){
+  return activeDeliveryContacts().map(c=>`<option value="${esc(contactDisplay(c))}" label="${esc([c.deliveryPlace,c.address].filter(Boolean).join('｜'))}"></option>`).join('');
+}
 
 const defaultItems = [
   {code:'MATTRESS', name:'塑膠床墊', spec:'3 x 6 尺', unit:'床', price:400, vendorPrice:400, openingStock:0, active:true, orderType:'general'},
@@ -358,7 +453,8 @@ const defaultState = () => ({
     companyTitles:['灃康人力','灃禾管顧','乾坤國際'],
     deliveryPlaces:['灃康人力','工廠','宿舍'],
     employers:['測試雇主股份有限公司'],
-    contacts:[],
+    contacts:DEFAULT_DELIVERY_CONTACTS.map(c=>Object.assign({},c)),
+    contactsInitialized:true,
     vendors:[],
     items: defaultItems.map(i=>Object.assign({},i)),
     orderSerial:1,
@@ -590,6 +686,15 @@ function normalizeState(s){
   s.settings.items = mergeDefaultItems(Array.isArray(s.settings.items) && s.settings.items.length ? s.settings.items : defaultItems);
   if(!Array.isArray(s.settings.staff) || !s.settings.staff.length || s.settings.staff.includes('海外承辦')) s.settings.staff = ['貝貝','阿金','明明'];
   ['灃康人力','灃禾管顧','乾坤國際'].forEach(x=>{ if(!s.settings.companyTitles.includes(x)) s.settings.companyTitles.push(x); });
+  const contactsWereInitialized = s.settings.contactsInitialized === true;
+  if(Array.isArray(s.settings.contacts)){
+    s.settings.contacts = (s.settings.contacts.length || contactsWereInitialized)
+      ? s.settings.contacts.map(normalizeDeliveryContact).filter(c=>c.name)
+      : DEFAULT_DELIVERY_CONTACTS.map(c=>Object.assign({},c));
+  }else{
+    s.settings.contacts = DEFAULT_DELIVERY_CONTACTS.map(c=>Object.assign({},c));
+  }
+  s.settings.contactsInitialized = true;
   s.settings.vendors = Array.isArray(s.settings.vendors) ? s.settings.vendors.map(v=>({
     id: v.id || uid('V'),
     companyName: v.companyName || v.name || '',
@@ -793,7 +898,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand">FOR-e寢具訂購<small>V4.8 Supabase 公開共用版</small></div>
+        <div class="brand"><img src="/brand-logo.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.9 Supabase 公開共用版</small></div></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -991,6 +1096,8 @@ function openOrderModal(orderId){
       toggleStockOrderFields(modal);
       updateOrderNoPreview(modal, !!existing, order.id);
       modal.querySelector('#f_deliveryPlace')?.addEventListener('change',()=>updateDeliveryInputs(modal,true));
+      modal.querySelector('#f_contact')?.addEventListener('change',()=>applyConfiguredContact(modal));
+      modal.querySelector('#f_contact')?.addEventListener('blur',()=>applyConfiguredContact(modal));
       modal.querySelector('#f_staff')?.addEventListener('change',()=>updateDeliveryInputs(modal,false));
       modal.querySelector('#f_dept')?.addEventListener('change',()=>{applyDepartmentDefaultStaff(modal);toggleStockOrderFields(modal);updateDeliveryInputs(modal,false);updateOrderNoPreview(modal, !!existing, order.id);});
       ['#f_isStockOrder','#f_companyTitle','#f_orderDate'].forEach(sel=>modal.querySelector(sel)?.addEventListener('change',()=>{toggleStockOrderFields(modal);updateOrderNoPreview(modal, !!existing, order.id);}));
@@ -1062,7 +1169,7 @@ function updateOrderNoPreview(modal, isExisting, id){
 }
 function optionHTML(list, value){ return list.map(v=>`<option value="${esc(v)}" ${v===value?'selected':''}>${esc(v)}</option>`).join(''); }
 function deliveryContact(o){ return (o.deliveryPlace===KANG_PLACE) ? staffContact(o.staff) : (o.contact||''); }
-function deliveryAddress(o){ return (o.deliveryPlace===KANG_PLACE) ? KANG_ADDRESS : (o.deliveryAddress||''); }
+function deliveryAddress(o){ return (o.deliveryPlace===KANG_PLACE) ? staffDeliveryAddress(o.staff) : (o.deliveryAddress||''); }
 function deliveryPlaceLabel(o){ return (o.deliveryPlace===KANG_PLACE) ? '' : (o.deliveryPlace||''); }
 function deliveryDisplay(o){ return [deliveryPlaceLabel(o), deliveryAddress(o)].filter(Boolean).join('　'); }
 function deliveryHourLabel(hour){
@@ -1128,16 +1235,31 @@ function updateDeliveryInputs(modal, fromPlaceChange){
   if(place===KANG_PLACE){
     contact.value = staffContact(staff);
     contact.readOnly = true;
-    address.value = KANG_ADDRESS;
+    address.value = staffDeliveryAddress(staff);
     address.readOnly = true;
-  }else{
-    contact.readOnly = false;
-    address.readOnly = false;
-    if(fromPlaceChange){
-      if(contact.value===staff || contact.value===staffContact(staff)) contact.value='';
-      if(address.value===KANG_ADDRESS) address.value='';
-    }
+    return;
   }
+  contact.readOnly = false;
+  address.readOnly = false;
+  const matches=activeDeliveryContacts(place);
+  if(fromPlaceChange){
+    const first=matches[0] || null;
+    contact.value = first ? contactDisplay(first) : '';
+    address.value = first?.address || '';
+    return;
+  }
+  const selected=findDeliveryContact(contact.value,place) || findDeliveryContact(contact.value);
+  if(selected && selected.address && !address.value) address.value=selected.address;
+}
+function applyConfiguredContact(modal){
+  const contact=$('#f_contact',modal);
+  const place=$('#f_deliveryPlace',modal);
+  const address=$('#f_deliveryAddress',modal);
+  if(!contact || !place || !address) return;
+  const selected=findDeliveryContact(contact.value);
+  if(!selected) return;
+  if(selected.deliveryPlace && Array.from(place.options).some(opt=>opt.value===selected.deliveryPlace)) place.value=selected.deliveryPlace;
+  if(selected.address) address.value=selected.address;
 }
 function itemRowsHTML(items, filterFn=null){
   const activeItems = state.settings.items.filter(i=>i.active!==false && (!filterFn || filterFn(i)));
@@ -1287,7 +1409,7 @@ function orderFormHTML(o){
         <div><label>送達日期</label><input type="date" id="f_deliveryDate" value="${esc(o.deliveryDate||'')}"></div>
         <div><label>送達時間（小時）</label><select id="f_deliveryHour">${hourOptionsHTML(o.deliveryHour||'16')}</select></div>
         <div class="form-row-wide"><label>送貨地點</label><select id="f_deliveryPlace">${optionHTML(state.settings.deliveryPlaces,o.deliveryPlace)}</select></div>
-        <div><label>收貨聯絡人</label><input id="f_contact" value="${esc(deliveryContact(o)||'')}" placeholder="灃康人力自動帶承辦分機，工廠/宿舍請手動輸入"></div>
+        <div><label>收貨聯絡人</label><input id="f_contact" list="deliveryContactList" value="${esc(deliveryContact(o)||'')}" placeholder="輸入或選擇資料設定中的聯絡人"><datalist id="deliveryContactList">${contactDatalistHTML()}</datalist><div class="mini-note" style="margin-top:5px">可至「資料設定 → 收貨聯絡人」新增常用窗口。</div></div>
         <div class="form-row-wide"><label>送貨地址</label><input id="f_deliveryAddress" value="${esc(deliveryAddress(o)||'')}" placeholder="灃康人力自動帶地址，工廠/宿舍請手動輸入"></div>
       </div>
     </div>
@@ -1403,7 +1525,7 @@ function saveOrderFromModal(id, isExisting, modal){
   order.batchNo = '';
   order.workerEnglish = '';
   if(!order.accountingBatch) order.overseasStaff = order.staff || '';
-  if(order.deliveryPlace===KANG_PLACE){ order.contact = staffContact(order.staff); order.deliveryAddress = KANG_ADDRESS; }
+  if(order.deliveryPlace===KANG_PLACE){ order.contact = staffContact(order.staff); order.deliveryAddress = staffDeliveryAddress(order.staff); }
   if(!isExisting){ state.orders.push(order); }
   if(order.employer && !state.settings.employers.includes(order.employer)) state.settings.employers.push(order.employer);
   audit(isExisting?'修改訂購':'新增訂購','訂購單',order.id,order.orderNo,`${order.employer||''}｜${workerDisplay(order)}｜${money(orderAmount(order))}`,beforeOrder);
@@ -2035,9 +2157,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.8｜簽收品項與腳踏車費用分開計算正式版</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.9｜網站圖示、系統 LOGO 與資料設定重整正式版</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.8 將腳踏車、電風扇排除於寢具廠商訂購單，但保留於簽收單；腳踏車費用改為獨立計算並於明細、對帳、統計與匯出中分開顯示。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.9 使用指定 Order 圖示作為網站圖示與系統 LOGO；新增可維護的收貨聯絡人，並將資料設定依使用流程重新分區。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -2086,31 +2208,80 @@ function exportAuditCSV(){
 }
 
 function renderSettings(root){
+  const contacts=(state.settings.contacts||[]);
+  const contactRows=contacts.length ? contacts.map(c=>`<tr>
+    <td><div class="contact-main">${esc(c.name)}</div><div class="contact-sub">${esc(contactDisplay(c))}</div></td>
+    <td>${esc(c.phone||'-')}</td>
+    <td>${esc(c.deliveryPlace||'-')}</td>
+    <td>${esc(c.address||'-')}</td>
+    <td>${esc(c.note||'-')}</td>
+    <td>${c.active!==false?'<span class="pill ok">啟用</span>':'<span class="pill">停用</span>'}</td>
+    <td><div class="actions"><button class="small" data-settings-edit-contact="${esc(c.id)}">修改</button><button class="small danger" data-settings-delete-contact="${esc(c.id)}">刪除</button></div></td>
+  </tr>`).join('') : `<tr><td colspan="7" class="center muted">尚未建立收貨聯絡人</td></tr>`;
   root.innerHTML = `
-    <div class="split">
-      <div class="card"><div class="card-title"><h2>基本資料</h2></div>
-        <div class="grid two">
-          <div><label>部門（一行一筆）</label><textarea id="set_departments">${esc(state.settings.departments.join('\n'))}</textarea></div>
-          <div><label>承辦人（一行一筆）</label><textarea id="set_staff">${esc(state.settings.staff.join('\n'))}</textarea><div class="mini-note" style="margin-top:6px">灃康聯絡窗口固定：貝貝#369、阿金#186、明明#186</div></div>
-          <div><label>公司別 / 發票抬頭（一行一筆）</label><textarea id="set_companyTitles">${esc(state.settings.companyTitles.join('\n'))}</textarea></div>
-          <div><label>送貨地點（一行一筆）</label><textarea id="set_deliveryPlaces">${esc(state.settings.deliveryPlaces.join('\n'))}</textarea></div>
-          <div><label>常用雇主（一行一筆）</label><textarea id="set_employers">${esc(state.settings.employers.join('\n'))}</textarea></div>
+    <div class="settings-shell">
+      <div class="settings-intro">
+        <div><div class="settings-eyebrow">資料設定中心</div><h2>依照實際使用流程，由上往下完成設定</h2><p>設定完成後會立即同步到 Supabase，所有使用此網址的人都會看到相同資料。</p></div>
+        <div class="settings-sync-card"><b>Supabase 公開共用</b><span>免登入｜儲存後自動同步<br>修改前建議先下載 JSON 備份</span></div>
+      </div>
+
+      <div class="settings-nav">
+        <a href="#settings-org">1　部門與承辦</a>
+        <a href="#settings-contacts">2　收貨聯絡人</a>
+        <a href="#settings-company">3　公司與雇主</a>
+        <a href="#settings-vendors">4　寢具廠商</a>
+        <a href="#settings-items">5　品項與價格</a>
+        <a href="#settings-backup">6　備份與還原</a>
+      </div>
+
+      <section class="card settings-section" id="settings-org">
+        <div class="settings-section-head"><div class="settings-heading"><div class="settings-step">1</div><div><h2>部門與承辦</h2><p>決定新增訂購時可選擇的部門與承辦人；一部仍會自動帶貝貝，二部自動帶阿金。</p></div></div></div>
+        <div class="settings-form-grid">
+          <div class="settings-field"><label>部門</label><textarea id="set_departments" placeholder="每行一筆">${esc(state.settings.departments.join('\n'))}</textarea><div class="field-help">例如：一部、二部。每行只輸入一個部門。</div></div>
+          <div class="settings-field"><label>承辦人</label><textarea id="set_staff" placeholder="每行一筆">${esc(state.settings.staff.join('\n'))}</textarea><div class="field-help">收貨分機請到下一區「收貨聯絡人」維護，不需要寫在姓名裡。</div></div>
         </div>
-        <div class="toolbar" style="margin-top:12px"><div></div><button class="primary" id="saveBasicSettingsBtn" ${can('settings')?'':'disabled'}>儲存基本資料</button></div>
-      </div>
-      <div class="card"><div class="card-title"><h2>備份 / 還原</h2></div>
-        <p class="mini-note">正式資料已連接 Supabase；目前瀏覽器另保留快取，網路恢復後會繼續同步。</p>
-        <div class="actions" style="margin-bottom:12px"><button id="exportJsonBtn">下載備份 JSON</button><button id="loadDemoBtn">建立測試資料</button><button class="danger" id="clearAllBtn" ${can('settings')?'':'disabled'}>清空資料</button></div>
-        <label>還原 JSON</label><input type="file" id="importJsonFile" accept="application/json">
-      </div>
-    </div>
-    <div class="card plain"><div class="card-title"><h2>寢具廠商資訊</h2><button id="settingsAddVendorBtn" ${can('settings')?'':'disabled'}>＋新增廠商</button></div>
-      <div class="table-wrap"><table><thead><tr><th>公司名稱</th><th>公司地址</th><th>聯絡窗口</th><th>電話</th><th>手機</th><th>傳真</th><th>LINE</th><th>eMAIL</th><th>操作</th></tr></thead><tbody>${(state.settings.vendors||[]).length ? state.settings.vendors.map(v=>`<tr><td><b>${esc(v.companyName)}</b></td><td>${esc(v.companyAddress)}</td><td>${esc(v.contactPerson)}</td><td>${esc(v.phone)}</td><td>${esc(v.mobile)}</td><td>${esc(v.fax)}</td><td>${esc(v.line)}</td><td>${esc(v.email)}</td><td><div class="actions"><button class="small" data-settings-edit-vendor="${esc(v.id)}" ${can('settings')?'':'disabled'}>修改</button><button class="small danger" data-settings-delete-vendor="${esc(v.id)}" ${can('settings')?'':'disabled'}>刪除</button></div></td></tr>`).join('') : `<tr><td colspan="9" class="center muted">尚未建立寢具廠商資訊</td></tr>`}</tbody></table></div>
-    </div>
-    <div class="card plain"><div class="card-title"><div><h2>品項資料</h2><div class="mini-note" style="margin-top:5px">使用上移／下移調整順序；此順序會套用於訂購、訂購單、明細、庫存、統計與 CSV。</div></div><button id="settingsAddItemBtn" ${can('settings')?'':'disabled'}>＋新增品項</button></div>
-      <div class="table-wrap"><table><thead><tr><th class="center">順序</th><th>代碼</th><th>品名</th><th>訂購類型</th><th>規格</th><th>單位</th><th class="right">廠商訂購價</th><th class="right">工人訂購價</th><th class="right">期初庫存</th><th>狀態</th><th>操作</th></tr></thead><tbody>${state.settings.items.map((i,idx)=>`<tr><td><div class="actions" style="justify-content:center"><button class="small" data-item-move="up" data-item-code="${esc(i.code)}" ${idx===0?'disabled':''} title="上移">↑</button><button class="small" data-item-move="down" data-item-code="${esc(i.code)}" ${idx===state.settings.items.length-1?'disabled':''} title="下移">↓</button></div></td><td>${esc(i.code)}</td><td><b>${esc(i.name)}</b></td><td><span class="pill ${itemOrderType(i)==='special'?'warn':'ok'}">${esc(itemOrderTypeLabel(i))}</span></td><td>${esc(i.spec)}</td><td>${esc(i.unit)}</td><td class="right">${money(i.vendorPrice ?? i.price)}</td><td class="right">${money(i.price)}</td><td class="right">${isSpecialItem(i)?'<span class="muted">不適用</span>':num(i.openingStock)}</td><td>${i.active!==false?'啟用':'停用'}</td><td><button class="small" data-settings-edit-item="${esc(i.code)}" ${can('settings')?'':'disabled'}>修改</button></td></tr>`).join('')}</tbody></table></div>
+        <div class="settings-actions"><button class="primary" id="saveOrgSettingsBtn">儲存部門與承辦</button></div>
+      </section>
+
+      <section class="card plain settings-section" id="settings-contacts">
+        <div class="settings-section-head"><div class="settings-heading"><div class="settings-step">2</div><div><h2>收貨聯絡人</h2><p>維護常用收貨窗口、分機／電話、預設送貨地點與地址；新增訂購時可直接選用。</p></div></div><button id="settingsAddContactBtn">＋新增收貨聯絡人</button></div>
+        <div class="settings-table-note">灃康人力的貝貝、阿金、明明可在此修改分機與地址；新增訂購選擇一部／二部時，會依承辦自動帶入對應聯絡人。</div>
+        <div class="table-wrap"><table><thead><tr><th>聯絡人</th><th>分機／電話</th><th>預設送貨地點</th><th>預設送貨地址</th><th>備註</th><th>狀態</th><th>操作</th></tr></thead><tbody>${contactRows}</tbody></table></div>
+      </section>
+
+      <section class="card settings-section" id="settings-company">
+        <div class="settings-section-head"><div class="settings-heading"><div class="settings-step">3</div><div><h2>公司、送貨地點與常用雇主</h2><p>這些資料會成為新增訂購表單的選項；常用雇主也可在新增訂購時直接選取。</p></div></div></div>
+        <div class="settings-form-grid">
+          <div class="settings-field"><label>公司別／發票抬頭</label><textarea id="set_companyTitles" placeholder="每行一筆">${esc(state.settings.companyTitles.join('\n'))}</textarea><div class="field-help">例如：灃康人力、灃禾管顧、乾坤國際。</div></div>
+          <div class="settings-field"><label>送貨地點</label><textarea id="set_deliveryPlaces" placeholder="每行一筆">${esc(state.settings.deliveryPlaces.join('\n'))}</textarea><div class="field-help">例如：灃康人力、工廠、宿舍。聯絡人可設定對應地點。</div></div>
+          <div class="settings-field" style="grid-column:1/-1"><label>常用雇主</label><textarea id="set_employers" placeholder="每行一筆">${esc(state.settings.employers.join('\n'))}</textarea><div class="field-help">新增訂購時仍可輸入未在清單中的雇主，儲存訂單後會自動加入。</div></div>
+        </div>
+        <div class="settings-actions"><button class="primary" id="saveCompanySettingsBtn">儲存公司與雇主資料</button></div>
+      </section>
+
+      <section class="card plain settings-section" id="settings-vendors">
+        <div class="settings-section-head"><div class="settings-heading"><div class="settings-step">4</div><div><h2>寢具廠商資訊</h2><p>集中管理廠商地址、聯絡窗口與各種聯絡方式。</p></div></div><button id="settingsAddVendorBtn">＋新增廠商</button></div>
+        <div class="table-wrap"><table><thead><tr><th>公司名稱</th><th>公司地址</th><th>聯絡窗口</th><th>電話</th><th>手機</th><th>傳真</th><th>LINE</th><th>eMAIL</th><th>操作</th></tr></thead><tbody>${(state.settings.vendors||[]).length ? state.settings.vendors.map(v=>`<tr><td><b>${esc(v.companyName)}</b></td><td>${esc(v.companyAddress)}</td><td>${esc(v.contactPerson)}</td><td>${esc(v.phone)}</td><td>${esc(v.mobile)}</td><td>${esc(v.fax)}</td><td>${esc(v.line)}</td><td>${esc(v.email)}</td><td><div class="actions"><button class="small" data-settings-edit-vendor="${esc(v.id)}">修改</button><button class="small danger" data-settings-delete-vendor="${esc(v.id)}">刪除</button></div></td></tr>`).join('') : `<tr><td colspan="9" class="center muted">尚未建立寢具廠商資訊</td></tr>`}</tbody></table></div>
+      </section>
+
+      <section class="card plain settings-section" id="settings-items">
+        <div class="settings-section-head"><div class="settings-heading"><div class="settings-step">5</div><div><h2>品項、價格與顯示順序</h2><p>使用上移／下移調整順序；順序會同步套用於訂購、訂購單、明細、庫存、統計與 CSV。</p></div></div><button id="settingsAddItemBtn">＋新增品項</button></div>
+        <div class="table-wrap"><table><thead><tr><th class="center">順序</th><th>代碼</th><th>品名</th><th>訂購類型</th><th>規格</th><th>單位</th><th class="right">廠商訂購價</th><th class="right">工人訂購價</th><th class="right">期初庫存</th><th>狀態</th><th>操作</th></tr></thead><tbody>${state.settings.items.map((i,idx)=>`<tr><td><div class="actions" style="justify-content:center"><button class="small" data-item-move="up" data-item-code="${esc(i.code)}" ${idx===0?'disabled':''} title="上移">↑</button><button class="small" data-item-move="down" data-item-code="${esc(i.code)}" ${idx===state.settings.items.length-1?'disabled':''} title="下移">↓</button></div></td><td>${esc(i.code)}</td><td><b>${esc(i.name)}</b></td><td><span class="pill ${itemOrderType(i)==='special'?'warn':'ok'}">${esc(itemOrderTypeLabel(i))}</span></td><td>${esc(i.spec)}</td><td>${esc(i.unit)}</td><td class="right">${money(i.vendorPrice ?? i.price)}</td><td class="right">${money(i.price)}</td><td class="right">${isSpecialItem(i)?'<span class="muted">不適用</span>':num(i.openingStock)}</td><td>${i.active!==false?'啟用':'停用'}</td><td><button class="small" data-settings-edit-item="${esc(i.code)}">修改</button></td></tr>`).join('')}</tbody></table></div>
+      </section>
+
+      <section class="card settings-section" id="settings-backup">
+        <div class="settings-section-head"><div class="settings-heading"><div class="settings-step">6</div><div><h2>備份、還原與測試工具</h2><p>正式資料儲存在 Supabase；更新系統或大量調整前，建議先下載備份。</p></div></div></div>
+        <div class="settings-backup-grid">
+          <div class="backup-panel"><h3>備份與還原</h3><p class="mini-note">下載 JSON 可完整保存設定、訂單、庫存、對帳與異動紀錄。</p><div class="actions" style="margin-bottom:12px"><button id="exportJsonBtn">下載備份 JSON</button></div><label>還原 JSON</label><input type="file" id="importJsonFile" accept="application/json"></div>
+          <div class="backup-panel danger-panel"><h3>測試與清理</h3><p class="mini-note">建立測試資料僅供驗證功能；清空資料會重設整個系統。</p><div class="actions"><button id="loadDemoBtn">建立測試資料</button><button class="danger" id="clearAllBtn">清空全部資料</button></div></div>
+        </div>
+      </section>
     </div>`;
-  $('#saveBasicSettingsBtn')?.addEventListener('click',saveBasicSettings);
+  $('#saveOrgSettingsBtn')?.addEventListener('click',saveOrgSettings);
+  $('#saveCompanySettingsBtn')?.addEventListener('click',saveCompanySettings);
+  $('#settingsAddContactBtn')?.addEventListener('click',()=>openDeliveryContactModal());
+  $all('[data-settings-edit-contact]').forEach(btn=>btn.addEventListener('click',()=>openDeliveryContactModal(btn.dataset.settingsEditContact)));
+  $all('[data-settings-delete-contact]').forEach(btn=>btn.addEventListener('click',()=>deleteDeliveryContact(btn.dataset.settingsDeleteContact)));
   $('#exportJsonBtn')?.addEventListener('click',exportJSON);
   $('#importJsonFile')?.addEventListener('change',importJSON);
   $('#clearAllBtn')?.addEventListener('click',clearAllData);
@@ -2122,6 +2293,7 @@ function renderSettings(root){
   $all('[data-settings-edit-vendor]').forEach(btn=>btn.addEventListener('click',()=>openVendorModal(btn.dataset.settingsEditVendor)));
   $all('[data-settings-delete-vendor]').forEach(btn=>btn.addEventListener('click',()=>deleteVendor(btn.dataset.settingsDeleteVendor)));
 }
+
 function moveSettingItem(code,direction){
   const idx=state.settings.items.findIndex(i=>i.code===code);
   if(idx<0) return;
@@ -2133,15 +2305,26 @@ function moveSettingItem(code,direction){
   save(); toast('品項順序已更新'); renderSettings($('#content'));
 }
 function linesFrom(id){ return ($('#'+id)?.value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean); }
-function saveBasicSettings(){
-  state.settings.departments=linesFrom('set_departments');
-  state.settings.staff=linesFrom('set_staff');
-  state.settings.companyTitles=linesFrom('set_companyTitles');
-  state.settings.deliveryPlaces=linesFrom('set_deliveryPlaces');
+function saveOrgSettings(){
+  const departments=linesFrom('set_departments');
+  const staff=linesFrom('set_staff');
+  if(!departments.length) return toast('請至少保留一個部門');
+  if(!staff.length) return toast('請至少保留一位承辦人');
+  state.settings.departments=departments;
+  state.settings.staff=staff;
+  audit('修改設定','部門與承辦','settings-org','資料設定','部門 / 承辦人');
+  save(); toast('部門與承辦已儲存'); renderSettings($('#content'));
+}
+function saveCompanySettings(){
+  const companyTitles=linesFrom('set_companyTitles');
+  const deliveryPlaces=linesFrom('set_deliveryPlaces');
+  if(!companyTitles.length) return toast('請至少保留一個公司別／發票抬頭');
+  if(!deliveryPlaces.length) return toast('請至少保留一個送貨地點');
+  state.settings.companyTitles=companyTitles;
+  state.settings.deliveryPlaces=deliveryPlaces;
   state.settings.employers=linesFrom('set_employers');
-  state.settings.contacts=[];
-  audit('修改設定','基本資料','settings','資料設定','部門 / 承辦 / 公司別 / 送貨地點 / 常用雇主');
-  save(); toast('基本資料已儲存'); render();
+  audit('修改設定','公司與雇主','settings-company','資料設定','公司別 / 送貨地點 / 常用雇主');
+  save(); toast('公司與雇主資料已儲存'); renderSettings($('#content'));
 }
 function exportJSON(){ downloadBlob('FOR-e寢具訂購備份_'+todayInput()+'.json', JSON.stringify(state,null,2), 'application/json;charset=utf-8'); }
 function importJSON(e){
@@ -2169,6 +2352,62 @@ function showModal(title, body, opts={}){
   if(opts.onOpen) opts.onOpen($('.modal'));
 }
 function closeModal(){ $('#modalRoot').innerHTML=''; }
+
+function openDeliveryContactModal(id){
+  const existing=(state.settings.contacts||[]).find(c=>c.id===id);
+  const contact=existing ? Object.assign({},existing) : {id:'',name:'',phone:'',deliveryPlace:state.settings.deliveryPlaces[0]||'',address:'',note:'',active:true};
+  const placeOptions=[...new Set([...(state.settings.deliveryPlaces||[]),contact.deliveryPlace].filter(Boolean))];
+  const body=`
+    <div class="form-section"><h3>聯絡人資料</h3>
+      <div class="grid two">
+        <div><label>收貨聯絡人姓名</label><input id="contact_name" value="${esc(contact.name)}" placeholder="例如：貝貝"></div>
+        <div><label>分機／電話</label><input id="contact_phone" value="${esc(contact.phone)}" placeholder="例如：#369 或 03-1234567"></div>
+        <div><label>預設送貨地點</label><select id="contact_deliveryPlace">${optionHTML(placeOptions,contact.deliveryPlace)}</select></div>
+        <div><label>狀態</label><select id="contact_active"><option value="true" ${contact.active!==false?'selected':''}>啟用</option><option value="false" ${contact.active===false?'selected':''}>停用</option></select></div>
+      </div>
+      <div style="margin-top:10px"><label>預設送貨地址</label><input id="contact_address" value="${esc(contact.address)}" placeholder="選擇此聯絡人時可自動帶入"></div>
+      <div style="margin-top:10px"><label>備註</label><input id="contact_note" value="${esc(contact.note)}" placeholder="例如：一部預設收貨窗口"></div>
+    </div>`;
+  showModal(id?'修改收貨聯絡人':'新增收貨聯絡人',body,{
+    width:'760px',
+    footer:`<button id="cancelModalBtn">取消</button><button class="primary" id="saveContactBtn">儲存聯絡人</button>`,
+    onOpen:(modal)=>{
+      $('#cancelModalBtn',modal).addEventListener('click',closeModal);
+      $('#saveContactBtn',modal).addEventListener('click',()=>saveDeliveryContactFromModal(id,modal));
+      $('#contact_deliveryPlace',modal)?.addEventListener('change',()=>{
+        const place=$('#contact_deliveryPlace',modal).value;
+        const address=$('#contact_address',modal);
+        if(place===KANG_PLACE && !address.value.trim()) address.value=KANG_ADDRESS;
+      });
+    }
+  });
+}
+function saveDeliveryContactFromModal(id,modal){
+  const data={
+    id:id||uid('CONTACT'),
+    name:$('#contact_name',modal).value.trim(),
+    phone:$('#contact_phone',modal).value.trim(),
+    deliveryPlace:$('#contact_deliveryPlace',modal).value,
+    address:$('#contact_address',modal).value.trim(),
+    note:$('#contact_note',modal).value.trim(),
+    active:$('#contact_active',modal).value==='true'
+  };
+  if(!data.name) return toast('請輸入收貨聯絡人姓名');
+  state.settings.contacts=Array.isArray(state.settings.contacts)?state.settings.contacts:[];
+  const idx=state.settings.contacts.findIndex(c=>c.id===id);
+  const before=idx>=0?JSON.parse(JSON.stringify(state.settings.contacts[idx])):null;
+  if(idx>=0) state.settings.contacts[idx]=data; else state.settings.contacts.push(data);
+  audit(idx>=0?'修改收貨聯絡人':'新增收貨聯絡人','收貨聯絡人',data.id,data.name,`${contactDisplay(data)}｜${data.deliveryPlace||''}`,before);
+  save(); toast('收貨聯絡人已儲存'); closeModal(); renderSettings($('#content'));
+}
+function deleteDeliveryContact(id){
+  const contact=(state.settings.contacts||[]).find(c=>c.id===id);
+  if(!contact) return;
+  if(!confirm(`確定刪除收貨聯絡人「${contactDisplay(contact)}」？`)) return;
+  state.settings.contacts=(state.settings.contacts||[]).filter(c=>c.id!==id);
+  audit('刪除收貨聯絡人','收貨聯絡人',id,contact.name,'已從資料設定移除',contact);
+  save(); toast('收貨聯絡人已刪除'); renderSettings($('#content'));
+}
 
 function openVendorModal(id){
   const vendor = (state.settings.vendors||[]).find(v=>v.id===id) || {id:'', companyName:'', companyAddress:'', contactPerson:'', phone:'', mobile:'', fax:'', line:'', email:''};
@@ -2560,7 +2799,7 @@ function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v;
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.8 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.9 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
