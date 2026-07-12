@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.6</title>
+  <title>FOR-e寢具訂購 V4.7</title>
   <style>
 
     :root{
@@ -190,7 +190,13 @@
     .stats-filter-bar{display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
     .stats-filter-bar>div{min-width:150px}
     .stats-filter-bar .range-fields{display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap}
-    .worker-textarea{min-height:58px;resize:vertical}
+    .worker-textarea{min-height:86px;resize:vertical}
+    .bulk-worker-panel{border:1px solid rgba(196,151,103,.48);background:rgba(196,151,103,.075);border-radius:14px;padding:12px;margin-bottom:10px}
+    .bulk-worker-panel h4{margin:0 0 10px;color:#ffd49b;font-size:15px}
+    .bulk-worker-panel .bulk-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:10px}
+    .bulk-worker-panel .bulk-actions button{flex:0 0 auto}
+    .bulk-worker-panel .name-field{grid-column:span 2}
+    .current-status-cell{min-width:94px}
     @media(max-width:1100px){.grid,.grid.six{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}.sidebar{width:210px}}
     @media(max-width:760px){.app{display:block}.sidebar{position:relative;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}.topbar{position:relative;top:auto}.content{padding:14px}.grid,.grid.two,.grid.three,.grid.six{grid-template-columns:1fr}.stat-grid{grid-template-columns:1fr}.record-head{display:block}.record-total{text-align:left;margin-top:10px}.record-meta{grid-template-columns:1fr}.table-wrap{overflow:auto;overscroll-behavior:contain}.toolbar input,.toolbar select{width:100%}.toolbar-left,.toolbar-right{width:100%}.toolbar-left>*{flex:1 1 180px}}
     .auth-shell{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 20% 0%,#3b3027 0,#241f1a 42%,#201c18 100%)}
@@ -254,6 +260,7 @@ const paymentTargets = ['工人','雇主','仲介'];
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.7', date:'2026/07/12', title:'入境日與狀態顯示、多工人一鍵批次帶入', items:['寢具訂購清單新增入境日與目前狀態','一部自動帶承辦貝貝，二部自動帶承辦阿金','可一次輸入多位工人姓名並一鍵建立','國籍與入境日可一鍵套用全部工人','第一位工人的購買品項可一鍵套用全部工人']},
   {version:'V4.6', date:'2026/07/12', title:'品項順序與一般／特殊訂購分類', items:['資料設定可用上移、下移調整品項顯示順序','每個品項可設定為一般訂購項目或特殊訂購項目','特殊訂購項目不綁定工人，同張訂購單只填一次，且不提供拿庫存、加買、退貨']},
   {version:'V4.5', date:'2026/07/12', title:'Supabase 公開共用免登入版', items:['移除登入畫面、帳號及角色權限','開啟正式網址即可直接使用全部功能','Supabase 保留共用資料、Realtime 同步與版本衝突保護']},
   {version:'V4.4', date:'2026/07/12', title:'Supabase 帳號登入版（已由 V4.5 取代）', items:['曾使用 Supabase Auth 登入與 profiles 角色權限','共用資料儲存於 Supabase，支援跨電腦與多人使用','GitHub 版本控管並由 Vercel 自動部署']},
@@ -268,6 +275,8 @@ const versionNotes = [
 const KANG_PLACE = '灃康人力';
 const KANG_ADDRESS = '桃園市桃園區經國一路65號2樓';
 const STAFF_CONTACTS = { '貝貝':'貝貝#369', '阿金':'阿金#186', '明明':'明明#186' };
+const DEPARTMENT_DEFAULT_STAFF = {'一部':'貝貝','二部':'阿金'};
+function defaultStaffForDepartment(dept){ return DEPARTMENT_DEFAULT_STAFF[dept] || state?.settings?.staff?.[0] || ''; }
 const LEGACY_SPECIAL_ITEM_CODES = new Set(['SINGLE_BED','ROUND_BUNK','ANGLE_BUNK','WOOD_BED']);
 const ITEM_ORDER_TYPES = {general:'一般訂購項目', special:'特殊訂購項目'};
 function normalizeItemOrderType(value, code=''){
@@ -757,7 +766,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand">FOR-e寢具訂購<small>V4.6 Supabase 公開共用版</small></div>
+        <div class="brand">FOR-e寢具訂購<small>V4.7 Supabase 公開共用版</small></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -792,7 +801,7 @@ function filteredOrders(){
   const status = state.filters.status || '全部';
   return state.orders.filter(o=>{
     if(o.accountingBatch) return false;
-    const hit = !q || [o.orderNo,o.employer,o.worker,o.nationality,o.dept,o.staff,o.companyTitle,o.deliveryPlace,itemSummary(o),o.isStockOrder?'訂庫存':'工人訂購'].some(v=>String(v||'').toLowerCase().includes(q));
+    const hit = !q || [o.orderNo,o.employer,o.worker,o.nationality,o.dept,o.staff,o.companyTitle,o.deliveryPlace,itemSummary(o),entryDateDisplay(o),displayStatus(o),o.isStockOrder?'訂庫存':'工人訂購'].some(v=>String(v||'').toLowerCase().includes(q));
     const st = status==='全部' || o.status===status || o.accountingStatus===status;
     return hit && st;
   }).sort((a,b)=>String(b.orderDate||'').localeCompare(String(a.orderDate||'')) || String(b.orderNo||'').localeCompare(String(a.orderNo||'')));
@@ -819,7 +828,7 @@ function renderOrders(root){
       <div class="table-wrap"><table>
         <thead><tr>
           <th class="nowrap center"><input type="checkbox" id="selectAllOrders"></th>
-          <th>訂購單</th><th>雇主 / 對象</th><th class="nowrap">訂購日</th><th>購買品項</th><th class="right nowrap">訂購金額</th><th class="nowrap">操作</th>
+          <th>訂購單</th><th>雇主 / 對象</th><th class="nowrap">入境日</th><th class="nowrap">訂購日</th><th>購買品項</th><th class="nowrap">目前狀態</th><th class="right nowrap">訂購金額</th><th class="nowrap">操作</th>
         </tr></thead>
         <tbody>
           ${orders.map(o=>`
@@ -827,8 +836,10 @@ function renderOrders(root){
               <td class="center"><input type="checkbox" class="orderCheck" value="${esc(o.id)}"></td>
               <td><b>${esc(o.orderNo)}</b></td>
               <td><b>${esc(o.employer||'-')}</b><br>${o.isStockOrder?'<span class="muted">庫存訂購</span>':esc(orderWorkers(o).join('、')||'-')}</td>
+              <td>${(o.isStockOrder||isSpecialOnlyOrder(o))?'<span class="muted">不適用</span>':`${esc(entryDateDisplay(o)||'-')}<br><span class="muted">${esc(nationalityDisplay(o)||'-')}</span>`}</td>
               <td>${orderRowDateSummary(o)}</td>
               <td><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
+              <td class="current-status-cell">${statusPills(o)}</td>
               <td class="right nowrap"><b>${money(orderAmount(o))}</b><br><span class="muted">工人訂購價</span></td>
               <td class="nowrap"><div class="actions">
                 <button class="small" data-act="view" data-id="${esc(o.id)}">查看</button>
@@ -930,7 +941,7 @@ function createBlankOrder(){
   const dept='一部';
   const companyTitle=state.settings.companyTitles[0]||'灃康人力';
   const orderDate=todayInput();
-  const staff=state.settings.staff[0]||'貝貝';
+  const staff=defaultStaffForDepartment(dept) || '貝貝';
   const workerGroups=[workerGroupBlank()];
   return {
     id:uid('ORD'), orderNo:makeOrderNo(companyTitle, dept, orderDate), batchNo:'', isStockOrder:false,
@@ -954,18 +965,25 @@ function openOrderModal(orderId){
       updateOrderNoPreview(modal, !!existing, order.id);
       modal.querySelector('#f_deliveryPlace')?.addEventListener('change',()=>updateDeliveryInputs(modal,true));
       modal.querySelector('#f_staff')?.addEventListener('change',()=>updateDeliveryInputs(modal,false));
-      ['#f_isStockOrder','#f_companyTitle','#f_dept','#f_orderDate'].forEach(sel=>modal.querySelector(sel)?.addEventListener('change',()=>{toggleStockOrderFields(modal);updateOrderNoPreview(modal, !!existing, order.id);}));
+      modal.querySelector('#f_dept')?.addEventListener('change',()=>{applyDepartmentDefaultStaff(modal);toggleStockOrderFields(modal);updateDeliveryInputs(modal,false);updateOrderNoPreview(modal, !!existing, order.id);});
+      ['#f_isStockOrder','#f_companyTitle','#f_orderDate'].forEach(sel=>modal.querySelector(sel)?.addEventListener('change',()=>{toggleStockOrderFields(modal);updateOrderNoPreview(modal, !!existing, order.id);}));
       $all('#applyBasicSet',modal).forEach(btn=>btn.addEventListener('click',()=>applyBasicSet(modal)));
+      modal.querySelector('#bulkAddWorkersBtn')?.addEventListener('click',()=>bulkAddWorkers(modal));
+      modal.querySelector('#applyWorkerMetaBtn')?.addEventListener('click',()=>applyBulkWorkerMeta(modal));
+      modal.querySelector('#copyFirstItemsBtn')?.addEventListener('click',()=>copyFirstWorkerItemsToAll(modal));
       modal.querySelector('#addWorkerGroupBtn')?.addEventListener('click',()=>{
         $('.worker-empty-note',modal)?.remove();
-        $('#workerCards',modal).insertAdjacentHTML('beforeend', workerGroupFormHTML(workerGroupBlank(), Date.now()));
+        const group=workerGroupBlank();
+        group.nationality=$('#f_bulkNationality',modal)?.value || group.nationality;
+        group.entryDate=$('#f_bulkEntryDate',modal)?.value || '';
+        $('#workerCards',modal).insertAdjacentHTML('beforeend', workerGroupFormHTML(group, Date.now()));
       });
       modal.addEventListener('click',e=>{
         const btn=e.target.closest('.remove-worker-card');
         if(!btn) return;
         btn.closest('.worker-card')?.remove();
         if(!$all('.worker-card',modal).length){
-          $('#workerCards',modal)?.insertAdjacentHTML('beforeend','<div class="empty worker-empty-note" style="padding:16px">目前沒有工人明細，可只填下方特殊訂購項目；也可按「＋新增工人」加入。</div>');
+          $('#workerCards',modal)?.insertAdjacentHTML('beforeend','<div class="empty worker-empty-note" style="padding:16px">目前沒有工人明細，可只填下方特殊訂購項目；也可按「＋單筆新增工人」加入。</div>');
         }
       });
       modal.querySelector('#saveOrderBtn')?.addEventListener('click',()=>saveOrderFromModal(order.id, !!existing, modal));
@@ -991,6 +1009,14 @@ function toggleStockOrderFields(modal){
     if(checked){ employer.value = KANG_PLACE; employer.readOnly = true; }
     else { employer.readOnly = false; }
   }
+}
+function applyDepartmentDefaultStaff(modal){
+  const dept=$('#f_dept',modal)?.value || '';
+  const staff=defaultStaffForDepartment(dept);
+  const select=$('#f_staff',modal);
+  if(!staff || !select) return;
+  if(!Array.from(select.options).some(opt=>opt.value===staff)) select.add(new Option(staff,staff));
+  select.value=staff;
 }
 function updateOrderNoPreview(modal, isExisting, id){
   const input=$('#f_orderNo',modal);
@@ -1045,6 +1071,12 @@ function entryDateDisplay(o){
   const dates = [...new Set(orderWorkerGroups(o).map(g=>dateSlash(g.entryDate)).filter(Boolean))];
   if(dates.length > 2) return `${dates.length}個日期`;
   return dates.join('、') || dateSlash(o?.entryDate) || '';
+}
+function nationalityDisplay(o){
+  if(o?.isStockOrder || isSpecialOnlyOrder(o)) return '不適用';
+  const values=[...new Set(orderWorkerGroups(o).map(g=>g.nationality).filter(Boolean))];
+  if(values.length>2) return `${values.length}個國籍`;
+  return values.join('、') || o?.nationality || '';
 }
 function safeFileName(text){
   return String(text||'').replace(/[\\/:*?"<>|\r\n]+/g,'_').replace(/\s+/g,'').slice(0,120) || '寢具訂購單';
@@ -1109,6 +1141,63 @@ function workerGroupFormHTML(g, index){
   </div>`;
 }
 
+function parseWorkerNames(value){
+  return [...new Set(String(value||'').split(/[\n\r、,，;；\t]+/).map(x=>x.trim()).filter(Boolean))];
+}
+function workerCardHasData(card){
+  if(!card) return false;
+  if(($('.wg-name',card)?.value||'').trim()) return true;
+  return $all('tr[data-code]',card).some(tr=>num($('.line-order',tr)?.value)>0 || num($('.line-use-stock',tr)?.value)>0 || num($('.line-add',tr)?.value)>0 || (($('.line-note',tr)?.value||'').trim()));
+}
+function bulkAddWorkers(modal){
+  const names=parseWorkerNames($('#f_bulkWorkerNames',modal)?.value);
+  if(!names.length) return toast('請先輸入工人姓名，可每行一位或用逗號、頓號分隔');
+  const existingNames=new Set($all('.worker-card .wg-name',modal).map(input=>input.value.trim()).filter(Boolean));
+  const newNames=names.filter(name=>!existingNames.has(name));
+  if(!newNames.length) return toast('輸入的工人已經在明細中');
+  $all('.worker-card',modal).filter(card=>!workerCardHasData(card)).forEach(card=>card.remove());
+  $('.worker-empty-note',modal)?.remove();
+  const nationality=$('#f_bulkNationality',modal)?.value || '越南';
+  const entryDate=$('#f_bulkEntryDate',modal)?.value || '';
+  const holder=$('#workerCards',modal);
+  newNames.forEach((name,index)=>{
+    const group=workerGroupBlank();
+    group.name=name; group.nationality=nationality; group.entryDate=entryDate;
+    holder?.insertAdjacentHTML('beforeend',workerGroupFormHTML(group,Date.now()+index));
+  });
+  if($('#f_bulkWorkerNames',modal)) $('#f_bulkWorkerNames',modal).value='';
+  toast(`已一鍵新增 ${newNames.length} 位工人`);
+}
+function applyBulkWorkerMeta(modal){
+  const cards=$all('.worker-card',modal);
+  if(!cards.length) return toast('目前沒有工人明細');
+  const nationality=$('#f_bulkNationality',modal)?.value || '越南';
+  const entryDate=$('#f_bulkEntryDate',modal)?.value || '';
+  cards.forEach(card=>{
+    const nationalitySelect=$('.wg-nationality',card);
+    if(nationalitySelect) nationalitySelect.value=nationality;
+    const entryInput=$('.wg-entryDate',card);
+    if(entryInput && entryDate) entryInput.value=entryDate;
+  });
+  toast(entryDate?'已將國籍與入境日套用全部工人':'已將國籍套用全部工人；入境日未填所以不覆蓋');
+}
+function copyFirstWorkerItemsToAll(modal){
+  const cards=$all('.worker-card',modal);
+  if(cards.length<2) return toast('至少需要兩位工人才能套用品項');
+  const sourceMap=new Map($all('tr[data-code]',cards[0]).map(tr=>[tr.dataset.code,{
+    price:$('.line-price',tr)?.value||'0', order:$('.line-order',tr)?.value||'0', stock:$('.line-use-stock',tr)?.value||'0', add:$('.line-add',tr)?.value||'0', note:$('.line-note',tr)?.value||''
+  }]));
+  cards.slice(1).forEach(card=>$all('tr[data-code]',card).forEach(tr=>{
+    const data=sourceMap.get(tr.dataset.code); if(!data) return;
+    if($('.line-price',tr)) $('.line-price',tr).value=data.price;
+    if($('.line-order',tr)) $('.line-order',tr).value=data.order;
+    if($('.line-use-stock',tr)) $('.line-use-stock',tr).value=data.stock;
+    if($('.line-add',tr)) $('.line-add',tr).value=data.add;
+    if($('.line-note',tr)) $('.line-note',tr).value=data.note;
+  }));
+  toast(`已將第一位工人的購買品項套用其餘 ${cards.length-1} 位工人`);
+}
+
 function normalizeSpecialLine(line){
   const l=normalizeItemLine(line||{});
   const qty=Math.max(0,num(l.orderQty)+num(l.addQty)+num(l.useStockQty)-num(l.returnQty));
@@ -1146,6 +1235,8 @@ function orderFormHTML(o){
   const stockRows = itemRowsHTML(o.items||[], i=>isGeneralItem(i));
   const specialRows = specialItemRowsHTML(o.items||[]);
   const isAddBuyOrder = String(o.note||'').includes('加買來源：');
+  const bulkNationality=groups[0]?.nationality || o.nationality || '越南';
+  const bulkEntryDate=groups[0]?.entryDate || o.entryDate || '';
   return `
     <div class="form-section">
       <input type="hidden" id="f_orderNo" value="${esc(o.orderNo)}">
@@ -1185,7 +1276,23 @@ function orderFormHTML(o){
 
     <div class="form-section worker-order-section">
       <h3>工人批次訂購明細</h3>
-      <div class="toolbar"><div class="toolbar-left"><button id="applyBasicSet" type="button">套用基本寢具</button><button id="addWorkerGroupBtn" type="button">＋新增工人</button></div><div class="subtle">一般訂購項目依每位工人填寫，可使用拿庫存、加買與退貨；可移除全部工人，只保留特殊訂購項目。</div></div>
+      <div class="bulk-worker-panel">
+        <h4>多工人一鍵填入</h4>
+        <div class="grid">
+          <div class="name-field"><label>一次輸入多位工人姓名</label><textarea id="f_bulkWorkerNames" class="worker-textarea" placeholder="每行一位，也可用逗號、頓號或分號分隔&#10;例如：&#10;阮文勇&#10;黎玉重"></textarea></div>
+          <div><label>共同國籍</label><select id="f_bulkNationality">${countryOptions.map(c=>`<option ${bulkNationality===c?'selected':''}>${c}</option>`).join('')}</select></div>
+          <div><label>共同入境日</label><input type="date" id="f_bulkEntryDate" value="${esc(bulkEntryDate)}"></div>
+        </div>
+        <div class="bulk-actions">
+          <button class="primary" id="bulkAddWorkersBtn" type="button">一鍵新增工人</button>
+          <button id="applyWorkerMetaBtn" type="button">國籍／入境日套用全部</button>
+          <button id="applyBasicSet" type="button">基本寢具套用全部</button>
+          <button id="copyFirstItemsBtn" type="button">第一位工人購買品項套用全部</button>
+          <button id="addWorkerGroupBtn" type="button">＋單筆新增工人</button>
+        </div>
+        <div class="mini-note" style="margin-top:8px">可一次建立多位工人並帶入共同國籍、入境日；自訂購買品項時，先填第一位工人，再按「第一位工人購買品項套用全部」。</div>
+      </div>
+      <div class="subtle">一般訂購項目依每位工人填寫，可使用拿庫存、加買與退貨；可移除全部工人，只保留特殊訂購項目。</div>
       <div id="workerCards">${workerCards}</div>
     </div>
 
@@ -1268,6 +1375,7 @@ function saveOrderFromModal(id, isExisting, modal){
   if(!isExisting || !order.orderNo || String(order.orderNo).startsWith('BO')) order.orderNo = makeOrderNo(order.companyTitle, order.dept, order.orderDate, isExisting ? order.id : '');
   order.batchNo = '';
   order.workerEnglish = '';
+  if(!order.accountingBatch) order.overseasStaff = order.staff || '';
   if(order.deliveryPlace===KANG_PLACE){ order.contact = staffContact(order.staff); order.deliveryAddress = KANG_ADDRESS; }
   if(!isExisting){ state.orders.push(order); }
   if(order.employer && !state.settings.employers.includes(order.employer)) state.settings.employers.push(order.employer);
@@ -1289,7 +1397,7 @@ function renderRecords(root){
   const q = (state.filters.records || '').trim().toLowerCase();
   const hideClosed = !!state.filters.hideClosed;
   const orders = state.orders.filter(o=>{
-    const hit = !q || [o.orderNo,o.dept,o.staff,o.employer,o.worker,o.nationality,itemSummary(o),deliveryContact(o),deliveryAddress(o),o.isStockOrder?'訂庫存':'工人訂購'].some(v=>String(v||'').toLowerCase().includes(q));
+    const hit = !q || [o.orderNo,o.dept,o.staff,o.employer,o.worker,o.nationality,entryDateDisplay(o),displayStatus(o),itemSummary(o),deliveryContact(o),deliveryAddress(o),o.isStockOrder?'訂庫存':'工人訂購'].some(v=>String(v||'').toLowerCase().includes(q));
     const show = !hideClosed || !['對帳完成','帳務錯誤'].includes(displayStatus(o));
     return hit && show;
   }).sort((a,b)=>String(b.orderDate||'').localeCompare(String(a.orderDate||'')) || String(b.orderNo||'').localeCompare(String(a.orderNo||'')));
@@ -1297,7 +1405,7 @@ function renderRecords(root){
     <div class="toolbar"><div class="toolbar-left"><input id="recordsSearch" placeholder="搜尋訂購單 / 部門 / 承辦 / 雇主 / 工人 / 品項" value="${esc(state.filters.records||'')}"><label class="checkline"><input type="checkbox" id="hideClosedRecords" ${hideClosed?'checked':''}><strong>隱藏對帳完成 / 帳務錯誤</strong></label></div><div class="toolbar-right">${exportDateFilterHTML()}<button id="exportRecordsBtn">匯出詳細 CSV</button></div></div>
     <div class="card plain">
       <div class="card-title"><h2>訂購紀錄</h2><span class="subtle">點選訂購單號即可查看；其他操作請進入訂單後使用</span></div>
-      ${orders.length ? `<div class="table-wrap"><table class="record-table"><thead><tr><th>訂購單</th><th>部門 / 承辦</th><th>雇主 / 工人</th><th>入境日 / 國籍</th><th>支付對象</th><th>購買品項</th><th>退貨狀況</th><th class="right">金額</th><th>狀態</th></tr></thead><tbody>${orders.map(o=>workerRecordHTML(o)).join('')}</tbody></table></div>` : `<div class="empty">尚無訂購紀錄。</div>`}
+      ${orders.length ? `<div class="table-wrap"><table class="record-table"><thead><tr><th>訂購單</th><th>部門 / 承辦</th><th>雇主 / 工人</th><th>入境日 / 國籍</th><th>支付對象</th><th>購買品項</th><th>退貨狀況</th><th class="right">金額</th><th>目前狀態</th></tr></thead><tbody>${orders.map(o=>workerRecordHTML(o)).join('')}</tbody></table></div>` : `<div class="empty">尚無訂購紀錄。</div>`}
     </div>`;
   $('#recordsSearch')?.addEventListener('input',e=>{state.filters.records=e.target.value;save();renderRecords(root);});
   $('#hideClosedRecords')?.addEventListener('change',e=>{state.filters.hideClosed=e.target.checked;save();renderRecords(root);});
@@ -1312,7 +1420,7 @@ function workerRecordHTML(o){
     <td><button class="link-btn" data-record-act="view" data-id="${esc(o.id)}">${esc(o.orderNo||'-')}</button></td>
     <td>${esc(o.dept||'-')}<br><span class="muted">${esc(o.staff||'-')}</span></td>
     <td><b>${esc(o.employer||'-')}</b><br>${workerText}</td>
-    <td>${(o.isStockOrder||specialOnly)?'<span class="muted">不適用</span>':`${esc(dateSlash(o.entryDate)||'-')}<br><span class="pill">${esc(o.nationality||'-')}</span>`}</td>
+    <td>${(o.isStockOrder||specialOnly)?'<span class="muted">不適用</span>':`${esc(entryDateDisplay(o)||'-')}<br><span class="pill">${esc(nationalityDisplay(o)||'-')}</span>`}</td>
     <td>${esc(o.paymentTarget||'工人')}</td>
     <td><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
     <td>${returnSummary(o)}</td>
@@ -1476,11 +1584,12 @@ function recordDetailHTML(o){
       <div class="meta-box"><span>部門 / 承辦</span><b>${esc(o.dept||'-')} / ${esc(o.staff||'-')}</b></div>
       <div class="meta-box"><span>雇主</span><b>${esc(o.employer||'-')}</b></div>
       <div class="meta-box"><span>工人</span><b>${(o.isStockOrder||isSpecialOnlyOrder(o))?'不適用':esc(orderWorkers(o).join('、')||'-')}</b></div>
-      <div class="meta-box"><span>國籍 / 入境日</span><b>${(o.isStockOrder||isSpecialOnlyOrder(o))?'不適用':`${esc(o.nationality||'-')} / ${esc(dateSlash(o.entryDate)||'-')}`}</b></div>
+      <div class="meta-box"><span>國籍 / 入境日</span><b>${(o.isStockOrder||isSpecialOnlyOrder(o))?'不適用':`${esc(nationalityDisplay(o)||'-')} / ${esc(entryDateDisplay(o)||'-')}`}</b></div>
       <div class="meta-box"><span>總金額</span><b>${money(orderAmount(o))}</b></div>
       <div class="meta-box"><span>訂購日期</span><b>${esc(dateSlash(o.orderDate)||'-')}</b></div>
       <div class="meta-box"><span>收貨日</span><b>${esc(dateSlash(o.receivedDate)||'-')}</b></div>
       <div class="meta-box"><span>請款日</span><b>${esc(dateSlash(o.billingDate)||'-')}</b></div>
+      <div class="meta-box"><span>目前狀態</span><b>${esc(displayStatus(o))}</b></div>
       <div class="meta-box"><span>會計狀態</span><b>${esc(o.accountingStatus||'未轉入')}</b></div>
       <div class="meta-box"><span>公司別</span><b>${esc(o.companyTitle||'-')}</b></div>
       <div class="meta-box"><span>收貨聯絡人</span><b>${esc(deliveryContact(o)||'-')}</b></div>
@@ -1895,9 +2004,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.6｜品項分類與順序正式版</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.7｜多工人批次帶入正式版</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.6 新增品項順序調整，以及一般／特殊訂購項目分類；特殊項目同張訂購單只填一次。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.7 新增入境日與目前狀態顯示、部門自動帶承辦，以及多工人姓名、國籍、入境日與購買品項批次帶入。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -2415,7 +2524,7 @@ function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v;
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.6 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.7 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
