@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.7</title>
+  <title>FOR-e寢具訂購 V4.8</title>
   <style>
 
     :root{
@@ -260,6 +260,7 @@ const paymentTargets = ['工人','雇主','仲介'];
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.8', date:'2026/07/12', title:'腳踏車／電風扇簽收單顯示與腳踏車費用獨立計算', items:['腳踏車與電風扇不列入寢具廠商訂購單及訂購單圖片','腳踏車與電風扇保留顯示於工人簽收單','腳踏車費用與寢具及用品費用分開計算，並於明細、對帳、統計及 CSV 顯示']},
   {version:'V4.7', date:'2026/07/12', title:'入境日與狀態顯示、多工人一鍵批次帶入', items:['寢具訂購清單新增入境日與目前狀態','一部自動帶承辦貝貝，二部自動帶承辦阿金','可一次輸入多位工人姓名並一鍵建立','國籍與入境日可一鍵套用全部工人','第一位工人的購買品項可一鍵套用全部工人']},
   {version:'V4.6', date:'2026/07/12', title:'品項順序與一般／特殊訂購分類', items:['資料設定可用上移、下移調整品項顯示順序','每個品項可設定為一般訂購項目或特殊訂購項目','特殊訂購項目不綁定工人，同張訂購單只填一次，且不提供拿庫存、加買、退貨']},
   {version:'V4.5', date:'2026/07/12', title:'Supabase 公開共用免登入版', items:['移除登入畫面、帳號及角色權限','開啟正式網址即可直接使用全部功能','Supabase 保留共用資料、Realtime 同步與版本衝突保護']},
@@ -276,16 +277,33 @@ const KANG_PLACE = '灃康人力';
 const KANG_ADDRESS = '桃園市桃園區經國一路65號2樓';
 const STAFF_CONTACTS = { '貝貝':'貝貝#369', '阿金':'阿金#186', '明明':'明明#186' };
 const DEPARTMENT_DEFAULT_STAFF = {'一部':'貝貝','二部':'阿金'};
+const ORDER_FORM_EXCLUDED_ITEM_CODES = new Set(['FAN','BIKE']);
+const BICYCLE_ITEM_CODES = new Set(['BIKE']);
 function defaultStaffForDepartment(dept){ return DEPARTMENT_DEFAULT_STAFF[dept] || state?.settings?.staff?.[0] || ''; }
+function itemIdentity(itemOrCode){
+  const item = typeof itemOrCode==='string' ? getItem(itemOrCode) : (itemOrCode||{});
+  return {code:String(item.code||''), name:String(item.name||'')};
+}
+function isBicycleItem(itemOrCode){
+  const item=itemIdentity(itemOrCode);
+  return BICYCLE_ITEM_CODES.has(item.code) || item.name.trim()==='腳踏車';
+}
+function isElectricFanItem(itemOrCode){
+  const item=itemIdentity(itemOrCode);
+  return item.code==='FAN' || item.name.trim()==='電風扇';
+}
+function isOrderFormExcludedItem(itemOrCode){ return isBicycleItem(itemOrCode) || isElectricFanItem(itemOrCode); }
 const LEGACY_SPECIAL_ITEM_CODES = new Set(['SINGLE_BED','ROUND_BUNK','ANGLE_BUNK','WOOD_BED']);
 const ITEM_ORDER_TYPES = {general:'一般訂購項目', special:'特殊訂購項目'};
 function normalizeItemOrderType(value, code=''){
+  if(ORDER_FORM_EXCLUDED_ITEM_CODES.has(String(code||''))) return 'general';
   if(value==='special' || value==='特殊訂購項目') return 'special';
   if(value==='general' || value==='一般訂購項目') return 'general';
   return LEGACY_SPECIAL_ITEM_CODES.has(code) ? 'special' : 'general';
 }
 function itemOrderType(itemOrCode){
   const item = typeof itemOrCode==='string' ? getItem(itemOrCode) : (itemOrCode||{});
+  if(isOrderFormExcludedItem(item)) return 'general';
   return normalizeItemOrderType(item.orderType, item.code);
 }
 function isSpecialItem(itemOrCode){ return itemOrderType(itemOrCode)==='special'; }
@@ -560,7 +578,9 @@ function aggregateWorkerItems(groups, oldItems=[]){
   });
   return Array.from(map.values());
 }
-function groupAmount(g){ return (g.items||[]).reduce((sum,l)=>sum+lineAmount(l),0); }
+function groupBicycleAmount(g){ return (g.items||[]).reduce((sum,l)=>sum+(isBicycleItem(l.code)?lineAmount(l):0),0); }
+function groupBeddingAmount(g){ return (g.items||[]).reduce((sum,l)=>sum+(!isBicycleItem(l.code)?lineAmount(l):0),0); }
+function groupAmount(g){ return groupBeddingAmount(g) + groupBicycleAmount(g); }
 function orderWorkers(o){ return orderWorkerGroups(o).map(g=>g.name).filter(Boolean); }
 function isSpecialOnlyOrder(o){ return !o.isStockOrder && !orderWorkers(o).length && (o.items||[]).some(l=>isSpecialItem(l.code) && positiveLineQty(l)); }
 function normalizeState(s){
@@ -690,8 +710,15 @@ function supplierQty(line){
   return Math.max(0, num(line?.orderQty) + num(line?.addQty) + num(line?.replenishQty) - num(line?.returnQty));
 }
 function lineAmount(line){ return lineQty(line) * num(line.price); }
-function orderAmount(order){ return orderedLines(order.items||[]).reduce((sum,l)=>sum+lineAmount(l),0); }
-function orderSupplierAmount(order){ return orderedLines(order.items||[]).reduce((sum,l)=>sum+supplierQty(l)*itemVendorPrice(l.code),0); }
+function orderBicycleAmount(order){ return orderedLines(order.items||[]).reduce((sum,l)=>sum+(isBicycleItem(l.code)?lineAmount(l):0),0); }
+function orderBeddingAmount(order){ return orderedLines(order.items||[]).reduce((sum,l)=>sum+(!isBicycleItem(l.code)?lineAmount(l):0),0); }
+function orderAmount(order){ return orderBeddingAmount(order) + orderBicycleAmount(order); }
+function orderSupplierAmount(order){ return orderedLines(order.items||[]).reduce((sum,l)=>sum+(!isOrderFormExcludedItem(l.code)?supplierQty(l)*itemVendorPrice(l.code):0),0); }
+function orderAmountBreakdownHTML(order){
+  const bedding=orderBeddingAmount(order), bicycle=orderBicycleAmount(order), total=bedding+bicycle;
+  if(bicycle<=0) return `<b>${money(total)}</b><br><span class="muted">寢具及用品</span>`;
+  return `<b>${money(total)}</b><br><span class="muted">寢具及用品 ${money(bedding)}</span><br><span class="pill warn">腳踏車 ${money(bicycle)}</span>`;
+}
 function hasReturn(order){ return (order.items||[]).some(l=>isGeneralItem(l.code) && num(l.returnQty)>0); }
 function itemSummary(order){
   const parts = orderedLines(order.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || (isGeneralItem(l.code) && num(l.useStockQty)>0)).map(l=>{
@@ -766,7 +793,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand">FOR-e寢具訂購<small>V4.7 Supabase 公開共用版</small></div>
+        <div class="brand">FOR-e寢具訂購<small>V4.8 Supabase 公開共用版</small></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -840,7 +867,7 @@ function renderOrders(root){
               <td>${orderRowDateSummary(o)}</td>
               <td><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
               <td class="current-status-cell">${statusPills(o)}</td>
-              <td class="right nowrap"><b>${money(orderAmount(o))}</b><br><span class="muted">工人訂購價</span></td>
+              <td class="right nowrap">${orderAmountBreakdownHTML(o)}</td>
               <td class="nowrap"><div class="actions">
                 <button class="small" data-act="view" data-id="${esc(o.id)}">查看</button>
                 <button class="small" data-act="edit" data-id="${esc(o.id)}" ${can('orderWrite')?'':'disabled'}>修改</button>
@@ -1424,7 +1451,7 @@ function workerRecordHTML(o){
     <td>${esc(o.paymentTarget||'工人')}</td>
     <td><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
     <td>${returnSummary(o)}</td>
-    <td class="right"><b>${money(orderAmount(o))}</b></td>
+    <td class="right">${orderAmountBreakdownHTML(o)}</td>
     <td>${statusPills(o)}</td>
   </tr>`;
 }
@@ -1585,7 +1612,7 @@ function recordDetailHTML(o){
       <div class="meta-box"><span>雇主</span><b>${esc(o.employer||'-')}</b></div>
       <div class="meta-box"><span>工人</span><b>${(o.isStockOrder||isSpecialOnlyOrder(o))?'不適用':esc(orderWorkers(o).join('、')||'-')}</b></div>
       <div class="meta-box"><span>國籍 / 入境日</span><b>${(o.isStockOrder||isSpecialOnlyOrder(o))?'不適用':`${esc(nationalityDisplay(o)||'-')} / ${esc(entryDateDisplay(o)||'-')}`}</b></div>
-      <div class="meta-box"><span>總金額</span><b>${money(orderAmount(o))}</b></div>
+      <div class="meta-box"><span>寢具及用品費用</span><b>${money(orderBeddingAmount(o))}</b></div><div class="meta-box"><span>腳踏車費用</span><b>${money(orderBicycleAmount(o))}</b></div><div class="meta-box"><span>總金額</span><b>${money(orderAmount(o))}</b></div>
       <div class="meta-box"><span>訂購日期</span><b>${esc(dateSlash(o.orderDate)||'-')}</b></div>
       <div class="meta-box"><span>收貨日</span><b>${esc(dateSlash(o.receivedDate)||'-')}</b></div>
       <div class="meta-box"><span>請款日</span><b>${esc(dateSlash(o.billingDate)||'-')}</b></div>
@@ -1797,7 +1824,7 @@ function accountingOrderRow(o){
     <td>${lineSummaryByKey(o,'useStockQty','warn')}</td>
     <td>${lineSummaryByKey(o,'returnQty','bad')}</td>
     <td>${lineSummaryByKey(o,'addQty','ok')}</td>
-    <td class="right nowrap">${money(orderAmount(o))}</td>
+    <td class="right nowrap">${orderAmountBreakdownHTML(o)}</td>
     <td class="right nowrap">${num(o.accountingAdjust||0) ? money(o.accountingAdjust) : '<span class="muted">-</span>'}</td>
     <td class="right nowrap"><b>${money(accountingAmount(o))}</b></td>
     <td>${esc(o.accountingStatus||'待對帳')}</td>
@@ -1941,6 +1968,8 @@ function renderStats(root){
   const years = availableStatYears();
   const statOrders = filteredStatOrders();
   const totalAmount = statOrders.reduce((s,o)=>s+orderAmount(o),0);
+  const beddingAmount = statOrders.reduce((s,o)=>s+orderBeddingAmount(o),0);
+  const bicycleAmount = statOrders.reduce((s,o)=>s+orderBicycleAmount(o),0);
   const supplierAmount = statOrders.reduce((s,o)=>s+orderSupplierAmount(o),0);
   const orderCount = statOrders.length;
   const workerCount = statOrders.reduce((s,o)=>s+(o.isStockOrder?0:Math.max(1,orderWorkers(o).length)),0);
@@ -1962,7 +1991,9 @@ function renderStats(root){
     <div class="stat-grid">
       <div class="stat"><div class="label">訂購總數</div><div class="num">${itemQty}</div></div>
       <div class="stat"><div class="label">訂購總金額</div><div class="num">${money(totalAmount)}</div></div>
-      <div class="stat"><div class="label">訂購單金額</div><div class="num">${money(supplierAmount)}</div></div>
+      <div class="stat"><div class="label">寢具及用品費用</div><div class="num">${money(beddingAmount)}</div></div>
+      <div class="stat"><div class="label">腳踏車費用</div><div class="num">${money(bicycleAmount)}</div></div>
+      <div class="stat"><div class="label">寢具廠商訂購單金額</div><div class="num">${money(supplierAmount)}</div></div>
       <div class="stat"><div class="label">訂購筆數 / 工人數</div><div class="num">${orderCount} / ${workerCount}</div></div>
     </div>
     <div class="split">
@@ -1982,15 +2013,15 @@ function renderStats(root){
 }
 function monthlyStatsHTML(orders=state.orders){
   const map={};
-  orders.forEach(o=>{ const key=String(o.orderDate||'未填').slice(0,7); map[key]=map[key]||{count:0,total:0,orders:0}; map[key].orders++; map[key].count+=(o.items||[]).reduce((s,l)=>s+lineQty(l),0); map[key].total+=orderAmount(o); });
+  orders.forEach(o=>{ const key=String(o.orderDate||'未填').slice(0,7); map[key]=map[key]||{count:0,bedding:0,bicycle:0,total:0,orders:0}; map[key].orders++; map[key].count+=(o.items||[]).reduce((s,l)=>s+lineQty(l),0); map[key].bedding+=orderBeddingAmount(o); map[key].bicycle+=orderBicycleAmount(o); map[key].total+=orderAmount(o); });
   const rows=Object.entries(map).sort((a,b)=>b[0].localeCompare(a[0]));
-  return rows.length?`<table><thead><tr><th>月份</th><th class="right">訂購筆數</th><th class="right">訂購總數</th><th class="right">總金額</th></tr></thead><tbody>${rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="right">${v.orders||0}</td><td class="right"><b>${v.count}</b></td><td class="right">${money(v.total)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無統計資料。</div>';
+  return rows.length?`<table><thead><tr><th>月份</th><th class="right">訂購筆數</th><th class="right">訂購總數</th><th class="right">寢具及用品</th><th class="right">腳踏車</th><th class="right">總金額</th></tr></thead><tbody>${rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="right">${v.orders||0}</td><td class="right"><b>${v.count}</b></td><td class="right">${money(v.bedding)}</td><td class="right"><b>${money(v.bicycle)}</b></td><td class="right">${money(v.total)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無統計資料。</div>';
 }
 function yearlyStatsHTML(orders=state.orders){
   const map={};
-  orders.forEach(o=>{ const key=String(o.orderDate||'未填').slice(0,4); map[key]=map[key]||{count:0,total:0,orders:0}; map[key].orders++; map[key].count+=(o.items||[]).reduce((s,l)=>s+lineQty(l),0); map[key].total+=orderAmount(o); });
+  orders.forEach(o=>{ const key=String(o.orderDate||'未填').slice(0,4); map[key]=map[key]||{count:0,bedding:0,bicycle:0,total:0,orders:0}; map[key].orders++; map[key].count+=(o.items||[]).reduce((s,l)=>s+lineQty(l),0); map[key].bedding+=orderBeddingAmount(o); map[key].bicycle+=orderBicycleAmount(o); map[key].total+=orderAmount(o); });
   const rows=Object.entries(map).sort((a,b)=>b[0].localeCompare(a[0]));
-  return rows.length?`<table><thead><tr><th>年度</th><th class="right">訂購筆數</th><th class="right">訂購總數</th><th class="right">總金額</th></tr></thead><tbody>${rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="right">${v.orders||0}</td><td class="right"><b>${v.count}</b></td><td class="right">${money(v.total)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無統計資料。</div>';
+  return rows.length?`<table><thead><tr><th>年度</th><th class="right">訂購筆數</th><th class="right">訂購總數</th><th class="right">寢具及用品</th><th class="right">腳踏車</th><th class="right">總金額</th></tr></thead><tbody>${rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="right">${v.orders||0}</td><td class="right"><b>${v.count}</b></td><td class="right">${money(v.bedding)}</td><td class="right"><b>${money(v.bicycle)}</b></td><td class="right">${money(v.total)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無統計資料。</div>';
 }
 function itemStatsHTML(orders=state.orders){
   const map=new Map();
@@ -2004,9 +2035,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.7｜多工人批次帶入正式版</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.8｜簽收品項與腳踏車費用分開計算正式版</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.7 新增入境日與目前狀態顯示、部門自動帶承辦，以及多工人姓名、國籍、入境日與購買品項批次帶入。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.8 將腳踏車、電風扇排除於寢具廠商訂購單，但保留於簽收單；腳踏車費用改為獨立計算並於明細、對帳、統計與匯出中分開顯示。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -2243,12 +2274,12 @@ function receiptProductHTML(code, langKey, lang){
   return `<b>${esc(it.name)}</b><br><span>${esc(tname)}</span>${details}`;
 }
 function purchaseOrderHTML(o){
-  const lines = orderedLines(o.items||[]).filter(l=>hasOrderLineForPrint(l));
+  const lines = orderedLines(o.items||[]).filter(l=>hasOrderLineForPrint(l) && !isOrderFormExcludedItem(l.code));
   const itemRows = lines.length ? lines.map((l,idx)=>{
     const it = getItem(l.code);
     const note=[l.note||'', isGeneralItem(l.code)&&num(l.returnQty)>0?`退貨 ${num(l.returnQty)}`:'', isGeneralItem(l.code)&&num(l.addQty)>0?`加買 ${num(l.addQty)}`:''].filter(Boolean).join(' / ');
     return `<tr><td>${idx+1}</td><td><b>${esc(it.name)}</b></td><td class="spec-cell">${esc(it.spec||'')}</td><td>${esc(it.unit||'')}</td><td>${supplierQty(l)||''}</td><td>${isGeneralItem(l.code)?(num(l.useStockQty)||''):''}</td><td>${esc(note)}</td></tr>`;
-  }).join('') : `<tr><td colspan="7" class="center">尚無有訂購數量的品項</td></tr>`;
+  }).join('') : `<tr><td colspan="7" class="center">本單沒有需向寢具廠商訂購的品項</td></tr>`;
   const deadline = formatDeliveryDeadline(o) || '未填寫';
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境外國人寢具訂購單</title><style>
     *{box-sizing:border-box} body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;margin:20px;background:#fff;text-align:center} button{padding:8px 12px;margin-bottom:12px} h1{text-align:center;margin:0 0 10px;font-size:26px;letter-spacing:.06em} table{width:100%;border-collapse:collapse;margin-bottom:10px} th,td{border:1px solid #222;padding:6px 8px;font-size:14px;vertical-align:middle;text-align:center;line-height:1.3} th{background:#f2f2f2;white-space:nowrap}.secondary td{font-size:14px;color:#222;font-weight:700}.secondary .label{font-size:12px}.label{display:block;font-size:12px;color:#555;font-weight:700;margin-bottom:4px}.value{display:block;font-size:18px;font-weight:800;line-height:1.22}.value.large{font-size:16px}.value.mid{font-size:17px}.hero{border:2px solid #111;padding:7px 10px;margin:7px 0 10px}.hero .label{font-size:12px}.hero .value{font-size:21px;line-height:1.18}.info td{height:66px}.address td{height:56px}.note-box td{height:50px}.items th{font-size:13px}.items td{font-size:14px}.items td.spec-cell{white-space:normal;word-break:break-word;line-height:1.45}.sign{text-align:center;height:78px;vertical-align:bottom}.no-border td{border:0}.print-note{font-size:13px;color:#555;margin-bottom:12px}@media print{button{display:none}body{margin:12mm} }
@@ -2282,17 +2313,22 @@ function printReceipt(orderId){
       const qty=lineQty(l);
       return `<tr><td class="center">${idx+1}</td><td>${receiptProductHTML(l.code, langKey, lang)}</td><td class="right">${money(l.price)}</td><td class="center"><b>${qty}</b></td><td>${esc(l.note||'')}</td></tr>`;
     }).join('') : `<tr><td colspan="5" class="center">尚無有訂購數量的品項</td></tr>`;
-    const total=groupAmount(g);
+    const beddingTotal=groupBeddingAmount(g);
+    const bicycleTotal=groupBicycleAmount(g);
+    const total=beddingTotal+bicycleTotal;
+    const amountRows = bicycleTotal>0
+      ? `<p class="sub-total">寢具及用品費用：${money(beddingTotal)}</p><p class="bike-total">腳踏車費用：${money(bicycleTotal)}</p><p class="total">總金額 ${esc(lang.total)}：${money(total)}</p>`
+      : `<p class="total">總金額 ${esc(lang.total)}：${money(total)}</p>`;
     return `<section class="receipt-page">
       <h1>入境寢具訂購單</h1><h2>${esc(lang.title)}</h2>
       <table class="info"><tr><td>雇主名稱 ${esc(lang.employer)}：<b>${esc(o.employer||'')}</b></td></tr><tr><td>外國人姓名 ${esc(lang.worker)}：<b>${esc(g.name||'-')}</b></td></tr><tr><td>入境日期 ${esc(lang.entry)}：<b>${esc(dateSlash(g.entryDate)||'')}</b></td></tr></table>
       <table><thead><tr><th>${esc(lang.item)}</th><th>${esc(lang.product)}</th><th>${esc(lang.price)}</th><th>${esc(lang.qty)}</th><th>${esc(lang.note)}</th></tr></thead><tbody>${rows}</tbody></table>
-      <p class="total">總金額 ${esc(lang.total)}：${money(total)}</p>
+      <div class="amount-breakdown">${amountRows}</div>
       <table class="info"><tr><td class="sign">翻譯人員 ${esc(lang.translator)}：____________________</td><td class="sign">訂購人簽名+簽收日期 ${esc(lang.signature)}：____________________</td></tr></table>
     </section>`;
   }).join('');
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境寢具訂購單</title><style>
-    *{box-sizing:border-box}body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;margin:26px;background:#fff}button{padding:8px 12px;margin-bottom:12px}h1{text-align:center;margin:0 0 8px;font-size:28px;text-decoration:underline}h2{text-align:center;margin:0 0 22px;font-size:20px;font-weight:600}table{width:100%;border-collapse:collapse;margin-bottom:14px}th,td{border:1px solid #222;padding:9px 10px;font-size:15px;vertical-align:middle;line-height:1.45}th{background:#f3f3f3}.info td{border:0;font-size:17px;padding:8px 4px}.center{text-align:center}.right{text-align:right}.toiletry-list{font-size:13px;line-height:1.55;margin-top:5px;font-weight:400}.total{text-align:right;font-size:20px;font-weight:800}.sign{height:76px;vertical-align:bottom}.receipt-page{page-break-after:always}.receipt-page:last-child{page-break-after:auto}@media print{button{display:none}body{margin:12mm}.receipt-page{break-after:page}.receipt-page:last-child{break-after:auto}}
+    *{box-sizing:border-box}body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;margin:26px;background:#fff}button{padding:8px 12px;margin-bottom:12px}h1{text-align:center;margin:0 0 8px;font-size:28px;text-decoration:underline}h2{text-align:center;margin:0 0 22px;font-size:20px;font-weight:600}table{width:100%;border-collapse:collapse;margin-bottom:14px}th,td{border:1px solid #222;padding:9px 10px;font-size:15px;vertical-align:middle;line-height:1.45}th{background:#f3f3f3}.info td{border:0;font-size:17px;padding:8px 4px}.center{text-align:center}.right{text-align:right}.toiletry-list{font-size:13px;line-height:1.55;margin-top:5px;font-weight:400}.amount-breakdown{text-align:right;margin:4px 0 12px}.amount-breakdown p{margin:4px 0}.sub-total{text-align:right;font-size:16px;font-weight:700}.bike-total{text-align:right;font-size:18px;font-weight:900}.total{text-align:right;font-size:20px;font-weight:800;border-top:1px solid #333;padding-top:6px}.sign{height:76px;vertical-align:bottom}.receipt-page{page-break-after:always}.receipt-page:last-child{page-break-after:auto}@media print{button{display:none}body{margin:12mm}.receipt-page{break-after:page}.receipt-page:last-child{break-after:auto}}
   </style></head><body><button onclick="window.print()">列印</button>${pageHTML}</body></html>`;
   const w=window.open('','_blank'); w.document.open(); w.document.write(html); w.document.close(); w.focus();
 }
@@ -2352,7 +2388,7 @@ function drawSmallInfo(ctx, x, y, w, h, label, value){
 }
 function downloadOrderImage(orderId){
   const o=state.orders.find(x=>x.id===orderId); if(!o) return;
-  const rows=orderedLines(o.items||[]).filter(l=>hasOrderLineForPrint(l));
+  const rows=orderedLines(o.items||[]).filter(l=>hasOrderLineForPrint(l) && !isOrderFormExcludedItem(l.code));
   const width=1400; const margin=70;
   const headers=['項目','品名','規格','單位','訂購數量','使用庫存','備註'];
   const widths=[70,230,430,80,120,120,210];
@@ -2362,7 +2398,7 @@ function downloadOrderImage(orderId){
   measureCtx.font='20px Noto Sans TC, Arial';
   const rowHeights=useRows.map((l,r)=>{
     const it=l?getItem(l.code):{};
-    const vals=l?[String(r+1),it.name||'',it.spec||'',it.unit||'',String(supplierQty(l)||''),isGeneralItem(l.code)?String(num(l.useStockQty)||''):'',[l.note||'',isGeneralItem(l.code)&&num(l.returnQty)>0?`退貨${num(l.returnQty)}`:'',isGeneralItem(l.code)&&num(l.addQty)>0?`加買${num(l.addQty)}`:''].filter(Boolean).join(' / ')]:['1','尚無有訂購數量的品項','','','','',''];
+    const vals=l?[String(r+1),it.name||'',it.spec||'',it.unit||'',String(supplierQty(l)||''),isGeneralItem(l.code)?String(num(l.useStockQty)||''):'',[l.note||'',isGeneralItem(l.code)&&num(l.returnQty)>0?`退貨${num(l.returnQty)}`:'',isGeneralItem(l.code)&&num(l.addQty)>0?`加買${num(l.addQty)}`:''].filter(Boolean).join(' / ')]:['1','本單沒有需向寢具廠商訂購的品項','','','','',''];
     const maxLines=Math.max(...vals.map((v,i)=>canvasWrapLines(measureCtx, v, widths[i]-12).length));
     return Math.max(48, maxLines*22+18);
   });
@@ -2408,7 +2444,7 @@ function downloadOrderImage(orderId){
     cx=margin;
     const rowH=rowHeights[r] || 48;
     const it=l?getItem(l.code):{};
-    const vals=l?[String(r+1),it.name||'',it.spec||'',it.unit||'',String(supplierQty(l)||''),isGeneralItem(l.code)?String(num(l.useStockQty)||''):'',[l.note||'',isGeneralItem(l.code)&&num(l.returnQty)>0?`退貨${num(l.returnQty)}`:'',isGeneralItem(l.code)&&num(l.addQty)>0?`加買${num(l.addQty)}`:''].filter(Boolean).join(' / ')]:['1','尚無有訂購數量的品項','','','','',''];
+    const vals=l?[String(r+1),it.name||'',it.spec||'',it.unit||'',String(supplierQty(l)||''),isGeneralItem(l.code)?String(num(l.useStockQty)||''):'',[l.note||'',isGeneralItem(l.code)&&num(l.returnQty)>0?`退貨${num(l.returnQty)}`:'',isGeneralItem(l.code)&&num(l.addQty)>0?`加買${num(l.addQty)}`:''].filter(Boolean).join(' / ')]:['1','本單沒有需向寢具廠商訂購的品項','','','','',''];
     vals.forEach((v,i)=>{ctx.strokeRect(cx,y,widths[i],rowH); drawCenteredWrapFull(ctx,v,cx+6,y,widths[i]-12,rowH,21); cx+=widths[i];});
     y+=rowH;
   });
@@ -2489,11 +2525,11 @@ function exportDateLabel(){
 }
 
 function exportRecordsCSV(){
-  const rows=[['訂購單','部門','承辦','雇主','工人','國籍','入境日','訂購日','收貨日','請款日','公司別','支付對象','送貨地點','收貨聯絡人','送貨地址','品項','訂購類型','廠商訂購價','工人訂購價','訂購','拿庫存','退貨','加買','小計','狀態','會計狀態','備註']];
+  const rows=[['訂購單','部門','承辦','雇主','工人','國籍','入境日','訂購日','收貨日','請款日','公司別','支付對象','送貨地點','收貨聯絡人','送貨地址','品項','訂購類型','廠商訂購價','工人訂購價','訂購','拿庫存','退貨','加買','小計','費用分類','訂單寢具及用品費用','訂單腳踏車費用','訂單總金額','狀態','會計狀態','備註']];
   filteredOrdersForCSV(state.orders).forEach(o=>{
     const lines=orderedLines(o.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || (isGeneralItem(l.code) && (num(l.returnQty)>0 || num(l.useStockQty)>0 || num(l.addQty)>0)));
-    if(!lines.length){ rows.push([o.orderNo,o.dept,o.staff,o.employer,o.worker,o.nationality,dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),'','',0,0,0,'','','',0,o.status,o.accountingStatus,o.note||'']); }
-    lines.forEach(l=>{ const special=isSpecialItem(l.code); rows.push([o.orderNo,o.dept,o.staff,o.employer,o.isStockOrder?'':o.worker,o.isStockOrder?'':o.nationality,o.isStockOrder?'':dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),itemLabel(l.code),itemOrderTypeLabel(l.code),itemVendorPrice(l.code),num(l.price),special?lineQty(l):num(l.orderQty),special?'':num(l.useStockQty),special?'':num(l.returnQty),special?'':num(l.addQty),lineAmount(l),o.status,o.accountingStatus,o.note||'']); });
+    if(!lines.length){ rows.push([o.orderNo,o.dept,o.staff,o.employer,o.worker,o.nationality,dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),'','',0,0,0,'','','',0,'',orderBeddingAmount(o),orderBicycleAmount(o),orderAmount(o),o.status,o.accountingStatus,o.note||'']); }
+    lines.forEach(l=>{ const special=isSpecialItem(l.code); rows.push([o.orderNo,o.dept,o.staff,o.employer,o.isStockOrder?'':o.worker,o.isStockOrder?'':o.nationality,o.isStockOrder?'':dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),itemLabel(l.code),itemOrderTypeLabel(l.code),itemVendorPrice(l.code),num(l.price),special?lineQty(l):num(l.orderQty),special?'':num(l.useStockQty),special?'':num(l.returnQty),special?'':num(l.addQty),lineAmount(l),isBicycleItem(l.code)?'腳踏車費用':'寢具及用品費用',orderBeddingAmount(o),orderBicycleAmount(o),orderAmount(o),o.status,o.accountingStatus,o.note||'']); });
   });
   downloadCSV('訂購紀錄詳細_'+exportDateLabel()+'.csv',rows);
 }
@@ -2507,11 +2543,11 @@ function plainQtySummary(o, key){
   return orderedLines(o.items||[]).filter(l=>(key==='orderQty' || isGeneralItem(l.code)) && (key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]))>0).map(l=>`${itemLabel(l.code)} ${key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key])}`).join('、');
 }
 function exportAccountingCSV(){
-  const rows=[['對帳批次','訂購單','雇主','工人','支付對象','訂購日','請款日','海外承辦','購買品項','拿庫存','退貨入庫','加買','原金額','調整金額','對帳金額','會計狀態','對帳人','會計備註','錯誤通知']];
+  const rows=[['對帳批次','訂購單','雇主','工人','支付對象','訂購日','請款日','海外承辦','購買品項','拿庫存','退貨入庫','加買','寢具及用品費用','腳踏車費用','原金額','調整金額','對帳金額','會計狀態','對帳人','會計備註','錯誤通知']];
   filteredOrdersForCSV(state.orders.filter(o=>o.accountingBatch)).forEach(o=>rows.push([
     o.accountingBatch,o.orderNo,o.employer,o.worker,o.paymentTarget||'雇主',dateSlash(o.orderDate),dateSlash(o.billingDate),o.overseasStaff||o.staff||'',
     plainQtySummary(o,'orderQty'),plainQtySummary(o,'useStockQty'),plainQtySummary(o,'returnQty'),plainQtySummary(o,'addQty'),
-    orderAmount(o),num(o.accountingAdjust||0),accountingAmount(o),o.accountingStatus||'待對帳',o.accountingBy||'',o.accountingNote||'',o.errorNotice?(o.errorNotice.type+' '+o.errorNotice.note):''
+    orderBeddingAmount(o),orderBicycleAmount(o),orderAmount(o),num(o.accountingAdjust||0),accountingAmount(o),o.accountingStatus||'待對帳',o.accountingBy||'',o.accountingNote||'',o.errorNotice?(o.errorNotice.type+' '+o.errorNotice.note):''
   ]));
   downloadCSV('會計對帳_'+exportDateLabel()+'.csv',rows);
 }
@@ -2524,7 +2560,7 @@ function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v;
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.7 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.8 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
