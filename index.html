@@ -1,0 +1,2390 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FOR-e寢具訂購 V4.5</title>
+  <style>
+
+    :root{
+      --bg:#241f1a;
+      --bg2:#2d261f;
+      --panel:#342c25;
+      --panel2:#3d342c;
+      --field:#473d34;
+      --text:#f2eadf;
+      --muted:#b9aa98;
+      --line:#5a4c40;
+      --soft:#42382f;
+      --accent:#c49767;
+      --accent2:#8c6240;
+      --danger:#d98a78;
+      --ok:#a8c69f;
+      --warn:#e2bd72;
+      --shadow:0 18px 45px rgba(23,18,14,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 20% 0%,#3b3027 0,#241f1a 42%,#201c18 100%)}
+    button,input,select,textarea{font:inherit}
+    button{border:1px solid var(--line);background:linear-gradient(180deg,#4a4037,#3d342c);color:var(--text);border-radius:10px;padding:6px 10px;cursor:pointer;white-space:nowrap;box-shadow:0 2px 0 rgba(255,255,255,.03) inset;transition:.16s ease}
+    button:hover{background:linear-gradient(180deg,#574b40,#453b32);transform:none}
+    button{user-select:none;-webkit-user-select:none;-webkit-user-drag:none;touch-action:manipulation}
+    button:active{transform:none}
+    button.primary{background:linear-gradient(180deg,#d0a16f,#a97648);color:#241a12;border-color:#d5ad82;font-weight:800}
+    button.primary:hover{background:linear-gradient(180deg,#d9ad7e,#b88455)}
+    button.ghost{background:transparent;box-shadow:none}
+    button.danger{border-color:#9d6257;color:#f0b0a2;background:#47312d}
+    button.small{padding:4px 7px;border-radius:9px;font-size:12px}
+    button:disabled{opacity:.38;cursor:not-allowed;transform:none}
+    input,select,textarea{border:1px solid var(--line);border-radius:10px;padding:6px 9px;background:var(--field);color:var(--text);width:100%;outline:none;min-height:34px}
+    input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(196,151,103,.16)}
+    input[readonly]{background:#3a322b;color:#c9bba9}
+    textarea{min-height:62px;resize:vertical;line-height:1.45}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:650}
+    .app{display:flex;min-height:100vh}
+    .sidebar{width:238px;background:rgba(47,39,32,.94);border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh;overflow:auto;backdrop-filter:blur(8px)}
+    .brand{font-size:20px;font-weight:900;letter-spacing:.5px;margin:6px 6px 20px;color:#fff2e0}
+    .brand small{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:5px}
+    .nav button{width:100%;text-align:left;margin:5px 0;border:1px solid transparent;border-radius:14px;padding:12px 13px;background:transparent;box-shadow:none;color:#ddcfbd}
+    .nav button.active{background:linear-gradient(180deg,#c49767,#8b613f);color:#211813;border-color:#ddb789;font-weight:900}
+    .main{flex:1;min-width:0}
+    .topbar{height:68px;background:rgba(52,44,37,.9);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:5;backdrop-filter:blur(10px)}
+    .topbar h1{font-size:21px;margin:0;color:#fff0df}
+    .rolebar{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px}
+    .rolebar select{width:125px;padding:7px 9px}
+    .content{padding:24px;max-width:1680px;margin:0 auto}
+    .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+    .toolbar-left,.toolbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .toolbar input,.toolbar select{width:180px}
+    .card{background:linear-gradient(180deg,rgba(58,49,41,.98),rgba(47,40,34,.98));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:18px}
+    .card.plain{box-shadow:var(--shadow)}
+    .card-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+    .card-title h2,.card-title h3{margin:0;font-size:18px;color:#fff0df}
+
+    .version-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(216,170,117,.42);background:rgba(73,55,38,.72);color:#ffd49b;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800;white-space:nowrap}
+    .worker-item-matrix{min-width:920px}
+    .worker-item-matrix th:first-child,.worker-item-matrix td:first-child{position:sticky;left:0;background:#3b3028;z-index:1}
+    .worker-item-matrix .worker-meta{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
+    .matrix-cell{display:flex;flex-direction:column;gap:3px;align-items:flex-start;min-width:92px;line-height:1.35}
+    .matrix-cell .mini{font-size:12px;color:#efd1aa}
+    .matrix-cell .amount{font-weight:900;color:#ffd49b}
+    .matrix-item-price{display:block;margin-top:3px;color:#ffd49b;font-weight:900;font-size:12px}
+    .export-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .export-filter select,.export-filter input{width:132px}
+    .export-filter .range-field{display:inline-flex;gap:6px;align-items:center}
+    .subtle{color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+    .grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid.six{grid-template-columns:repeat(6,minmax(0,1fr))}
+    .stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+    .stat{background:linear-gradient(180deg,#41362d,#332b24);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+    .stat .num{font-size:26px;font-weight:900;margin-top:6px;color:#f2c58e}
+    .stat .label{font-size:13px;color:var(--muted)}
+    table{width:100%;border-collapse:separate;border-spacing:0;background:#342c25;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+    th,td{border-bottom:1px solid var(--line);padding:11px 10px;vertical-align:top;text-align:left;font-size:14px}
+    th{background:#40362d;font-weight:800;color:#ead9c5}
+    tr:nth-child(even) td{background:rgba(255,255,255,.018)}
+    tr:last-child td{border-bottom:0}
+    td.nowrap,th.nowrap{white-space:nowrap}
+    .actions{display:flex;gap:6px;flex-wrap:wrap;user-select:none}
+    .pill{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-size:12px;color:#eadbca;background:#443a31;margin:2px 4px 2px 0}
+    .pill.ok{border-color:#87a979;color:var(--ok);background:#31402f}
+    .pill.warn{border-color:#b38e4e;color:var(--warn);background:#4a3c25}
+    .special-bed-section{border-color:#9c744e;background:linear-gradient(180deg,rgba(74,58,43,.55),rgba(60,48,38,.45))}
+    .payment-target-card{border:1px solid rgba(196,151,103,.45);background:rgba(196,151,103,.08);border-radius:14px;padding:10px}
+    .pill.bad{border-color:#a96155;color:var(--danger);background:#4a302b}
+    .empty{padding:36px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px;background:rgba(52,44,37,.75)}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(26,21,18,.72);z-index:20;display:flex;align-items:flex-start;justify-content:center;padding:28px 18px;overflow:auto;backdrop-filter:blur(5px)}
+    .modal{background:#332b24;border-radius:18px;border:1px solid var(--line);box-shadow:0 24px 70px rgba(20,14,10,.58);width:min(1320px,100%);overflow:hidden}
+    .modal.small{width:min(720px,100%)}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);background:#3b322a}
+    .modal-head h2{margin:0;font-size:18px;color:#fff0df}
+    .modal-body{padding:14px;max-height:80vh;overflow:auto}
+    .modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:10px 16px;border-top:1px solid var(--line);background:#302821}
+    .item-table input{padding:4px 5px;border-radius:8px;min-width:48px;min-height:28px}
+    .item-table td,.item-table th{font-size:12px;padding:5px 4px;line-height:1.25}
+    .right{text-align:right}
+    .center{text-align:center}
+    .muted{color:var(--muted)}
+    .hidden{display:none!important}
+    .line-preview{white-space:pre-wrap;background:#2f2822;border:1px solid var(--line);border-radius:14px;padding:14px;line-height:1.75;color:#f4eadc}
+    .section-title{font-size:15px;font-weight:900;margin:18px 0 9px;padding-top:11px;border-top:1px solid var(--line);color:#f1c48f}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;border:1px solid var(--line);border-radius:6px;padding:1px 5px;background:#433931;color:#f0dfcc}
+    .toast{position:fixed;right:18px;bottom:18px;background:#7d573a;color:#fff3e3;padding:11px 14px;border-radius:12px;box-shadow:var(--shadow);z-index:40;opacity:0;transform:translateY(8px);transition:.2s}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .mini-note{font-size:12px;color:var(--muted);line-height:1.55}
+    .form-section{background:rgba(255,255,255,.026);border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:10px}
+    .form-section h3{margin:0 0 8px;font-size:15px;color:#f0c28b;display:flex;align-items:center;gap:7px}
+    .form-section h3::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block}
+    .record-card{background:linear-gradient(180deg,#3b322a,#312a23);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:16px;box-shadow:var(--shadow)}
+    .record-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}
+    .record-title{font-size:17px;font-weight:900;color:#fff0df}
+    .record-total{font-size:20px;font-weight:900;color:#f1c48f;text-align:right;white-space:nowrap}
+    .record-meta{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;margin-bottom:13px}
+    .meta-box{background:#40362e;border:1px solid var(--line);border-radius:12px;padding:9px 10px;min-height:58px}
+    .meta-box span{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}
+    .meta-box b{font-size:14px;color:#f5eadc}
+    .detail-pill{display:inline-flex;border:1px solid var(--line);background:#42382f;border-radius:999px;padding:3px 8px;font-size:12px;margin:2px;color:#e9d7c3}
+    .scroll-x{overflow:auto;overscroll-behavior:contain}
+
+    .checkline{display:flex;align-items:center;gap:8px;background:#42382f;border:1px solid var(--line);border-radius:10px;padding:6px 9px;min-height:34px;margin-bottom:0}
+    .checkline.order-type-toggle{min-height:34px;padding:6px 9px}
+    .checkline input{width:auto;margin:0;accent-color:#c49767}
+    .checkline strong{color:#fff0df;font-size:13px}
+
+    .stock-toggle-field .order-type-toggle{height:34px;width:100%;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:6px 9px;margin:0;box-shadow:none}
+    .stock-toggle-field .order-type-toggle strong{font-weight:700;color:var(--text);font-size:13px}
+    .stock-toggle-field .order-type-toggle:hover{border-color:var(--accent)}
+    .employer-field{grid-column:span 2;background:rgba(196,151,103,.09);border:1px solid rgba(196,151,103,.38);border-radius:13px;padding:8px}
+    .employer-field label{color:#f0c28b;font-size:13px;font-weight:900}
+    .employer-field input{font-weight:800;border-color:rgba(196,151,103,.72);background:#514436}
+    .summary-chip.stock{border-color:#8fac7c;color:#cce3bd;background:#33442f}
+    .summary-chip.add-stock{border-color:#d0a16f;color:#f1d6ad;background:#4a3b26}
+    .form-row-wide{grid-column:1/-1}
+    .delivery-long{min-width:260px;white-space:normal;line-height:1.5}
+    .record-table td{vertical-align:middle}
+    .compact-items{max-width:none;white-space:normal;overflow:visible;text-overflow:clip;display:block;line-height:1.55}
+    .kind-badge{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:12px;background:#4a3c25;color:#f0d5ac;margin-top:3px}
+    .order-row-summary{line-height:1.65;color:#d8c7b3;white-space:nowrap}
+    .accounting-detail-table{min-width:1320px}
+    .accounting-detail-table td{vertical-align:middle}
+    .summary-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;background:#42382f;color:#eadbca;font-size:12px;padding:3px 8px;margin:2px 3px 2px 0;white-space:nowrap}
+    .summary-chip.warn{background:#4a3c25;color:#e2bd72;border-color:#b38e4e}
+    .summary-chip.bad{background:#4a302b;color:#d98a78;border-color:#a96155}
+    .summary-chip.ok{background:#31402f;color:#a8c69f;border-color:#87a979}
+
+    .account-batch{padding:0;overflow:hidden}
+    .account-batch summary{list-style:none;cursor:pointer;padding:14px 16px;border-bottom:1px solid var(--line)}
+    .account-batch summary::-webkit-details-marker{display:none}
+    .account-batch[open] summary{background:rgba(255,255,255,.025)}
+    .account-batch .batch-body{padding:0 14px 14px}
+    .batch-toggle{font-size:12px;color:var(--muted);margin-top:4px}
+    .toiletry-list{font-size:12px;line-height:1.45;margin-top:4px;color:inherit}
+
+    .worker-card{border:1px solid var(--line);background:rgba(255,255,255,.025);border-radius:14px;padding:10px;margin-top:10px}
+    .worker-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+    .worker-card-head h4{margin:0;color:#ffd49b;font-size:14px;letter-spacing:.03em}
+    .worker-card .item-table input{min-width:68px}
+    .worker-card .item-table .line-note{min-width:140px}
+    .batch-hero{display:inline-flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;background:linear-gradient(180deg,#6b4a2f,#4b3526);border:1px solid #b98655;color:#ffe3bd;font-weight:900;font-size:20px;box-shadow:0 12px 24px rgba(0,0,0,.22);margin-top:8px}
+    .batch-hero span{font-size:13px;color:#f0d0a8;font-weight:700}
+    .record-worker-section{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+    .record-worker-section h4{margin:0 0 8px;color:#ffd49b}
+    @media(max-width:1200px){.record-meta{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+    button.return-btn{border-color:#d58f49;color:#ffd4a3;background:linear-gradient(180deg,#6a4428,#4b3325);font-weight:800}
+    button.return-btn:hover{background:linear-gradient(180deg,#7b5030,#5a3a29)}
+    button.link-btn{border:0;background:transparent;box-shadow:none;color:#f2c58e;padding:0;text-decoration:underline;text-underline-offset:3px;font-weight:900}
+    button.link-btn:hover{background:transparent;transform:none;color:#ffdfb5}
+    .accounting-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px;max-width:760px}
+    .accounting-overview .big-stat{border:1px solid #8a6848;background:linear-gradient(180deg,#513d2e,#392d25);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow)}
+    .accounting-overview .big-stat span{display:block;color:#d8c7b4;font-size:13px;margin-bottom:4px}
+    .accounting-overview .big-stat b{font-size:28px;line-height:1.1;color:#ffd49b}
+
+    .order-no-ribbon{display:inline-flex;align-items:center;gap:10px;border:1px solid #b98655;background:linear-gradient(180deg,#60442e,#453225);border-radius:14px;padding:9px 12px;margin-bottom:10px;box-shadow:0 8px 18px rgba(0,0,0,.18)}
+    .order-no-ribbon span{font-size:12px;color:#e3c6a4;font-weight:700}
+    .order-no-ribbon b{font-size:18px;color:#ffd49b;letter-spacing:.03em}
+    .stats-filter-bar{display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
+    .stats-filter-bar>div{min-width:150px}
+    .stats-filter-bar .range-fields{display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap}
+    .worker-textarea{min-height:58px;resize:vertical}
+    @media(max-width:1100px){.grid,.grid.six{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}.sidebar{width:210px}}
+    @media(max-width:760px){.app{display:block}.sidebar{position:relative;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}.topbar{position:relative;top:auto}.content{padding:14px}.grid,.grid.two,.grid.three,.grid.six{grid-template-columns:1fr}.stat-grid{grid-template-columns:1fr}.record-head{display:block}.record-total{text-align:left;margin-top:10px}.record-meta{grid-template-columns:1fr}.table-wrap{overflow:auto;overscroll-behavior:contain}.toolbar input,.toolbar select{width:100%}.toolbar-left,.toolbar-right{width:100%}.toolbar-left>*{flex:1 1 180px}}
+    .auth-shell{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 20% 0%,#3b3027 0,#241f1a 42%,#201c18 100%)}
+    .auth-card{width:min(440px,100%);background:linear-gradient(180deg,rgba(58,49,41,.99),rgba(47,40,34,.99));border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:28px}
+    .auth-card h1{margin:0 0 7px;color:#fff0df;font-size:26px}.auth-card .auth-subtitle{color:var(--muted);line-height:1.6;margin-bottom:22px}
+    .auth-card .auth-field{margin-bottom:13px}.auth-card .auth-actions{display:flex;gap:8px;align-items:center;margin-top:18px}.auth-card .auth-actions button{flex:1}
+    .auth-error{border:1px solid #a96155;background:#4a302b;color:#f2b5a8;border-radius:10px;padding:9px 11px;margin-bottom:13px;font-size:13px;line-height:1.5}
+    .user-chip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#42382f;border-radius:999px;padding:6px 9px 6px 11px;color:#eadbca}
+    .user-chip b{color:#fff0df}.user-chip button{padding:4px 8px;font-size:12px}
+    .sync-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#a8c69f;box-shadow:0 0 0 3px rgba(168,198,159,.12)}
+    .sync-dot.saving{background:#e2bd72;box-shadow:0 0 0 3px rgba(226,189,114,.12)}
+    .sync-dot.error{background:#d98a78;box-shadow:0 0 0 3px rgba(217,138,120,.12)}
+    .sync-label{color:var(--muted);font-size:12px;white-space:nowrap}
+    .system-message{padding:36px;text-align:center;color:var(--muted)}
+    @media print{.sidebar,.topbar,.toolbar,.no-print{display:none!important}.content{padding:0}.card{box-shadow:none;border:0;background:#fff;color:#111}}
+  
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="modalRoot"></div>
+  <div id="toast" class="toast"></div>
+<script type="module">
+import { createClient } from '@supabase/supabase-js';
+
+(function(){
+'use strict';
+
+let buttonPointerGuard = null;
+document.addEventListener('pointerdown', e=>{
+  const btn = e.target && e.target.closest ? e.target.closest('button') : null;
+  buttonPointerGuard = btn ? {btn, x:e.clientX, y:e.clientY, moved:false} : null;
+}, true);
+document.addEventListener('pointermove', e=>{
+  if(!buttonPointerGuard) return;
+  if(Math.abs(e.clientX - buttonPointerGuard.x) > 7 || Math.abs(e.clientY - buttonPointerGuard.y) > 7){
+    buttonPointerGuard.moved = true;
+  }
+}, true);
+document.addEventListener('click', e=>{
+  const btn = e.target && e.target.closest ? e.target.closest('button') : null;
+  if(buttonPointerGuard && buttonPointerGuard.moved && btn === buttonPointerGuard.btn){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+  buttonPointerGuard = null;
+}, true);
+
+const STORAGE_KEY = 'for_e_bedding_order_system_v3_1_20260711';
+const pages = [
+  {id:'orders', label:'寢具訂購'},
+  {id:'records', label:'訂購紀錄'},
+  {id:'accounting', label:'會計對帳'},
+  {id:'inventory', label:'庫存管理'},
+  {id:'stats', label:'統計報表'},
+  {id:'control', label:'控管資訊'},
+  {id:'settings', label:'資料設定'}
+];
+const countryOptions = ['印尼','泰國','菲律賓','越南','其他'];
+const paymentTargets = ['工人','雇主','仲介'];
+const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
+const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
+const versionNotes = [
+  {version:'V4.5', date:'2026/07/12', title:'Supabase 公開共用免登入版', items:['移除登入畫面、帳號及角色權限','開啟正式網址即可直接使用全部功能','Supabase 保留共用資料、Realtime 同步與版本衝突保護']},
+  {version:'V4.4', date:'2026/07/12', title:'Supabase 帳號登入版（已由 V4.5 取代）', items:['曾使用 Supabase Auth 登入與 profiles 角色權限','共用資料儲存於 Supabase，支援跨電腦與多人使用','GitHub 版本控管並由 Vercel 自動部署']},
+  {version:'V4.3', date:'2026/07/12', title:'工人×品項矩陣與 CSV 匯出篩選', items:['工人 × 訂購項目明細改為品項下方顯示金額','品項列不再顯示規格，畫面更精簡','訂購紀錄與會計對帳 CSV 匯出可選區間、年、月、日']},
+  {version:'V4.2', date:'2026/07/12', title:'會計對帳點單號查看與工人×品項明細', items:['版本資訊改到寢具訂購頁面右上角顯示','會計對帳可點訂單編號查看訂購明細','多名工人訂單明細改為工人 × 訂購項目橫向矩陣']},
+  {version:'V4.1', date:'2026/07/12', title:'訂購單規格完整顯示、控管資訊與刪除救回', items:['訂購單客戶名稱與工人姓名文字再縮小一階','訂購單下載的品項規格完整換行顯示，不再截斷','新增控管資訊頁：異動紀錄、刪除訂單救回','新增版本更新資訊頁，方便追蹤每次調整內容']},
+  {version:'V4.0', date:'2026/07/12', title:'訂購單版面與訂購金額修正', items:['訂購單上方欄位排序調整','寢具訂購清單訂購金額改以工人訂購價顯示']},
+  {version:'V3.9', date:'2026/07/12', title:'訂購單送達時間與 LINE 按鈕位置', items:['送達時間改為請於日期時間前送達','LINE 按鈕放到訂購單下載後面']},
+  {version:'V3.8', date:'2026/07/12', title:'送達日期時間與訂購單檔名', items:['新增送達日期與小時','訂購單下載檔名依訂購日期、雇主、工人或人數命名']},
+  {version:'V3.7', date:'2026/07/11', title:'廠商訂購價 / 工人訂購價', items:['品項價格拆分為廠商訂購價與工人訂購價']}
+];
+const KANG_PLACE = '灃康人力';
+const KANG_ADDRESS = '桃園市桃園區經國一路65號2樓';
+const STAFF_CONTACTS = { '貝貝':'貝貝#369', '阿金':'阿金#186', '明明':'明明#186' };
+const INVENTORY_HIDE_CODES = new Set(['SINGLE_BED','ROUND_BUNK','ANGLE_BUNK','WOOD_BED']);
+const BED_ITEM_CODES = new Set(['SINGLE_BED','ROUND_BUNK','ANGLE_BUNK','WOOD_BED']);
+function isBedItem(code){ return BED_ITEM_CODES.has(code); }
+function staffContact(staff){ return STAFF_CONTACTS[staff] || staff || ''; }
+
+const defaultItems = [
+  {code:'MATTRESS', name:'塑膠床墊', spec:'3 x 6 尺', unit:'床', price:400, vendorPrice:400, openingStock:0, active:true},
+  {code:'QUILT', name:'棉被含被套', spec:'4.5 x 6.5 尺', unit:'件', price:600, vendorPrice:600, openingStock:0, active:true},
+  {code:'PILLOW', name:'枕頭', spec:'1.2 x 2.2 尺', unit:'個', price:90, vendorPrice:90, openingStock:0, active:true},
+  {code:'CLOSET', name:'T 型衣櫥', spec:'高160 寬75 深50', unit:'組', price:720, vendorPrice:720, openingStock:0, active:true},
+  {code:'TOILETRIES', name:'盥洗用具', spec:'口杯/牙刷/牙膏/毛巾/香皂/衣架/臉盆/洗衣粉/衛生紙', unit:'組', price:400, vendorPrice:400, openingStock:0, active:true},
+  {code:'SINGLE_BED', name:'單人床', spec:'單人床', unit:'張', price:1785, vendorPrice:1785, openingStock:0, active:true},
+  {code:'ROUND_BUNK', name:'圓管架雙層床', spec:'圓管架雙層床', unit:'組', price:3570, vendorPrice:3570, openingStock:0, active:true},
+  {code:'ANGLE_BUNK', name:'角鋼架雙層床', spec:'角鋼架雙層床', unit:'組', price:3570, vendorPrice:3570, openingStock:0, active:true},
+  {code:'WOOD_BED', name:'木頭床', spec:'木頭床', unit:'張', price:1785, vendorPrice:1785, openingStock:0, active:true},
+  {code:'FAN', name:'電風扇', spec:'依實際需求', unit:'台', price:0, vendorPrice:0, openingStock:0, active:true},
+  {code:'BIKE', name:'腳踏車', spec:'依實際需求', unit:'台', price:3200, vendorPrice:3200, openingStock:0, active:true}
+];
+
+const itemTranslations = {
+  '印尼': {
+    title:'Formulir pemesanan perlengkapan tidur kedatangan', employer:'majikan', worker:'tki', entry:'tgl', item:'Item', product:'Produk', price:'harga', qty:'Jumlah', note:'Catatan', total:'jumlah bulat', translator:'penterjemah', signature:'Tanggal Tanda Tangan Pengorder',
+    names:{MATTRESS:'Alas kasur plastik', QUILT:'Selimut dan sarungnya', PILLOW:'Bantal', CLOSET:'Lemari baju model T', TOILETRIES:'Perlengkapan mandi', SINGLE_BED:'Tempat tidur tunggal', ROUND_BUNK:'Ranjang susun rangka pipa bulat', ANGLE_BUNK:'Ranjang susun rangka besi siku', WOOD_BED:'Tempat tidur kayu', FAN:'Kipas angin', BIKE:'Bersepeda'}
+  },
+  '泰國': {
+    title:'แบบฟอร์มสั่งซื้อเครื่องนอนสำหรับแรงงานเข้าใหม่', employer:'ชื่อนายจ้าง', worker:'ชื่อพนักงาน', entry:'วันที่', item:'รายการ', product:'ชื่อสินค้า', price:'ราคา', qty:'จำนวน', note:'หมายเหตุ', total:'รวมเงินทั้งหมด', translator:'ลงชื่อล่าม', signature:'ลายเซ็นผู้สั่งซื้อ วันที่',
+    names:{MATTRESS:'ที่นอนพลาสติก', QUILT:'ผ้าห่มพร้อมปลอกผ้าห่ม', PILLOW:'หมอน', CLOSET:'ตู้เสื้อผ้ารูปตัวT', TOILETRIES:'อุปกรณ์อาบน้ำ', SINGLE_BED:'เตียงเดี่ยว', ROUND_BUNK:'เตียงสองชั้นโครงท่อกลม', ANGLE_BUNK:'เตียงสองชั้นโครงเหล็กฉาก', WOOD_BED:'เตียงไม้', FAN:'พัดลม', BIKE:'จักรยาน'}
+  },
+  '菲律賓': {
+    title:'Arrival bedding order form', employer:'Employer', worker:'Worker Name', entry:'Date', item:'Item', product:'Product', price:'Price', qty:'Qty.', note:'Remarks', total:'Total', translator:'Translator', signature:'Signature and date of order',
+    names:{MATTRESS:'Plastic mattress', QUILT:'Quilt with cover', PILLOW:'Pillow', CLOSET:'T type closet', TOILETRIES:'Toiletries', SINGLE_BED:'Single bed', ROUND_BUNK:'Round-tube bunk bed', ANGLE_BUNK:'Angle-steel bunk bed', WOOD_BED:'Wooden bed', FAN:'Electric fan', BIKE:'Bicycle'}
+  },
+  '越南': {
+    title:'Phiếu đặt đồ dùng chăn ga gối đệm khi nhập cảnh', employer:'Tên chủ sử dụng', worker:'Họ tên lao động', entry:'Thời gian', item:'Hạng mục', product:'Tên sản phẩm', price:'Số tiền', qty:'Số lượng', note:'Ghi chú', total:'Tổng số tiền', translator:'Phiên dịch viên', signature:'Ký tên và ghi ngày tháng',
+    names:{MATTRESS:'Đệm', QUILT:'Chăn', PILLOW:'Gối', CLOSET:'Tủ vải đựng quần áo', TOILETRIES:'Đồ dùng vệ sinh cá nhân', SINGLE_BED:'Giường đơn', ROUND_BUNK:'Giường tầng khung ống tròn', ANGLE_BUNK:'Giường tầng khung sắt V', WOOD_BED:'Giường gỗ', FAN:'Quạt điện', BIKE:'Xe đạp'}
+  },
+  '其他': {
+    title:'Arrival bedding order form', employer:'Employer', worker:'Worker Name', entry:'Date', item:'Item', product:'Product', price:'Price', qty:'Qty.', note:'Remarks', total:'Total', translator:'Translator', signature:'Signature and date', names:{SINGLE_BED:'Single bed', ROUND_BUNK:'Round-tube bunk bed', ANGLE_BUNK:'Angle-steel bunk bed', WOOD_BED:'Wooden bed', FAN:'Electric fan'}
+  }
+};
+
+const defaultState = () => ({
+  currentPage:'orders',
+  filters:{orders:'', records:'', accounting:'', status:'全部', statsMode:'month', statsYear:String(new Date().getFullYear()), statsMonth:todayInput().slice(0,7), statsStart:'', statsEnd:'', exportMode:'month', exportYear:String(new Date().getFullYear()), exportMonth:todayInput().slice(0,7), exportDay:todayInput(), exportStart:'', exportEnd:''},
+  settings:{
+    departments:['一部','二部'],
+    staff:['貝貝','阿金','明明'],
+    companyTitles:['灃康人力','灃禾管顧','乾坤國際'],
+    deliveryPlaces:['灃康人力','工廠','宿舍'],
+    employers:['測試雇主股份有限公司'],
+    contacts:[],
+    vendors:[],
+    items: defaultItems,
+    orderSerial:1,
+    accountingSerial:1
+  },
+  orders:[],
+  stockAdjustments:[],
+  deletedOrders:[],
+  auditLogs:[]
+});
+function mergeDefaultItems(items){
+  const map = new Map((items||[]).map(i=>[i.code,i]));
+  ['BED_SINGLE','BED_DOUBLE'].forEach(code=>{ if(map.has(code)) map.get(code).active = false; });
+  defaultItems.forEach(def=>{
+    if(map.has(def.code)) map.set(def.code, Object.assign({}, def, map.get(def.code), {active: map.get(def.code).active!==false}));
+    else map.set(def.code, Object.assign({}, def));
+  });
+  return Array.from(map.values()).filter(i=>!['BED_SINGLE','BED_DOUBLE'].includes(i.code)).map(i=>Object.assign({}, i, {vendorPrice: num(i.vendorPrice ?? i.price), price: num(i.price)}));
+}
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const APP_STATE_ID = 'main';
+const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth:{persistSession:false, autoRefreshToken:false, detectSessionInUrl:false}})
+  : null;
+const CLIENT_ID_KEY = 'for_e_bedding_client_id';
+const CLIENT_ID = sessionStorage.getItem(CLIENT_ID_KEY) || (globalThis.crypto?.randomUUID?.() || ('client-' + Date.now() + '-' + Math.random().toString(36).slice(2)));
+sessionStorage.setItem(CLIENT_ID_KEY, CLIENT_ID);
+
+let state = loadState();
+let remoteRevision = 0;
+let lastSharedJSON = '';
+let remoteSaveTimer = null;
+let remoteSaving = false;
+let remoteSaveQueued = false;
+let remoteConflict = false;
+let stateChannel = null;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    return normalizeState(JSON.parse(raw));
+  }catch(err){
+    console.warn(err);
+    return defaultState();
+  }
+}
+function sharedStatePayload(){
+  return {
+    settings: state.settings,
+    orders: state.orders,
+    stockAdjustments: state.stockAdjustments,
+    deletedOrders: state.deletedOrders,
+    auditLogs: state.auditLogs
+  };
+}
+function sharedJSON(){ return JSON.stringify(sharedStatePayload()); }
+function setSyncStatus(status, label){
+  const dot = document.querySelector('#syncDot');
+  const text = document.querySelector('#syncLabel');
+  if(dot){ dot.className = 'sync-dot' + (status==='saving'?' saving':status==='error'?' error':''); }
+  if(text) text.textContent = label || (status==='saving'?'同步中':'已同步');
+}
+function applyRemoteState(data, revision){
+  const localUI = {currentPage:state.currentPage, filters:state.filters};
+  state = normalizeState(Object.assign(defaultState(), data || {}, localUI));
+  remoteRevision = Number(revision || 0);
+  lastSharedJSON = sharedJSON();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  remoteConflict = false;
+}
+async function loadRemoteState(){
+  const {data, error} = await supabase.from('app_state').select('data, revision').eq('id', APP_STATE_ID).single();
+  if(error) throw error;
+  applyRemoteState(data?.data || {}, data?.revision || 0);
+}
+function scheduleRemoteSave(){
+  if(!supabase || remoteConflict) return;
+  const nextJSON = sharedJSON();
+  if(nextJSON === lastSharedJSON) return;
+  clearTimeout(remoteSaveTimer);
+  setSyncStatus('saving','等待同步');
+  remoteSaveTimer = setTimeout(persistRemoteState, 450);
+}
+async function persistRemoteState(){
+  if(remoteSaving){ remoteSaveQueued = true; return; }
+  const nextJSON = sharedJSON();
+  if(nextJSON === lastSharedJSON){ setSyncStatus('ok','已同步'); return; }
+  remoteSaving = true;
+  setSyncStatus('saving','同步中');
+  try{
+    const {data, error} = await supabase.rpc('save_bedding_state', {
+      p_data: JSON.parse(nextJSON),
+      p_expected_revision: remoteRevision,
+      p_client_id: CLIENT_ID
+    });
+    if(error) throw error;
+    if(!data?.success){
+      remoteConflict = true;
+      remoteRevision = Number(data?.revision || remoteRevision);
+      setSyncStatus('error','版本衝突，請重新整理');
+      alert('資料已被其他使用者更新。為避免覆蓋他人資料，這次變更尚未寫入 Supabase。請先下載備份 JSON，再重新整理後重做本次操作。');
+      return;
+    }
+    remoteRevision = Number(data.revision || remoteRevision + 1);
+    lastSharedJSON = nextJSON;
+    setSyncStatus('ok','已同步');
+  }catch(err){
+    console.error(err);
+    setSyncStatus('error','同步失敗');
+    toast('Supabase 同步失敗，資料暫存在此瀏覽器');
+  }finally{
+    remoteSaving = false;
+    if(remoteSaveQueued){ remoteSaveQueued = false; scheduleRemoteSave(); }
+  }
+}
+function subscribeRemoteState(){
+  if(stateChannel) supabase.removeChannel(stateChannel);
+  stateChannel = supabase.channel('bedding-app-state')
+    .on('postgres_changes', {event:'UPDATE', schema:'public', table:'app_state', filter:`id=eq.${APP_STATE_ID}`}, payload=>{
+      const row = payload.new || {};
+      if(row.updated_by === CLIENT_ID) return;
+      if(sharedJSON() !== lastSharedJSON || remoteSaving){
+        remoteConflict = true;
+        setSyncStatus('error','有其他人更新，請重新整理');
+        return;
+      }
+      applyRemoteState(row.data || {}, row.revision || remoteRevision);
+      render();
+      toast('已同步其他使用者的最新資料');
+    })
+    .subscribe();
+}
+function normalizeStatusValue(v){
+  if(['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'].includes(v)) return v;
+  if(['已建立','待確認','取消'].includes(v)) return '已下單';
+  if(['部分收貨'].includes(v)) return '已收貨';
+  if(['待會計對帳'].includes(v)) return '待對帳';
+  if(['已結案','已確認帳款'].includes(v)) return '對帳完成';
+  if(['帳務錯誤待處理','帳戶錯誤'].includes(v)) return '帳務錯誤';
+  return '已下單';
+}
+function normalizeAccountingStatusValue(v, hasBatch){
+  if(v==='已確認帳款') return '對帳完成';
+  if(v==='帳務錯誤') return '帳務錯誤';
+  if(v==='待對帳') return '待對帳';
+  return hasBatch ? '待對帳' : '未轉入';
+}
+function createEmptyItemLines(filterFn=null){
+  return state.settings.items.filter(i=>i.active!==false && (!filterFn || filterFn(i))).map(i=>({code:i.code, price:num(i.price), orderQty:0, addQty:0, returnQty:0, useStockQty:0, stockInQty:0, replenishQty:0, returnToStockQty:0, receivedQty:0, note:''}));
+}
+function normalizeItemLine(line){
+  const item=getItem(line?.code);
+  return {
+    code: line?.code || item.code,
+    price: num(line?.price ?? item.price),
+    orderQty: num(line?.orderQty),
+    addQty: num(line?.addQty),
+    returnQty: num(line?.returnQty),
+    useStockQty: num(line?.useStockQty),
+    stockInQty: num(line?.stockInQty),
+    replenishQty: num(line?.replenishQty),
+    returnToStockQty: num(line?.returnToStockQty),
+    receivedQty: num(line?.receivedQty),
+    note: line?.note || ''
+  };
+}
+function workerGroupBlank(){
+  return {id:uid('WG'), name:'', nationality:'越南', entryDate:'', items:createEmptyItemLines(i=>!isBedItem(i.code))};
+}
+function orderWorkerGroups(o){
+  if(!o || o.isStockOrder) return [];
+  if(Array.isArray(o.workerGroups) && o.workerGroups.length){
+    return o.workerGroups.map(g=>({
+      id:g.id || uid('WG'),
+      name:g.name || '',
+      nationality:g.nationality || o.nationality || '越南',
+      entryDate:g.entryDate || o.entryDate || '',
+      items: mergeGroupItems(g.items || [])
+    }));
+  }
+  const names = String(o.worker||'').split(/[\n、,，;；]+/).map(x=>x.trim()).filter(Boolean);
+  const baseItems = (o.items||[]).length ? mergeGroupItems(o.items) : createEmptyItemLines(i=>!isBedItem(i.code));
+  if(names.length){
+    return names.map((name,idx)=>({
+      id:uid('WG'), name,
+      nationality:o.nationality||'越南', entryDate:o.entryDate||'',
+      items: baseItems.map(l=>Object.assign({}, l, idx===0 ? {} : {returnQty:0, returnToStockQty:0}))
+    }));
+  }
+  return [{id:uid('WG'), name:o.worker||'', nationality:o.nationality||'越南', entryDate:o.entryDate||'', items:baseItems.filter(l=>!isBedItem(l.code))}];
+}
+function mergeGroupItems(items){
+  const old = new Map((items||[]).map(l=>[l.code,l]));
+  return state.settings.items.filter(i=>i.active!==false && !isBedItem(i.code)).map(i=>normalizeItemLine(old.get(i.code) || {code:i.code, price:i.price}));
+}
+function aggregateWorkerItems(groups, oldItems=[]){
+  const oldMap = new Map((oldItems||[]).map(l=>[l.code,l]));
+  const map = new Map(state.settings.items.filter(i=>i.active!==false).map(i=>[i.code, normalizeItemLine(oldMap.get(i.code) || {code:i.code, price:i.price})]));
+  map.forEach(l=>{ l.orderQty=0; l.addQty=0; l.useStockQty=0; l.stockInQty=0; l.replenishQty=0; l.receivedQty=0; l.note=''; });
+  (groups||[]).forEach(g=>{
+    (g.items||[]).forEach(raw=>{
+      const l=normalizeItemLine(raw); if(!map.has(l.code)) map.set(l.code, normalizeItemLine(l));
+      const target=map.get(l.code);
+      target.price = num(l.price || target.price);
+      target.orderQty += num(l.orderQty);
+      target.addQty += num(l.addQty);
+      target.useStockQty += num(l.useStockQty);
+      target.stockInQty += num(l.stockInQty);
+      target.replenishQty += num(l.replenishQty);
+      target.receivedQty += num(l.receivedQty);
+      target.returnQty += num(l.returnQty);
+      target.returnToStockQty += num(l.returnToStockQty);
+      if(l.note) target.note = [target.note, `${g.name||'工人'}：${l.note}`].filter(Boolean).join(' / ');
+    });
+  });
+  return Array.from(map.values());
+}
+function groupAmount(g){ return (g.items||[]).reduce((sum,l)=>sum+lineAmount(l),0); }
+function orderWorkers(o){ return orderWorkerGroups(o).map(g=>g.name).filter(Boolean); }
+function isSpecialOnlyOrder(o){ return !o.isStockOrder && !orderWorkers(o).length && (o.items||[]).some(l=>isBedItem(l.code) && positiveLineQty(l)); }
+function normalizeState(s){
+  const d = defaultState();
+  s = Object.assign(d, s || {});
+  s.settings = Object.assign(d.settings, s.settings || {});
+  s.settings.items = mergeDefaultItems(Array.isArray(s.settings.items) && s.settings.items.length ? s.settings.items : defaultItems);
+  if(!Array.isArray(s.settings.staff) || !s.settings.staff.length || s.settings.staff.includes('海外承辦')) s.settings.staff = ['貝貝','阿金','明明'];
+  ['灃康人力','灃禾管顧','乾坤國際'].forEach(x=>{ if(!s.settings.companyTitles.includes(x)) s.settings.companyTitles.push(x); });
+  s.settings.vendors = Array.isArray(s.settings.vendors) ? s.settings.vendors.map(v=>({
+    id: v.id || uid('V'),
+    companyName: v.companyName || v.name || '',
+    companyAddress: v.companyAddress || v.address || '',
+    contactPerson: v.contactPerson || v.contact || '',
+    phone: v.phone || '',
+    mobile: v.mobile || '',
+    fax: v.fax || '',
+    line: v.line || v.LINE || '',
+    email: v.email || v.eMAIL || v.mail || ''
+  })) : [];
+  s.orders = Array.isArray(s.orders) ? s.orders : [];
+  s.orders.forEach(o=>{
+    o.status = normalizeStatusValue(o.status);
+    o.accountingStatus = normalizeAccountingStatusValue(o.accountingStatus, !!o.accountingBatch);
+    if(!o.overseasStaff) o.overseasStaff = o.staff || '';
+    if(typeof o.deliveryDate === 'undefined') o.deliveryDate = '';
+    if(typeof o.deliveryHour === 'undefined') o.deliveryHour = '16';
+  });
+  s.stockAdjustments = Array.isArray(s.stockAdjustments) ? s.stockAdjustments : [];
+  s.deletedOrders = Array.isArray(s.deletedOrders) ? s.deletedOrders : [];
+  s.auditLogs = Array.isArray(s.auditLogs) ? s.auditLogs : [];
+  s.filters = Object.assign(d.filters, s.filters || {});
+  if(typeof s.filters.hideClosed === 'undefined') s.filters.hideClosed = false;
+  if(!s.filters.statsMode) s.filters.statsMode = 'month';
+  if(!s.filters.statsYear) s.filters.statsYear = String(new Date().getFullYear());
+  if(!s.filters.statsMonth) s.filters.statsMonth = todayInput().slice(0,7);
+  if(!s.filters.statsStart) s.filters.statsStart = '';
+  if(!s.filters.statsEnd) s.filters.statsEnd = '';
+  if(!s.filters.exportMode) s.filters.exportMode = 'month';
+  if(!s.filters.exportYear) s.filters.exportYear = String(new Date().getFullYear());
+  if(!s.filters.exportMonth) s.filters.exportMonth = todayInput().slice(0,7);
+  if(!s.filters.exportDay) s.filters.exportDay = todayInput();
+  if(!s.filters.exportStart) s.filters.exportStart = '';
+  if(!s.filters.exportEnd) s.filters.exportEnd = '';
+  delete s.role;
+  if(!pages.find(p=>p.id===s.currentPage)) s.currentPage = 'orders';
+  return s;
+}
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  scheduleRemoteSave();
+}
+function nowStamp(){
+  const d=new Date();
+  return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+function audit(action, targetType, targetId, targetName, detail='', snapshot=null){
+  state.auditLogs = Array.isArray(state.auditLogs) ? state.auditLogs : [];
+  state.auditLogs.unshift({id:uid('AUD'), time:nowStamp(), source:'共用網址', action, targetType, targetId:targetId||'', targetName:targetName||'', detail:detail||'', snapshot:snapshot||null});
+  if(state.auditLogs.length>500) state.auditLogs = state.auditLogs.slice(0,500);
+}
+function snapshotOrder(o){ return JSON.parse(JSON.stringify(o||{})); }
+function can(){ return true; }
+function $(sel, root=document){ return root.querySelector(sel); }
+function $all(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+function esc(v){ return String(v ?? '').replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
+function num(v){ const n = Number(v); return isFinite(n) ? n : 0; }
+function money(v){ return 'NT$' + Math.round(num(v)).toLocaleString('zh-TW'); }
+function today(){ const d=new Date(); return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0'); }
+function todayInput(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function dateSlash(v){ if(!v) return ''; return String(v).replaceAll('-','/'); }
+function uid(prefix='ID'){ return prefix + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,6).toUpperCase(); }
+function serial(prefix){
+  const ymd = todayInput().replaceAll('-','');
+  const n = state.settings.accountingSerial || 1;
+  state.settings.accountingSerial = n + 1;
+  return `AC${ymd}-${String(n).padStart(3,'0')}`;
+}
+function companyPrefix(title){
+  const t=String(title||'');
+  if(t.includes('灃康')) return 'FC';
+  if(t.includes('灃禾')) return 'FW';
+  if(t.includes('乾坤')) return 'WC';
+  return 'OT';
+}
+function deptDigit(dept){ return String(dept||'').includes('二') ? '2' : '1'; }
+function dateCode(v){ return String(v||todayInput()).replaceAll('-',''); }
+function makeOrderNo(companyTitle, dept, orderDate, excludeId=''){
+  const head = `${companyPrefix(companyTitle)}${deptDigit(dept)}${dateCode(orderDate)}-`;
+  let max=0;
+  state.orders.forEach(o=>{
+    if(excludeId && o.id===excludeId) return;
+    const no=String(o.orderNo||'');
+    if(no.startsWith(head)){
+      const n=Number(no.slice(head.length));
+      if(Number.isFinite(n)) max=Math.max(max,n);
+    }
+  });
+  return head + String(max+1).padStart(3,'0');
+}
+function orderNoMatches(o){
+  return String(o.orderNo||'').startsWith(`${companyPrefix(o.companyTitle)}${deptDigit(o.dept)}${dateCode(o.orderDate)}-`);
+}
+function makeAccountingBatchNo(order, billingDate){
+  const head = `AC-${companyPrefix(order?.companyTitle)}${deptDigit(order?.dept)}${dateCode(billingDate || order?.orderDate || todayInput())}-`;
+  let max=0;
+  state.orders.forEach(o=>{
+    const no=String(o.accountingBatch||'');
+    if(no.startsWith(head)){
+      const n=Number(no.slice(head.length));
+      if(Number.isFinite(n)) max=Math.max(max,n);
+    }
+  });
+  return head + String(max+1).padStart(3,'0');
+}
+
+function getItem(code){ return state.settings.items.find(i=>i.code===code) || {code,name:code,spec:'',unit:'',price:0,vendorPrice:0,openingStock:0,active:true}; }
+function itemVendorPrice(code){ const item=getItem(code); return num(item.vendorPrice ?? item.price); }
+function itemWorkerPrice(code){ const item=getItem(code); return num(item.price); }
+function itemLabel(code){ const item=getItem(code); return item.name || code; }
+function lineQty(line){ return Math.max(0, num(line.orderQty) + num(line.addQty) + num(line.useStockQty) - num(line.returnQty)); }
+function supplierQty(line){ return Math.max(0, num(line.orderQty) + num(line.addQty) + num(line.replenishQty) - num(line.returnQty)); }
+function lineAmount(line){ return lineQty(line) * num(line.price); }
+function orderAmount(order){ return (order.items||[]).reduce((sum,l)=>sum+lineAmount(l),0); }
+function orderSupplierAmount(order){ return (order.items||[]).reduce((sum,l)=>sum+supplierQty(l)*itemVendorPrice(l.code),0); }
+function hasReturn(order){ return (order.items||[]).some(l=>num(l.returnQty)>0); }
+function itemSummary(order){
+  const parts = (order.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || num(l.useStockQty)>0).map(l=>{
+    const item=getItem(l.code);
+    const tags=[];
+    if(num(l.orderQty)>0) tags.push(`訂${num(l.orderQty)}`);
+    if(num(l.useStockQty)>0) tags.push(`庫${num(l.useStockQty)}`);
+    if(num(l.returnQty)>0) tags.push(`退${num(l.returnQty)}`);
+    if(num(l.addQty)>0) tags.push(`加${num(l.addQty)}`);
+    return `${item.name} ${tags.join('/')}`;
+  });
+  return parts.length ? parts.join('、') : '尚未填品項';
+}
+
+function purchaseItemsHTML(order){
+  const isAddBuyOrder = String(order.note||'').includes('加買來源：');
+  const rows = [];
+  (order.items||[]).forEach(l=>{
+    if(num(l.orderQty)>0){
+      const label = isAddBuyOrder ? `加購 ${itemLabel(l.code)} ${num(l.orderQty)}` : `${itemLabel(l.code)} ${num(l.orderQty)}`;
+      rows.push(`<span class="summary-chip ${isAddBuyOrder?'warn':''}">${esc(label)}</span>`);
+    }
+    if(num(l.useStockQty)>0){
+      const label = isAddBuyOrder ? `加購拿庫存 ${itemLabel(l.code)} ${num(l.useStockQty)}` : `拿庫存 ${itemLabel(l.code)} ${num(l.useStockQty)}`;
+      rows.push(`<span class="summary-chip ${isAddBuyOrder?'add-stock':'stock'}">${esc(label)}</span>`);
+    }
+    if(num(l.addQty)>0){
+      rows.push(`<span class="summary-chip warn">${esc('加購 '+itemLabel(l.code)+' '+num(l.addQty))}</span>`);
+    }
+  });
+  return rows.length ? rows.join('') : '<span class="muted">-</span>';
+}
+function hasOrderLineForPrint(line){ return supplierQty(line)>0 || num(line.useStockQty)>0; }
+function hasReceiptLine(line){ return lineQty(line)>0; }
+function returnableQty(line){ return Math.max(0, num(line.orderQty) + num(line.addQty) + num(line.useStockQty) - num(line.returnQty)); }
+function hasReturnableItems(order){ return (order.items||[]).some(l=>returnableQty(l)>0); }
+function currentStock(code){
+  const item = getItem(code);
+  let stock = num(item.openingStock);
+  for(const order of state.orders){
+    for(const l of (order.items||[])){
+      if(l.code !== code) continue;
+      if(order.isStockOrder && order.receivedDate){
+        stock += Math.max(0, num(l.orderQty) + num(l.addQty) - num(l.returnQty));
+      }
+      stock += num(l.stockInQty || 0);
+      stock += num(l.replenishQty || 0);
+      stock += num(l.returnToStockQty || 0);
+      stock -= num(l.useStockQty);
+    }
+  }
+  for(const adj of state.stockAdjustments){
+    if(adj.code===code) stock += num(adj.qty);
+  }
+  return stock;
+}
+function toast(msg){
+  const t=$('#toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+function pageAllowed(){ return true; }
+function render(){
+  const visiblePages = pages;
+  if(!visiblePages.some(p=>p.id===state.currentPage)) state.currentPage=visiblePages[0]?.id || 'orders';
+  const page = visiblePages.find(p=>p.id===state.currentPage) || visiblePages[0];
+  $('#app').innerHTML = `
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">FOR-e寢具訂購<small>V4.5 Supabase 公開共用版</small></div>
+        <nav class="nav">
+          ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
+        </nav>
+      </aside>
+      <main class="main">
+        <div class="topbar">
+          <h1>${page.label}</h1>
+          <div class="rolebar">
+            <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
+            <span class="version-badge">免登入｜全部功能</span>
+          </div>
+        </div>
+        <section class="content" id="content"></section>
+      </main>
+    </div>`;
+  $all('[data-page]').forEach(btn=>btn.addEventListener('click',()=>{state.currentPage=btn.dataset.page;save();render();}));
+  renderPage();
+}
+function renderPage(){
+  const root = $('#content');
+  if(state.currentPage==='orders') return renderOrders(root);
+  if(state.currentPage==='records') return renderRecords(root);
+  if(state.currentPage==='inventory') return renderInventory(root);
+  if(state.currentPage==='accounting') return renderAccounting(root);
+  if(state.currentPage==='stats') return renderStats(root);
+  if(state.currentPage==='control') return renderControlInfo(root);
+  if(state.currentPage==='settings') return renderSettings(root);
+}
+
+function filteredOrders(){
+  const q = (state.filters.orders || '').trim().toLowerCase();
+  const status = state.filters.status || '全部';
+  return state.orders.filter(o=>{
+    if(o.accountingBatch) return false;
+    const hit = !q || [o.orderNo,o.employer,o.worker,o.nationality,o.dept,o.staff,o.companyTitle,o.deliveryPlace,itemSummary(o),o.isStockOrder?'訂庫存':'工人訂購'].some(v=>String(v||'').toLowerCase().includes(q));
+    const st = status==='全部' || o.status===status || o.accountingStatus===status;
+    return hit && st;
+  }).sort((a,b)=>String(b.orderDate||'').localeCompare(String(a.orderDate||'')) || String(b.orderNo||'').localeCompare(String(a.orderNo||'')));
+}
+function renderOrders(root){
+  const orders = filteredOrders();
+  root.innerHTML = `
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button class="primary" id="newOrderBtn" ${can('orderWrite')?'':'disabled'}>＋新增訂購</button>
+        <input id="orderSearch" placeholder="搜尋訂購單 / 雇主 / 工人 / 品項" value="${esc(state.filters.orders||'')}">
+        <select id="statusFilter"><option>全部</option>${statusOptions.map(s=>`<option ${state.filters.status===s?'selected':''}>${s}</option>`).join('')}</select>
+      </div>
+      <div class="toolbar-right">
+        <input type="date" id="batchReceiveDate" value="${todayInput()}">
+        <button id="applyReceiveBtn" ${can('orderWrite')?'':'disabled'}>選取批次輸入收貨日</button>
+        <input type="date" id="batchBillingDate" value="${todayInput()}">
+        <button id="requestAccountingBtn" ${can('requestPayment')?'':'disabled'}>選取批次請款 / 轉會計對帳</button>
+      </div>
+    </div>
+    <div class="card plain">
+      <div class="card-title"><h2>訂購資料</h2><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end"><span class="subtle">已轉入會計對帳的資料會從此清單移除；完整狀態請點「查看」</span><span class="version-badge">更新日期 ${esc(versionNotes[0].date)}｜${esc(versionNotes[0].version)}</span></div></div>
+      ${orders.length ? `
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th class="nowrap center"><input type="checkbox" id="selectAllOrders"></th>
+          <th>訂購單</th><th>雇主 / 對象</th><th class="nowrap">訂購日</th><th>購買品項</th><th class="right nowrap">訂購金額</th><th class="nowrap">操作</th>
+        </tr></thead>
+        <tbody>
+          ${orders.map(o=>`
+            <tr>
+              <td class="center"><input type="checkbox" class="orderCheck" value="${esc(o.id)}"></td>
+              <td><b>${esc(o.orderNo)}</b></td>
+              <td><b>${esc(o.employer||'-')}</b><br>${o.isStockOrder?'<span class="muted">庫存訂購</span>':esc(orderWorkers(o).join('、')||'-')}</td>
+              <td>${orderRowDateSummary(o)}</td>
+              <td><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
+              <td class="right nowrap"><b>${money(orderAmount(o))}</b><br><span class="muted">工人訂購價</span></td>
+              <td class="nowrap"><div class="actions">
+                <button class="small" data-act="view" data-id="${esc(o.id)}">查看</button>
+                <button class="small" data-act="edit" data-id="${esc(o.id)}" ${can('orderWrite')?'':'disabled'}>修改</button>
+                <button class="small" data-act="image" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>訂購單下載</button>
+                <button class="small" data-act="line" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>LINE</button>
+                <button class="small" data-act="receipt" data-id="${esc(o.id)}" ${(can('orderPrint')&&!o.isStockOrder)?'':'disabled'}>列印寢具單</button>
+                <button class="small" data-act="requestAccounting" data-id="${esc(o.id)}" ${can('requestPayment')?'':'disabled'}>請款/轉對帳</button>
+              </div></td>
+            </tr>`).join('')}
+        </tbody>
+      </table></div>` : `<div class="empty">目前沒有訂購資料，請先新增第一筆。</div>`}
+    </div>`;
+  $('#newOrderBtn')?.addEventListener('click',()=>openOrderModal());
+  $('#orderSearch')?.addEventListener('input', e=>{state.filters.orders=e.target.value;save();renderOrders(root);});
+  $('#statusFilter')?.addEventListener('change', e=>{state.filters.status=e.target.value;save();renderOrders(root);});
+  $('#selectAllOrders')?.addEventListener('change', e=>$all('.orderCheck').forEach(c=>c.checked=e.target.checked));
+  $('#applyReceiveBtn')?.addEventListener('click', applyBatchReceiveDate);
+  $('#requestAccountingBtn')?.addEventListener('click', requestSelectedAccounting);
+  $all('[data-act]').forEach(btn=>btn.addEventListener('click',()=>{
+    const id=btn.dataset.id;
+    if(btn.dataset.act==='view') openRecordDetailModal(id);
+    if(btn.dataset.act==='edit') openOrderModal(id);
+    if(btn.dataset.act==='image') downloadOrderImage(id);
+    if(btn.dataset.act==='receipt') printReceipt(id);
+    if(btn.dataset.act==='requestAccounting') requestSingleAccounting(id);
+    if(btn.dataset.act==='line') openLineModal(id);
+  }));
+}
+function orderRowDateSummary(o){
+  return `<span class="nowrap">${esc(dateSlash(o.orderDate)||'-')}</span>`;
+}
+function displayStatus(o){
+  if(o.accountingStatus==='對帳完成') return '對帳完成';
+  if(o.accountingStatus==='帳務錯誤' || o.status==='帳務錯誤') return '帳務錯誤';
+  if(o.accountingBatch) return o.accountingStatus || '待對帳';
+  return normalizeStatusValue(o.status || '已下單');
+}
+function statusPills(o){
+  const st = displayStatus(o);
+  const cls = st==='帳務錯誤' ? 'bad' : (st==='對帳完成' ? 'ok' : (st==='待請款' || st==='待對帳' ? 'warn' : ''));
+  return `<span class="pill ${cls}" title="訂購 ${esc(dateSlash(o.orderDate)||'-')}｜收貨 ${esc(dateSlash(o.receivedDate)||'-')}｜請款 ${esc(dateSlash(o.billingDate)||'-')}｜會計 ${esc(o.accountingStatus||'未轉入')}">${esc(st)}</span>`;
+}
+function getSelectedOrderIds(){ return $all('.orderCheck:checked').map(c=>c.value); }
+function applyBatchReceiveDate(){
+  const ids = getSelectedOrderIds();
+  const date = $('#batchReceiveDate')?.value || todayInput();
+  if(!ids.length) return toast('請先勾選要批次輸入收貨日的資料');
+  state.orders.forEach(o=>{ if(ids.includes(o.id)){ o.receivedDate=date; if(o.status!=='對帳完成') o.status='已收貨'; }});
+  save(); toast(`已更新 ${ids.length} 筆收貨日`); render();
+}
+function moveOrdersToAccounting(ids, date, batch, overseasStaff){
+  const selectedOrders = state.orders.filter(o=>ids.includes(o.id));
+  if(!selectedOrders.length) return;
+  const batchNo = batch || makeAccountingBatchNo(selectedOrders[0], date || todayInput());
+  let count = 0;
+  state.orders.forEach(o=>{
+    if(ids.includes(o.id)){
+      o.billingDate = date || todayInput();
+      o.accountingBatch = batchNo;
+      o.accountingStatus = '待對帳';
+      o.status = '待對帳';
+      o.overseasStaff = overseasStaff || o.overseasStaff || o.staff || '';
+      if(typeof o.accountingAdjust === 'undefined') o.accountingAdjust = 0;
+      if(typeof o.accountingNote === 'undefined') o.accountingNote = '';
+      count++;
+    }
+  });
+  if(count){ save(); toast(`已請款並轉入會計對帳批次：${batchNo}`); render(); }
+}
+function requestSelectedAccounting(){
+  const ids = getSelectedOrderIds();
+  const date = $('#batchBillingDate')?.value || todayInput();
+  if(!ids.length) return toast('請先勾選要請款 / 轉入會計對帳的資料');
+  const selectedOrders = state.orders.filter(o=>ids.includes(o.id));
+  const total = selectedOrders.reduce((s,o)=>s+accountingAmount(o),0);
+  const overseasStaff = prompt(`請輸入海外承辦：`, selectedOrders[0]?.overseasStaff || selectedOrders[0]?.staff || '');
+  if(overseasStaff===null) return;
+  if(!String(overseasStaff).trim()) return toast('請輸入海外承辦');
+  if(!confirm(`確定要將 ${selectedOrders.length} 筆轉入會計對帳？
+對帳總金額：${money(total)}
+海外承辦：${overseasStaff}`)) return;
+  moveOrdersToAccounting(ids, date, undefined, String(overseasStaff).trim());
+}
+function requestSingleAccounting(orderId){
+  if(!orderId) return;
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  const overseasStaff = prompt(`請輸入海外承辦：`, o.overseasStaff || o.staff || '');
+  if(overseasStaff===null) return;
+  if(!String(overseasStaff).trim()) return toast('請輸入海外承辦');
+  if(!confirm(`確定要將 1 筆轉入會計對帳？
+對帳金額：${money(accountingAmount(o))}
+海外承辦：${overseasStaff}`)) return;
+  moveOrdersToAccounting([orderId], todayInput(), undefined, String(overseasStaff).trim());
+}
+
+
+function createBlankOrder(){
+  const dept='一部';
+  const companyTitle=state.settings.companyTitles[0]||'灃康人力';
+  const orderDate=todayInput();
+  const staff=state.settings.staff[0]||'貝貝';
+  const workerGroups=[workerGroupBlank()];
+  return {
+    id:uid('ORD'), orderNo:makeOrderNo(companyTitle, dept, orderDate), batchNo:'', isStockOrder:false,
+    dept, employer:'', worker:'', workerEnglish:'', nationality:'越南', entryDate:'', workerGroups,
+    provideDate:orderDate, companyTitle, deliveryPlace:KANG_PLACE, deliveryAddress:KANG_ADDRESS, staff, contact:staffContact(staff),
+    deliveryDate:'', deliveryHour:'16',
+    orderDate, receivedDate:'', signDate:'', billingDate:'', accountingDate:'', accountingBatch:'', status:'已下單', accountingStatus:'未轉入', paymentTarget:'工人', note:'', errorNotice:null, overseasStaff:staff,
+    items:createEmptyItemLines()
+  };
+}
+function openOrderModal(orderId){
+  if(!can('orderWrite')) return toast('目前無法修改訂購資料');
+  const existing = orderId ? state.orders.find(o=>o.id===orderId) : null;
+  const order = existing ? JSON.parse(JSON.stringify(existing)) : createBlankOrder();
+  const title = existing ? `修改訂購｜${order.orderNo}` : '新增寢具訂購';
+  showModal(title, orderFormHTML(order), {
+    width:'1380px',
+    onOpen:(modal)=>{
+      updateDeliveryInputs(modal,false);
+      toggleStockOrderFields(modal);
+      updateOrderNoPreview(modal, !!existing, order.id);
+      modal.querySelector('#f_deliveryPlace')?.addEventListener('change',()=>updateDeliveryInputs(modal,true));
+      modal.querySelector('#f_staff')?.addEventListener('change',()=>updateDeliveryInputs(modal,false));
+      ['#f_isStockOrder','#f_companyTitle','#f_dept','#f_orderDate'].forEach(sel=>modal.querySelector(sel)?.addEventListener('change',()=>{toggleStockOrderFields(modal);updateOrderNoPreview(modal, !!existing, order.id);}));
+      $all('#applyBasicSet',modal).forEach(btn=>btn.addEventListener('click',()=>applyBasicSet(modal)));
+      modal.querySelector('#addWorkerGroupBtn')?.addEventListener('click',()=>{
+        $('.worker-empty-note',modal)?.remove();
+        $('#workerCards',modal).insertAdjacentHTML('beforeend', workerGroupFormHTML(workerGroupBlank(), Date.now()));
+      });
+      modal.addEventListener('click',e=>{
+        const btn=e.target.closest('.remove-worker-card');
+        if(!btn) return;
+        btn.closest('.worker-card')?.remove();
+        if(!$all('.worker-card',modal).length){
+          $('#workerCards',modal)?.insertAdjacentHTML('beforeend','<div class="empty worker-empty-note" style="padding:16px">目前沒有工人明細，可只填下方特殊訂購項目；也可按「＋新增工人」加入。</div>');
+        }
+      });
+      modal.querySelector('#saveOrderBtn')?.addEventListener('click',()=>saveOrderFromModal(order.id, !!existing, modal));
+      modal.querySelector('#deleteOrderBtn')?.addEventListener('click',()=>deleteOrder(order.id));
+      modal.querySelector('#cancelModalBtn')?.addEventListener('click',closeModal);
+    },
+    footer:`
+      ${existing?'<button class="danger" id="deleteOrderBtn">刪除</button>':''}
+      <button id="cancelModalBtn">取消</button>
+      <button class="primary" id="saveOrderBtn">儲存</button>`
+  });
+}
+function toggleStockOrderFields(modal){
+  const checked = $('#f_isStockOrder',modal)?.checked;
+  const workerSection=$('.worker-order-section',modal);
+  const stockSection=$('.stock-item-section',modal);
+  const specialBedSection=$('.special-bed-section',modal);
+  if(workerSection) workerSection.classList.toggle('hidden', !!checked);
+  if(stockSection) stockSection.classList.toggle('hidden', !checked);
+  if(specialBedSection) specialBedSection.classList.toggle('hidden', !!checked);
+  const employer = $('#f_employer', modal);
+  if(employer){
+    if(checked){ employer.value = KANG_PLACE; employer.readOnly = true; }
+    else { employer.readOnly = false; }
+  }
+}
+function updateOrderNoPreview(modal, isExisting, id){
+  const input=$('#f_orderNo',modal);
+  const badge=$('#orderNoPreview',modal);
+  if(!input && !badge) return;
+  if(isExisting && input && !String(input.value||'').startsWith('BO')){
+    if(badge) badge.textContent = input.value || '-';
+    return;
+  }
+  const company=$('#f_companyTitle',modal)?.value || '';
+  const dept=$('#f_dept',modal)?.value || '';
+  const date=$('#f_orderDate',modal)?.value || todayInput();
+  const next = makeOrderNo(company, dept, date, id);
+  if(input) input.value = next;
+  if(badge) badge.textContent = next;
+}
+function optionHTML(list, value){ return list.map(v=>`<option value="${esc(v)}" ${v===value?'selected':''}>${esc(v)}</option>`).join(''); }
+function deliveryContact(o){ return (o.deliveryPlace===KANG_PLACE) ? staffContact(o.staff) : (o.contact||''); }
+function deliveryAddress(o){ return (o.deliveryPlace===KANG_PLACE) ? KANG_ADDRESS : (o.deliveryAddress||''); }
+function deliveryPlaceLabel(o){ return (o.deliveryPlace===KANG_PLACE) ? '' : (o.deliveryPlace||''); }
+function deliveryDisplay(o){ return [deliveryPlaceLabel(o), deliveryAddress(o)].filter(Boolean).join('　'); }
+function deliveryHourLabel(hour){
+  const h = num(hour);
+  if(!h) return '';
+  const period = h < 12 ? '上午' : '下午';
+  const display = h === 12 ? 12 : (h > 12 ? h - 12 : h);
+  return `${period}${display}點`;
+}
+function formatDeliveryDeadline(o){
+  const d = o?.deliveryDate || '';
+  const h = deliveryHourLabel(o?.deliveryHour);
+  if(!d) return '';
+  return h ? `請於 ${d} ${h}前送達` : `請於 ${d}前送達`;
+}
+function hourOptionsHTML(value){
+  const opts=[];
+  for(let h=8; h<=20; h++){
+    const v=String(h);
+    opts.push(`<option value="${v}" ${String(value||'16')===v?'selected':''}>${deliveryHourLabel(h)}前</option>`);
+  }
+  return opts.join('');
+}
+function workerDisplay(o){
+  if(o?.isStockOrder) return '訂庫存';
+  const names = orderWorkers(o);
+  if(names.length > 2) return `${names.length}人`;
+  if(names.length) return names.join('、');
+  return o?.worker || 'FOR 雇主';
+}
+function entryDateDisplay(o){
+  if(o?.isStockOrder || isSpecialOnlyOrder(o)) return '不適用';
+  const dates = [...new Set(orderWorkerGroups(o).map(g=>dateSlash(g.entryDate)).filter(Boolean))];
+  if(dates.length > 2) return `${dates.length}個日期`;
+  return dates.join('、') || dateSlash(o?.entryDate) || '';
+}
+function safeFileName(text){
+  return String(text||'').replace(/[\\/:*?"<>|\r\n]+/g,'_').replace(/\s+/g,'').slice(0,120) || '寢具訂購單';
+}
+function orderDownloadFileName(o){
+  const date = o?.orderDate || todayInput();
+  const employer = o?.employer || '寢具';
+  let target = '';
+  const names = orderWorkers(o);
+  if(o?.isStockOrder) target = '訂庫存';
+  else if(names.length > 2) target = `${names.length}人`;
+  else if(names.length) target = names.join('、');
+  else target = 'FOR雇主';
+  return safeFileName(`${date}_${employer}_${target}`);
+}
+function updateDeliveryInputs(modal, fromPlaceChange){
+  const place = $('#f_deliveryPlace',modal)?.value || '';
+  const staff = $('#f_staff',modal)?.value || '';
+  const contact = $('#f_contact',modal);
+  const address = $('#f_deliveryAddress',modal);
+  if(!contact || !address) return;
+  if(place===KANG_PLACE){
+    contact.value = staffContact(staff);
+    contact.readOnly = true;
+    address.value = KANG_ADDRESS;
+    address.readOnly = true;
+  }else{
+    contact.readOnly = false;
+    address.readOnly = false;
+    if(fromPlaceChange){
+      if(contact.value===staff || contact.value===staffContact(staff)) contact.value='';
+      if(address.value===KANG_ADDRESS) address.value='';
+    }
+  }
+}
+function itemRowsHTML(items, filterFn=null){
+  const activeItems = state.settings.items.filter(i=>i.active!==false && (!filterFn || filterFn(i)));
+  const itemMap = new Map((items||[]).map(l=>[l.code,l]));
+  return activeItems.map(item=>{
+    const l = normalizeItemLine(itemMap.get(item.code) || {code:item.code,price:item.price});
+    return `<tr data-code="${esc(item.code)}">
+      <td><b>${esc(item.name)}</b><br><span class="muted">${esc(item.spec||'')}</span></td>
+      <td class="nowrap">${esc(item.unit||'')}</td>
+      <td><input type="number" step="1" class="line-price" value="${num(l.price)}"></td>
+      <td><input type="number" step="1" min="0" class="line-order" value="${num(l.orderQty)}"></td>
+      <td><input type="number" step="1" min="0" class="line-use-stock" value="${num(l.useStockQty)}"></td>
+      <td><input type="number" step="1" min="0" class="line-add" value="${num(l.addQty)}"></td>
+      <td><input class="line-note" value="${esc(l.note||'')}"></td>
+    </tr>`;
+  }).join('');
+}
+function workerGroupFormHTML(g, index){
+  const group = Object.assign(workerGroupBlank(), g||{});
+  return `<div class="worker-card" data-group-id="${esc(group.id||uid('WG'))}">
+    <div class="worker-card-head"><h4>工人訂購明細</h4><button type="button" class="small danger remove-worker-card">移除此工人</button></div>
+    <div class="grid three">
+      <div><label>工人姓名</label><input class="wg-name" value="${esc(group.name||'')}" placeholder="請輸入工人姓名"></div>
+      <div><label>國籍</label><select class="wg-nationality">${countryOptions.map(c=>`<option ${group.nationality===c?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div><label>入境日</label><input type="date" class="wg-entryDate" value="${esc(group.entryDate||'')}"></div>
+    </div>
+    <div class="table-wrap" style="margin-top:8px"><table class="item-table"><thead><tr><th>品項</th><th>單位</th><th>工人訂購價</th><th>訂購</th><th>拿庫存</th><th>加買</th><th>備註</th></tr></thead><tbody>${itemRowsHTML(group.items, i=>!isBedItem(i.code))}</tbody></table></div>
+  </div>`;
+}
+
+function specialBedRowsHTML(items){
+  const itemMap = new Map((items||[]).map(l=>[l.code,l]));
+  const bedItems = state.settings.items.filter(i=>i.active!==false && isBedItem(i.code));
+  return bedItems.map(item=>{
+    const l = normalizeItemLine(itemMap.get(item.code) || {code:item.code,price:item.price});
+    return `<tr data-code="${esc(item.code)}">
+      <td><b>${esc(item.name)}</b><br><span class="muted">${esc(item.spec||'')}｜只 FOR 雇主，不需工人姓名</span></td>
+      <td class="nowrap">${esc(item.unit||'')}</td>
+      <td><input type="number" step="1" class="line-price" value="${num(l.price)}"></td>
+      <td><input type="number" step="1" min="0" class="line-order" value="${num(l.orderQty)}"></td>
+      <td><input class="line-note" value="${esc(l.note||'')}"></td>
+    </tr>`;
+  }).join('');
+}
+function positiveLineQty(line){ return supplierQty(line)>0 || num(line.useStockQty)>0 || num(line.addQty)>0 || num(line.orderQty)>0; }
+function mergeSpecialBedLines(baseLines, bedLines){
+  const map = new Map((baseLines||[]).map(l=>[l.code, normalizeItemLine(l)]));
+  (bedLines||[]).forEach(raw=>{
+    const l = normalizeItemLine(raw);
+    if(!isBedItem(l.code)) return;
+    map.set(l.code, l);
+  });
+  state.settings.items.filter(i=>i.active!==false).forEach(i=>{
+    if(!map.has(i.code)) map.set(i.code, normalizeItemLine({code:i.code, price:i.price}));
+  });
+  return Array.from(map.values());
+}
+function orderFormHTML(o){
+  const groups = orderWorkerGroups(o);
+  const workerCards = (groups.length?groups:[workerGroupBlank()]).map((g,i)=>workerGroupFormHTML(g,i)).join('');
+  const stockRows = itemRowsHTML(o.items||[], i=>!isBedItem(i.code));
+  const bedRows = specialBedRowsHTML(o.items||[]);
+  const isAddBuyOrder = String(o.note||'').includes('加買來源：');
+  return `
+    <div class="form-section">
+      <input type="hidden" id="f_orderNo" value="${esc(o.orderNo)}">
+      <div class="order-no-ribbon"><span>訂單編號</span><b id="orderNoPreview">${esc(o.orderNo||'-')}</b></div>
+      <h3>基本資料</h3>
+      <div class="grid">
+        <div class="stock-toggle-field"><label>訂庫存</label><label class="checkline order-type-toggle"><input type="checkbox" id="f_isStockOrder" ${o.isStockOrder?'checked':''}><strong>訂庫存</strong></label></div>
+        <div><label>部門</label><select id="f_dept">${optionHTML(state.settings.departments,o.dept)}</select></div>
+        <div><label>承辦人</label><select id="f_staff">${optionHTML(state.settings.staff,o.staff)}</select></div>
+        <div><label>訂購日期</label><input type="date" id="f_orderDate" value="${esc(o.orderDate||todayInput())}"></div>
+        <div class="employer-field"><label>雇主名稱</label><input id="f_employer" list="employerList" value="${esc(o.employer||'')}" placeholder="請輸入或選擇雇主名稱"><datalist id="employerList">${state.settings.employers.map(x=>`<option value="${esc(x)}">`).join('')}</datalist></div>
+      </div>
+      <div class="mini-note" style="margin-top:10px">同一雇主可在同一張訂購單新增多位工人；每位工人可填不同品項。床類請填在「特殊訂購項目」，只 FOR 雇主，不需工人姓名。</div>
+    </div>
+
+    <div class="form-section">
+      <h3>發票與送貨資料</h3>
+      <div class="grid">
+        <div><label>公司別（發票開立抬頭）</label><select id="f_companyTitle">${optionHTML(state.settings.companyTitles,o.companyTitle)}</select></div>
+        <div><label>支付對象（工人、雇主、仲介）</label><select id="f_paymentTarget">${optionHTML(paymentTargets,o.paymentTarget||'工人')}</select></div>
+        <div><label>送達日期</label><input type="date" id="f_deliveryDate" value="${esc(o.deliveryDate||'')}"></div>
+        <div><label>送達時間（小時）</label><select id="f_deliveryHour">${hourOptionsHTML(o.deliveryHour||'16')}</select></div>
+        <div class="form-row-wide"><label>送貨地點</label><select id="f_deliveryPlace">${optionHTML(state.settings.deliveryPlaces,o.deliveryPlace)}</select></div>
+        <div><label>收貨聯絡人</label><input id="f_contact" value="${esc(deliveryContact(o)||'')}" placeholder="灃康人力自動帶承辦分機，工廠/宿舍請手動輸入"></div>
+        <div class="form-row-wide"><label>送貨地址</label><input id="f_deliveryAddress" value="${esc(deliveryAddress(o)||'')}" placeholder="灃康人力自動帶地址，工廠/宿舍請手動輸入"></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>狀態</h3>
+      <div class="grid">
+        <div><label>收貨日</label><input type="date" id="f_receivedDate" value="${esc(o.receivedDate||'')}"></div>
+        <div><label>狀態</label><select id="f_status">${statusOptions.map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div><label>會計狀態</label><input value="${esc(o.accountingStatus||'未轉入')}" readonly></div>
+      </div>
+    </div>
+
+    <div class="form-section worker-order-section">
+      <h3>工人批次訂購明細</h3>
+      <div class="toolbar"><div class="toolbar-left"><button id="applyBasicSet" type="button">套用基本寢具</button><button id="addWorkerGroupBtn" type="button">＋新增工人</button></div><div class="subtle">每位工人可個別填訂購、拿庫存、加買與備註；可移除全部工人，只保留特殊訂購項目。退貨請至訂購紀錄處理。</div></div>
+      <div id="workerCards">${workerCards}</div>
+    </div>
+
+    ${isAddBuyOrder ? '' : `<div class="form-section special-bed-section">
+      <h3>特殊訂購項目｜床類</h3>
+      <div class="mini-note" style="margin-bottom:8px">床類只 FOR 雇主，不需填工人姓名；加買不提供床類選項。</div>
+      <div class="table-wrap"><table class="item-table"><thead><tr><th>品項</th><th>單位</th><th>工人訂購價</th><th>訂購</th><th>備註</th></tr></thead><tbody>${bedRows}</tbody></table></div>
+    </div>`}
+
+    <div class="form-section stock-item-section hidden">
+      <h3>庫存訂購明細</h3>
+      <div class="toolbar"><div class="toolbar-left"><button id="applyBasicSet" type="button">套用基本寢具</button></div><div class="subtle">訂庫存收貨後會直接增加庫存；床類不列入庫存訂購。</div></div>
+      <div class="table-wrap"><table class="item-table"><thead><tr><th>品項</th><th>單位</th><th>工人訂購價</th><th>訂購</th><th>拿庫存</th><th>加買</th><th>備註</th></tr></thead><tbody>${stockRows}</tbody></table></div>
+    </div>
+
+    <div class="form-section">
+      <h3>備註</h3>
+      <textarea id="f_note" placeholder="可輸入特殊說明、送貨備註等">${esc(o.note||'')}</textarea>
+    </div>`;
+}
+function applyBasicSet(modal){
+  const basic = {MATTRESS:1, QUILT:1, PILLOW:1, CLOSET:1, TOILETRIES:1};
+  const area = $('#f_isStockOrder',modal)?.checked ? $('.stock-item-section',modal) : $('.worker-order-section',modal);
+  $all('tr[data-code]',area||modal).forEach(tr=>{
+    const code=tr.dataset.code;
+    tr.querySelector('.line-order').value = basic[code] || 0;
+    tr.querySelector('.line-add').value = 0;
+    tr.querySelector('.line-use-stock').value = 0;
+  });
+  toast('已套用基本寢具');
+}
+function readLinesFromRoot(root){
+  return $all('tr[data-code]', root).map(tr=>({
+    code: tr.dataset.code,
+    price: num(tr.querySelector('.line-price')?.value),
+    orderQty: num(tr.querySelector('.line-order')?.value),
+    addQty: num(tr.querySelector('.line-add')?.value),
+    returnQty: 0,
+    useStockQty: num(tr.querySelector('.line-use-stock')?.value),
+    stockInQty: 0,
+    replenishQty: 0,
+    returnToStockQty: 0,
+    note: tr.querySelector('.line-note')?.value || ''
+  }));
+}
+function readWorkerGroupsFromModal(modal){
+  return $all('.worker-card', modal).map(card=>({
+    id: card.dataset.groupId || uid('WG'),
+    name: $('.wg-name',card)?.value.trim() || '',
+    nationality: $('.wg-nationality',card)?.value || '越南',
+    entryDate: $('.wg-entryDate',card)?.value || '',
+    items: readLinesFromRoot(card)
+  })).filter(g=>g.name || (g.items||[]).some(l=>lineQty(l)>0 || supplierQty(l)>0 || num(l.useStockQty)>0 || num(l.addQty)>0));
+}
+function saveOrderFromModal(id, isExisting, modal){
+  const order = isExisting ? (state.orders.find(o=>o.id===id) || createBlankOrder()) : createBlankOrder();
+  const beforeOrder = isExisting ? snapshotOrder(order) : null;
+  const oldItems = order.items || [];
+  order.isStockOrder = !!$('#f_isStockOrder', modal)?.checked;
+  const fields = ['dept','staff','employer','orderDate','companyTitle','paymentTarget','deliveryDate','deliveryHour','deliveryPlace','contact','deliveryAddress','receivedDate','status','note'];
+  const map = {dept:'f_dept',staff:'f_staff',employer:'f_employer',orderDate:'f_orderDate',companyTitle:'f_companyTitle',paymentTarget:'f_paymentTarget',deliveryDate:'f_deliveryDate',deliveryHour:'f_deliveryHour',deliveryPlace:'f_deliveryPlace',contact:'f_contact',deliveryAddress:'f_deliveryAddress',receivedDate:'f_receivedDate',status:'f_status',note:'f_note'};
+  fields.forEach(k=>{ order[k] = modal.querySelector('#'+map[k])?.value || ''; });
+  order.provideDate = order.orderDate;
+  if(order.isStockOrder){
+    order.employer=KANG_PLACE; order.worker=''; order.workerGroups=[]; order.nationality=''; order.entryDate='';
+    order.items = readLinesFromRoot($('.stock-item-section', modal));
+  }else{
+    const groups = readWorkerGroupsFromModal(modal);
+    const bedLines = $('.special-bed-section', modal) ? readLinesFromRoot($('.special-bed-section', modal)) : [];
+    const hasWorkerItems = groups.some(g=>(g.items||[]).some(l=>positiveLineQty(l)));
+    const hasBedItems = bedLines.some(l=>positiveLineQty(l));
+    if(!groups.length && !hasBedItems) return toast('請至少輸入一位工人或特殊床類訂購項目');
+    if(groups.length && !hasWorkerItems && !hasBedItems) return toast('請輸入至少一個訂購品項');
+    order.workerGroups = groups;
+    order.worker = groups.map(g=>g.name).filter(Boolean).join('\n');
+    order.nationality = groups[0]?.nationality || '';
+    order.entryDate = groups[0]?.entryDate || '';
+    order.items = mergeSpecialBedLines(aggregateWorkerItems(groups, oldItems), bedLines);
+  }
+  if(!isExisting || !order.orderNo || String(order.orderNo).startsWith('BO')) order.orderNo = makeOrderNo(order.companyTitle, order.dept, order.orderDate, isExisting ? order.id : '');
+  order.batchNo = '';
+  order.workerEnglish = '';
+  if(order.deliveryPlace===KANG_PLACE){ order.contact = staffContact(order.staff); order.deliveryAddress = KANG_ADDRESS; }
+  if(!isExisting){ state.orders.push(order); }
+  if(order.employer && !state.settings.employers.includes(order.employer)) state.settings.employers.push(order.employer);
+  audit(isExisting?'修改訂購':'新增訂購','訂購單',order.id,order.orderNo,`${order.employer||''}｜${workerDisplay(order)}｜${money(orderAmount(order))}`,beforeOrder);
+  save(); closeModal(); toast('訂購資料已儲存'); render();
+}
+function deleteOrder(id){
+  const order = state.orders.find(o=>o.id===id);
+  if(!order) return;
+  if(!confirm('確定要刪除此筆訂購資料？刪除後可到「控管資訊」救回。')) return;
+  state.deletedOrders = Array.isArray(state.deletedOrders) ? state.deletedOrders : [];
+  state.deletedOrders.unshift({id:uid('DEL'), deletedAt:nowStamp(), deletedBy:'共用網址', order:snapshotOrder(order)});
+  state.orders = state.orders.filter(o=>o.id!==id);
+  audit('刪除訂購','訂購單',order.id,order.orderNo,`${order.employer||''}｜${workerDisplay(order)}｜可救回`,order);
+  save(); closeModal(); toast('已刪除，可於控管資訊救回'); render();
+}
+
+function renderRecords(root){
+  const q = (state.filters.records || '').trim().toLowerCase();
+  const hideClosed = !!state.filters.hideClosed;
+  const orders = state.orders.filter(o=>{
+    const hit = !q || [o.orderNo,o.dept,o.staff,o.employer,o.worker,o.nationality,itemSummary(o),deliveryContact(o),deliveryAddress(o),o.isStockOrder?'訂庫存':'工人訂購'].some(v=>String(v||'').toLowerCase().includes(q));
+    const show = !hideClosed || !['對帳完成','帳務錯誤'].includes(displayStatus(o));
+    return hit && show;
+  }).sort((a,b)=>String(b.orderDate||'').localeCompare(String(a.orderDate||'')) || String(b.orderNo||'').localeCompare(String(a.orderNo||'')));
+  root.innerHTML = `
+    <div class="toolbar"><div class="toolbar-left"><input id="recordsSearch" placeholder="搜尋訂購單 / 部門 / 承辦 / 雇主 / 工人 / 品項" value="${esc(state.filters.records||'')}"><label class="checkline"><input type="checkbox" id="hideClosedRecords" ${hideClosed?'checked':''}><strong>隱藏對帳完成 / 帳務錯誤</strong></label></div><div class="toolbar-right">${exportDateFilterHTML()}<button id="exportRecordsBtn">匯出詳細 CSV</button></div></div>
+    <div class="card plain">
+      <div class="card-title"><h2>訂購紀錄</h2><span class="subtle">點選訂購單號即可查看；其他操作請進入訂單後使用</span></div>
+      ${orders.length ? `<div class="table-wrap"><table class="record-table"><thead><tr><th>訂購單</th><th>部門 / 承辦</th><th>雇主 / 工人</th><th>入境日 / 國籍</th><th>支付對象</th><th>購買品項</th><th>退貨狀況</th><th class="right">金額</th><th>狀態</th></tr></thead><tbody>${orders.map(o=>workerRecordHTML(o)).join('')}</tbody></table></div>` : `<div class="empty">尚無訂購紀錄。</div>`}
+    </div>`;
+  $('#recordsSearch')?.addEventListener('input',e=>{state.filters.records=e.target.value;save();renderRecords(root);});
+  $('#hideClosedRecords')?.addEventListener('change',e=>{state.filters.hideClosed=e.target.checked;save();renderRecords(root);});
+  $('#exportRecordsBtn')?.addEventListener('click', exportRecordsCSV);
+  bindExportDateFilter(renderRecords, root);
+  $all('[data-record-act="view"]').forEach(btn=>btn.addEventListener('click',()=>openRecordDetailModal(btn.dataset.id)));
+}
+function workerRecordHTML(o){
+  const specialOnly = isSpecialOnlyOrder(o);
+  const workerText = o.isStockOrder ? '<span class="muted">庫存訂購</span>' : (specialOnly ? '<span class="muted">特殊訂購項目</span>' : esc((orderWorkers(o).join('、') || o.worker || '-')));
+  return `<tr>
+    <td><button class="link-btn" data-record-act="view" data-id="${esc(o.id)}">${esc(o.orderNo||'-')}</button></td>
+    <td>${esc(o.dept||'-')}<br><span class="muted">${esc(o.staff||'-')}</span></td>
+    <td><b>${esc(o.employer||'-')}</b><br>${workerText}</td>
+    <td>${(o.isStockOrder||specialOnly)?'<span class="muted">不適用</span>':`${esc(dateSlash(o.entryDate)||'-')}<br><span class="pill">${esc(o.nationality||'-')}</span>`}</td>
+    <td>${esc(o.paymentTarget||'工人')}</td>
+    <td><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
+    <td>${returnSummary(o)}</td>
+    <td class="right"><b>${money(orderAmount(o))}</b></td>
+    <td>${statusPills(o)}</td>
+  </tr>`;
+}
+function openReturnToStockModal(orderId){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  if(!can('orderWrite')) return toast('目前無法辦理退貨');
+  const lines=(o.items||[]).filter(l=>returnableQty(l)>0);
+  if(!lines.length) return toast('此筆沒有可退貨入庫的品項');
+  const rows=lines.map(l=>{
+    const it=getItem(l.code);
+    return `<tr data-return-code="${esc(l.code)}">
+      <td><b>${esc(it.name)}</b><br><span class="muted">${esc(it.spec||'')}</span></td>
+      <td class="right">${returnableQty(l)}</td>
+      <td class="right">${esc(it.unit||'')}</td>
+      <td><input type="number" min="0" step="1" max="${returnableQty(l)}" class="return-qty" value="0"></td>
+      <td><input class="return-note" placeholder="退貨原因 / 備註"></td>
+    </tr>`;
+  }).join('');
+  showModal(`退貨入庫｜${o.orderNo}`, `
+    <div class="mini-note" style="margin-bottom:10px">請選擇退貨品項與數量；儲存後會同步更新退貨數量、金額，並將退貨品項入庫存。</div>
+    <div class="scroll-x"><table class="item-table"><thead><tr><th>品項</th><th class="right">可退數量</th><th>單位</th><th>退貨數量</th><th>備註</th></tr></thead><tbody>${rows}</tbody></table></div>`,{
+    width:'880px',
+    footer:`<button id="cancelModalBtn">取消</button><button class="primary" id="saveReturnBtn">儲存退貨入庫</button>`,
+    onOpen:(modal)=>{
+      $('#cancelModalBtn',modal).addEventListener('click',closeModal);
+      $('#saveReturnBtn',modal).addEventListener('click',()=>{
+        let total=0; const updates=[];
+        $all('tr[data-return-code]',modal).forEach(tr=>{
+          const code=tr.dataset.returnCode;
+          const line=(o.items||[]).find(l=>l.code===code);
+          if(!line) return;
+          const qty=num($('.return-qty',tr).value);
+          const max=returnableQty(line);
+          const note=$('.return-note',tr).value || '';
+          if(qty<0) return;
+          if(qty>max){ updates.push({error:`${itemLabel(code)} 退貨數量不可超過 ${max}`}); return; }
+          if(qty>0) updates.push({line,qty,note});
+        });
+        const err=updates.find(u=>u.error);
+        if(err) return toast(err.error);
+        if(!updates.length) return toast('請輸入至少一個退貨數量');
+        updates.forEach(u=>{
+          u.line.returnQty = num(u.line.returnQty) + u.qty;
+          u.line.returnToStockQty = num(u.line.returnToStockQty) + u.qty;
+          const stamp = `退貨入庫 ${today()} x${u.qty}${u.note ? '：'+u.note : ''}`;
+          u.line.note = [u.line.note||'', stamp].filter(Boolean).join(' / ');
+          total += u.qty;
+        });
+        o.returnedAt = todayInput();
+        if(o.status==='對帳完成') o.status='已收貨';
+        save(); closeModal(); toast(`已退貨入庫 ${total} 件`); render();
+      });
+    }
+  });
+}
+function openAddPurchaseFlow(orderId){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  if(!can('orderWrite')) return toast('目前無法辦理加買');
+  const useStock = confirm('這次加買是否直接拿庫存？\n\n確定＝拿庫存\n取消＝新增一張加買訂購單');
+  if(useStock) return openAddFromStockModal(orderId);
+  const addOrder = createBlankOrder();
+  addOrder.dept=o.dept; addOrder.staff=o.staff; addOrder.employer=o.employer; addOrder.companyTitle=o.companyTitle; addOrder.paymentTarget=o.paymentTarget||'雇主';
+  addOrder.deliveryPlace=o.deliveryPlace; addOrder.contact=o.contact; addOrder.deliveryAddress=o.deliveryAddress; addOrder.orderDate=todayInput(); addOrder.status='已下單'; addOrder.note=`加買來源：${o.orderNo}`;
+  addOrder.orderNo=makeOrderNo(addOrder.companyTitle, addOrder.dept, addOrder.orderDate);
+  if(!o.isStockOrder){
+    addOrder.isStockOrder=false;
+    addOrder.workerGroups=orderWorkerGroups(o).map(g=>({id:uid('WG'), name:g.name, nationality:g.nationality, entryDate:g.entryDate, items:createEmptyItemLines(i=>!isBedItem(i.code))}));
+    addOrder.worker=addOrder.workerGroups.map(g=>g.name).join('\n');
+    addOrder.nationality=addOrder.workerGroups[0]?.nationality||'';
+    addOrder.entryDate=addOrder.workerGroups[0]?.entryDate||'';
+    addOrder.items=createEmptyItemLines(i=>!isBedItem(i.code));
+  }
+  state.orders.push(addOrder); save(); closeModal(); toast('已建立加買訂購單，請填寫加買品項'); openOrderModal(addOrder.id);
+}
+function openAddFromStockModal(orderId){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  const groups=orderWorkerGroups(o);
+  const targetSelect = (!o.isStockOrder && groups.length>1) ? `<div style="margin-bottom:10px"><label>加買對象</label><select id="add_stock_worker">${groups.map((g,i)=>`<option value="${i}">${esc(g.name||('工人'+(i+1)))}</option>`).join('')}</select></div>` : '';
+  const rows=state.settings.items.filter(i=>i.active!==false && !isBedItem(i.code)).map(i=>`<tr data-add-code="${esc(i.code)}"><td><b>${esc(i.name)}</b><br><span class="muted">庫存 ${currentStock(i.code)}｜${esc(i.spec||'')}</span></td><td class="right">${money(i.price)}</td><td><input type="number" min="0" step="1" class="add-stock-qty" value="0"></td><td><input class="add-stock-note" placeholder="備註"></td></tr>`).join('');
+  showModal(`加買拿庫存｜${o.orderNo}`, `${targetSelect}<div class="scroll-x"><table class="item-table"><thead><tr><th>品項</th><th class="right">工人訂購價</th><th>拿庫存數量</th><th>備註</th></tr></thead><tbody>${rows}</tbody></table></div>`,{
+    width:'880px',
+    footer:`<button id="cancelModalBtn">取消</button><button class="primary" id="saveAddStockBtn">儲存加買拿庫存</button>`,
+    onOpen:(modal)=>{
+      $('#cancelModalBtn',modal).addEventListener('click',closeModal);
+      $('#saveAddStockBtn',modal).addEventListener('click',()=>{
+        let total=0;
+        const updates=[];
+        $all('tr[data-add-code]',modal).forEach(tr=>{
+          const qty=num($('.add-stock-qty',tr)?.value); if(qty<=0) return;
+          const code=tr.dataset.addCode; const note=$('.add-stock-note',tr)?.value||'';
+          updates.push({code,qty,note}); total+=qty;
+        });
+        if(!updates.length) return toast('請輸入至少一個加買拿庫存數量');
+        if(!o.isStockOrder && groups.length){
+          const idx=num($('#add_stock_worker',modal)?.value || 0);
+          const realGroups=orderWorkerGroups(o);
+          const g=realGroups[idx] || realGroups[0];
+          updates.forEach(u=>{
+            let line=(g.items||[]).find(l=>l.code===u.code);
+            if(!line){ line=normalizeItemLine({code:u.code}); g.items.push(line); }
+            line.useStockQty=num(line.useStockQty)+u.qty;
+            line.note=[line.note||'',`加買拿庫存 ${today()} x${u.qty}${u.note?'：'+u.note:''}`].filter(Boolean).join(' / ');
+          });
+          o.workerGroups=realGroups;
+          o.items=aggregateWorkerItems(realGroups, o.items);
+        }else{
+          updates.forEach(u=>{
+            let line=(o.items||[]).find(l=>l.code===u.code);
+            if(!line){ line=normalizeItemLine({code:u.code}); o.items.push(line); }
+            line.useStockQty=num(line.useStockQty)+u.qty;
+            line.note=[line.note||'',`加買拿庫存 ${today()} x${u.qty}${u.note?'：'+u.note:''}`].filter(Boolean).join(' / ');
+          });
+        }
+        o.note=[o.note||'',`加買拿庫存 ${today()} 共${total}件`].filter(Boolean).join('\n');
+        save(); closeModal(); toast(`已加買拿庫存 ${total} 件`); render();
+      });
+    }
+  });
+}
+function openRecordDetailModal(orderId){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  showModal(`訂單明細｜${o.orderNo}`, recordDetailHTML(o), {
+    width:'1120px',
+    footer:`<button id="cancelModalBtn">關閉</button>
+      <button id="addBuyFromRecordBtn" ${can('orderWrite')?'':'disabled'}>加買</button>
+      <button class="return-btn" id="returnFromRecordBtn" ${(can('orderWrite')&&hasReturnableItems(o))?'':'disabled'}>退貨入庫</button>
+      <button id="downloadFromRecordBtn" ${can('orderPrint')?'':'disabled'}>補印訂購單</button>
+      <button id="receiptFromRecordBtn" ${(can('orderPrint')&&!o.isStockOrder)?'':'disabled'}>補印簽收單</button>
+      <button id="editFromRecordBtn" ${can('orderWrite')?'':'disabled'}>修改</button>
+      <button class="danger" id="deleteFromRecordBtn" ${can('orderWrite')?'':'disabled'}>刪除</button>`,
+    onOpen:(modal)=>{
+      $('#cancelModalBtn',modal).addEventListener('click',closeModal);
+      $('#addBuyFromRecordBtn',modal)?.addEventListener('click',()=>openAddPurchaseFlow(orderId));
+      $('#returnFromRecordBtn',modal)?.addEventListener('click',()=>{closeModal();openReturnToStockModal(orderId);});
+      $('#downloadFromRecordBtn',modal)?.addEventListener('click',()=>downloadOrderImage(orderId));
+      $('#receiptFromRecordBtn',modal)?.addEventListener('click',()=>printReceipt(orderId));
+      $('#editFromRecordBtn',modal)?.addEventListener('click',()=>{closeModal();openOrderModal(orderId);});
+      $('#deleteFromRecordBtn',modal)?.addEventListener('click',()=>deleteOrder(orderId));
+    }
+  });
+}
+function recordDetailHTML(o){
+  const lines = (o.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || num(l.useStockQty)>0 || num(l.returnQty)>0 || num(l.addQty)>0);
+  const itemTable = lines.length ? `<div class="scroll-x"><table class="item-table"><thead><tr><th>品項</th><th class="right">工人訂購價</th><th class="right">訂購</th><th class="right">拿庫存</th><th class="right">退貨</th><th class="right">加買</th><th class="right">小計</th><th>備註</th></tr></thead><tbody>${lines.map(l=>recordItemRow(l)).join('')}</tbody></table></div>` : `<div class="empty">此筆尚未填寫品項。</div>`;
+  const err = o.errorNotice ? `<span class="pill bad">${esc(o.errorNotice.type)}｜${esc(o.errorNotice.note||'')}</span>` : '<span class="muted">無</span>';
+  const groupHTML = (!o.isStockOrder && orderWorkerGroups(o).length>1) ? workerItemMatrixHTML(o) : '';
+  return `<div class="record-meta">
+      <div class="meta-box"><span>支付對象</span><b>${esc(o.paymentTarget||'雇主')}</b></div>
+      <div class="meta-box"><span>部門 / 承辦</span><b>${esc(o.dept||'-')} / ${esc(o.staff||'-')}</b></div>
+      <div class="meta-box"><span>雇主</span><b>${esc(o.employer||'-')}</b></div>
+      <div class="meta-box"><span>工人</span><b>${(o.isStockOrder||isSpecialOnlyOrder(o))?'不適用':esc(orderWorkers(o).join('、')||'-')}</b></div>
+      <div class="meta-box"><span>國籍 / 入境日</span><b>${(o.isStockOrder||isSpecialOnlyOrder(o))?'不適用':`${esc(o.nationality||'-')} / ${esc(dateSlash(o.entryDate)||'-')}`}</b></div>
+      <div class="meta-box"><span>總金額</span><b>${money(orderAmount(o))}</b></div>
+      <div class="meta-box"><span>訂購日期</span><b>${esc(dateSlash(o.orderDate)||'-')}</b></div>
+      <div class="meta-box"><span>收貨日</span><b>${esc(dateSlash(o.receivedDate)||'-')}</b></div>
+      <div class="meta-box"><span>請款日</span><b>${esc(dateSlash(o.billingDate)||'-')}</b></div>
+      <div class="meta-box"><span>會計狀態</span><b>${esc(o.accountingStatus||'未轉入')}</b></div>
+      <div class="meta-box"><span>公司別</span><b>${esc(o.companyTitle||'-')}</b></div>
+      <div class="meta-box"><span>收貨聯絡人</span><b>${esc(deliveryContact(o)||'-')}</b></div>
+      <div class="meta-box" style="grid-column:span 6"><span>送貨地點 / 地址</span><b>${esc(deliveryDisplay(o)||'-')}</b></div>
+    </div>
+    ${itemTable}
+    ${groupHTML}
+    <div style="margin-top:12px"><span class="subtle">帳務錯誤通知：</span>${err}</div>
+    ${o.note?`<div style="margin-top:8px"><span class="subtle">備註：</span>${esc(o.note)}</div>`:''}`;
+}
+
+function matrixLineCell(l){
+  if(!l || !positiveLineQty(l)) return '<span class="muted">-</span>';
+  const parts=[];
+  if(num(l.orderQty)>0) parts.push(`訂 ${num(l.orderQty)}`);
+  if(num(l.useStockQty)>0) parts.push(`庫 ${num(l.useStockQty)}`);
+  if(num(l.addQty)>0) parts.push(`加 ${num(l.addQty)}`);
+  if(num(l.returnQty)>0) parts.push(`退 ${num(l.returnQty)}`);
+  const note = l.note ? `<span class="mini">${esc(l.note)}</span>` : '';
+  return `<div class="matrix-cell">${parts.map(p=>`<span>${esc(p)}</span>`).join('')}${note}</div>`;
+}
+function matrixItemPrice(groups, code){
+  for(const g of groups){
+    const l=(g.items||[]).find(x=>x.code===code && positiveLineQty(x));
+    if(l) return num(l.price);
+  }
+  return itemWorkerPrice(code);
+}
+function workerItemMatrixHTML(o){
+  const groups = orderWorkerGroups(o).filter(g=>g.name || (g.items||[]).some(l=>positiveLineQty(l)));
+  if(groups.length <= 1) return '';
+  const codes = [];
+  groups.forEach(g=>(g.items||[]).forEach(l=>{
+    if(positiveLineQty(l) && !codes.includes(l.code)) codes.push(l.code);
+  }));
+  if(!codes.length) return '';
+  const header = codes.map(code=>{
+    const it=getItem(code);
+    return `<th><b>${esc(it.name)}</b><span class="matrix-item-price">${money(matrixItemPrice(groups, code))}</span></th>`;
+  }).join('');
+  const body = groups.map(g=>{
+    const map = new Map((g.items||[]).map(l=>[l.code,l]));
+    return `<tr>
+      <td><b>${esc(g.name||'-')}</b><div class="worker-meta">${esc(g.nationality||'-')}｜${esc(dateSlash(g.entryDate)||'-')}｜${money(groupAmount(g))}</div></td>
+      ${codes.map(code=>`<td>${matrixLineCell(map.get(code))}</td>`).join('')}
+    </tr>`;
+  }).join('');
+  return `<div class="record-worker-section">
+    <h4>工人 × 訂購項目</h4>
+    <div class="scroll-x"><table class="item-table worker-item-matrix"><thead><tr><th>工人</th>${header}</tr></thead><tbody>${body}</tbody></table></div>
+  </div>`;
+}
+
+function workerGroupDetailHTML(g){
+  const rows=(g.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || num(l.useStockQty)>0 || num(l.addQty)>0).map(l=>recordItemRow(l)).join('');
+  return `<details class="card plain" style="padding:10px;margin:8px 0" open><summary style="cursor:pointer"><b>${esc(g.name||'-')}</b><span class="muted">　${esc(g.nationality||'-')} / ${esc(dateSlash(g.entryDate)||'-')} / ${money(groupAmount(g))}</span></summary>${rows?`<div class="scroll-x" style="margin-top:8px"><table class="item-table"><thead><tr><th>品項</th><th class="right">工人訂購價</th><th class="right">訂購</th><th class="right">拿庫存</th><th class="right">退貨</th><th class="right">加買</th><th class="right">小計</th><th>備註</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<div class="empty">無品項</div>'}</details>`;
+}
+function recordItemRow(l){
+  const it=getItem(l.code);
+  return `<tr>
+    <td><b>${esc(it.name)}</b><br><span class="muted">${esc(it.spec||'')}</span></td>
+    <td class="right">${money(l.price)}</td>
+    <td class="right">${num(l.orderQty)}</td>
+    <td class="right">${num(l.useStockQty)}</td>
+    <td class="right">${num(l.returnQty)}</td>
+    <td class="right">${num(l.addQty)}</td>
+    <td class="right"><b>${money(lineAmount(l))}</b></td>
+    <td>${esc(l.note||'')}</td>
+  </tr>`;
+}
+function returnSummary(o){
+  const rows=(o.items||[]).filter(l=>num(l.returnQty)>0).map(l=>`${itemLabel(l.code)} 退${num(l.returnQty)}`);
+  return rows.length ? rows.map(x=>`<span class="pill bad">${esc(x)}</span>`).join('') : '<span class="muted">無退貨</span>';
+}
+
+function renderInventory(root){
+  const items = state.settings.items.filter(i=>i.active!==false && !INVENTORY_HIDE_CODES.has(i.code));
+  root.innerHTML = `
+    <div class="toolbar"><div class="toolbar-left"><button class="primary" id="addItemBtn" ${can('stockWrite')?'':'disabled'}>＋新增品項</button></div><div class="toolbar-right"><button id="exportInventoryBtn">匯出庫存 CSV</button></div></div>
+    <div class="card plain">
+      <div class="card-title"><h2>目前庫存</h2><span class="subtle">庫存 = 期初庫存 + 已收貨的訂庫存 - 拿庫存 + 手動調整；床類品項不顯示於庫存管理</span></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>品項</th><th>規格</th><th>單位</th><th class="right">廠商訂購價</th><th class="right">工人訂購價</th><th class="right">期初</th><th class="right">目前庫存</th><th>快速調整</th><th class="nowrap">操作</th></tr></thead>
+        <tbody>${items.map(i=>`<tr>
+          <td><b>${esc(i.name)}</b><br><span class="muted">${esc(i.code)}</span></td><td>${esc(i.spec||'')}</td><td>${esc(i.unit||'')}</td><td class="right">${money(i.vendorPrice ?? i.price)}</td><td class="right">${money(i.price)}</td><td class="right">${num(i.openingStock)}</td><td class="right"><b>${currentStock(i.code)}</b></td>
+          <td><div style="display:flex;gap:6px;min-width:220px"><input type="number" class="stockAdjQty" data-code="${esc(i.code)}" placeholder="+入 / -出"><input class="stockAdjNote" data-code="${esc(i.code)}" placeholder="備註"></div></td>
+          <td><div class="actions"><button class="small" data-edit-item="${esc(i.code)}" ${can('stockWrite')?'':'disabled'}>修改庫存</button><button class="small" data-adj-item="${esc(i.code)}" ${can('stockWrite')?'':'disabled'}>新增調整</button></div></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>
+    <div class="card plain">
+      <div class="card-title"><h2>庫存異動紀錄</h2><span class="subtle">手動新增的庫存調整</span></div>
+      ${state.stockAdjustments.length ? `<div class="table-wrap"><table><thead><tr><th>日期</th><th>品項</th><th class="right">數量</th><th>備註</th></tr></thead><tbody>${state.stockAdjustments.slice().reverse().map(a=>`<tr><td>${esc(dateSlash(a.date))}</td><td>${esc(itemLabel(a.code))}</td><td class="right">${num(a.qty)}</td><td>${esc(a.note||'')}</td></tr>`).join('')}</tbody></table></div>` : `<div class="empty">尚無手動庫存調整。</div>`}
+    </div>`;
+  $('#addItemBtn')?.addEventListener('click',()=>openItemModal());
+  $('#exportInventoryBtn')?.addEventListener('click', exportInventoryCSV);
+  $all('[data-edit-item]').forEach(btn=>btn.addEventListener('click',()=>openItemModal(btn.dataset.editItem)));
+  $all('[data-adj-item]').forEach(btn=>btn.addEventListener('click',()=>addStockAdjustment(btn.dataset.adjItem)));
+}
+function addStockAdjustment(code){
+  const qty = num($(`.stockAdjQty[data-code="${CSS.escape(code)}"]`)?.value);
+  const note = $(`.stockAdjNote[data-code="${CSS.escape(code)}"]`)?.value || '';
+  if(!qty) return toast('請輸入調整數量，可正數或負數');
+  state.stockAdjustments.push({id:uid('STK'), date:todayInput(), code, qty, note});
+  audit('庫存調整','庫存品項',code,itemLabel(code),`數量 ${qty}｜${note||''}`);
+  save(); toast('庫存已調整'); render();
+}
+function openItemModal(code){
+  if(!can('stockWrite')) return toast('目前無法修改庫存');
+  const item = code ? JSON.parse(JSON.stringify(getItem(code))) : {code:'ITEM_'+Date.now().toString(36).toUpperCase(), name:'', spec:'', unit:'', price:0, vendorPrice:0, openingStock:0, active:true};
+  showModal(code?'修改品項 / 庫存':'新增品項', `
+    <div class="grid two">
+      <div><label>品項代碼</label><input id="i_code" value="${esc(item.code)}" ${code?'readonly':''}></div>
+      <div><label>品名</label><input id="i_name" value="${esc(item.name||'')}"></div>
+      <div><label>規格</label><input id="i_spec" value="${esc(item.spec||'')}"></div>
+      <div><label>單位</label><input id="i_unit" value="${esc(item.unit||'')}"></div>
+      <div><label>廠商訂購價</label><input type="number" id="i_vendorPrice" value="${num(item.vendorPrice ?? item.price)}" placeholder="向廠商訂購的價格"></div>
+      <div><label>工人訂購價</label><input type="number" id="i_price" value="${num(item.price)}" placeholder="工人簽收/請款價格"></div>
+      <div><label>期初庫存</label><input type="number" id="i_openingStock" value="${num(item.openingStock)}"></div>
+      <div><label>啟用</label><select id="i_active"><option value="true" ${item.active!==false?'selected':''}>啟用</option><option value="false" ${item.active===false?'selected':''}>停用</option></select></div>
+    </div>`,{
+    width:'720px',
+    footer:`<button id="cancelModalBtn">取消</button><button class="primary" id="saveItemBtn">儲存</button>`,
+    onOpen:(modal)=>{
+      modal.querySelector('#cancelModalBtn').addEventListener('click',closeModal);
+      modal.querySelector('#saveItemBtn').addEventListener('click',()=>{
+        const next={code:$('#i_code',modal).value.trim(), name:$('#i_name',modal).value.trim(), spec:$('#i_spec',modal).value.trim(), unit:$('#i_unit',modal).value.trim(), vendorPrice:num($('#i_vendorPrice',modal).value), price:num($('#i_price',modal).value), openingStock:num($('#i_openingStock',modal).value), active:$('#i_active',modal).value==='true'};
+        if(!next.code || !next.name) return toast('請輸入品項代碼與品名');
+        const idx=state.settings.items.findIndex(i=>i.code===next.code);
+        const beforeItem = idx>=0 ? JSON.parse(JSON.stringify(state.settings.items[idx])) : null;
+        if(idx>=0) state.settings.items[idx]=next; else state.settings.items.push(next);
+        audit(idx>=0?'修改品項':'新增品項','品項',next.code,next.name,`廠商訂購價 ${money(next.vendorPrice)}｜工人訂購價 ${money(next.price)}`,beforeItem);
+        save(); closeModal(); toast('品項已儲存'); render();
+      });
+    }
+  });
+}
+
+function renderAccounting(root){
+  const q = (state.filters.accounting || '').trim().toLowerCase();
+  const grouped = {};
+  state.orders.filter(o=>o.accountingBatch).filter(o=>{
+    if(!q) return true;
+    return [o.accountingBatch,o.orderNo,o.dept,o.staff,o.employer,o.worker,o.nationality,o.companyTitle,o.paymentTarget,o.accountingStatus,o.accountingBy,o.billingDate,o.orderDate,itemSummary(o),o.isStockOrder?'訂庫存':'工人訂購'].some(v=>String(v||'').toLowerCase().includes(q));
+  }).forEach(o=>{
+    grouped[o.accountingBatch] = grouped[o.accountingBatch] || [];
+    grouped[o.accountingBatch].push(o);
+  });
+  const batches = Object.entries(grouped).sort((a,b)=>b[0].localeCompare(a[0]));
+  const allRows = batches.flatMap(([,orders])=>orders);
+  const overviewTotal = allRows.reduce((s,o)=>s+accountingAmount(o),0);
+  root.innerHTML = `
+    <div class="accounting-overview"><div class="big-stat"><span>對帳批次</span><b>${batches.length}</b></div><div class="big-stat"><span>對帳筆數</span><b>${allRows.length}</b></div><div class="big-stat"><span>對帳總金額</span><b>${money(overviewTotal)}</b></div></div>
+    <div class="toolbar"><div class="toolbar-left"><input id="accountingSearch" placeholder="搜尋批次 / 訂購單 / 訂購日 / 雇主 / 工人 / 品項" value="${esc(state.filters.accounting||'')}"><span class="subtle">批次可展開 / 收起；明細顯示訂購日與請款日。</span></div><div class="toolbar-right">${exportDateFilterHTML()}<button id="exportAccountingBtn">匯出對帳 CSV</button></div></div>
+    ${batches.length ? batches.map(([batch,orders])=>accountingBatchHTML(batch,orders)).join('') : `<div class="empty">尚未有符合條件的請款批次。請先在「寢具訂購」勾選資料後按「請款 / 轉會計對帳」。</div>`}`;
+  $('#accountingSearch')?.addEventListener('input', e=>{state.filters.accounting=e.target.value;save();renderAccounting(root);});
+  $('#exportAccountingBtn')?.addEventListener('click', exportAccountingCSV);
+  bindExportDateFilter(renderAccounting, root);
+  $all('[data-confirm-batch]').forEach(btn=>btn.addEventListener('click',()=>confirmAccountingBatch(btn.dataset.confirmBatch)));
+  $all('[data-error-batch]').forEach(btn=>btn.addEventListener('click',()=>openAccountingErrorModal(btn.dataset.errorBatch)));
+  $all('[data-account-edit]').forEach(btn=>btn.addEventListener('click',()=>openAccountingEditModal(btn.dataset.accountEdit)));
+  $all('[data-account-adjust]').forEach(btn=>btn.addEventListener('click',()=>openAccountingEditModal(btn.dataset.accountAdjust, true)));
+  $all('[data-account-note]').forEach(btn=>btn.addEventListener('click',()=>openAccountingNoteModal(btn.dataset.accountNote)));
+  $all('[data-account-remove]').forEach(btn=>btn.addEventListener('click',()=>removeFromAccounting(btn.dataset.accountRemove)));
+  $all('[data-account-view]').forEach(btn=>btn.addEventListener('click',()=>openRecordDetailModal(btn.dataset.accountView)));
+}
+function accountingAmount(o){ return orderAmount(o) + num(o.accountingAdjust || 0); }
+function lineSummaryByKey(o, key, cls=''){
+  const rows=(o.items||[]).filter(l=>num(l[key])>0).map(l=>`<span class="summary-chip ${cls}">${esc(itemLabel(l.code))} ${num(l[key])}</span>`);
+  return rows.length ? rows.join('') : '<span class="muted">-</span>';
+}
+function accountingBatchHTML(batch, orders){
+  const total = orders.reduce((s,o)=>s+accountingAmount(o),0);
+  const status = orders.every(o=>o.accountingStatus==='對帳完成') ? '對帳完成' : (orders.some(o=>o.accountingStatus==='帳務錯誤') ? '帳務錯誤' : '待對帳');
+  const accountBySummary = Array.from(new Set(orders.map(o=>o.accountingBy).filter(Boolean))).join('、') || '-';
+  return `<details class="card account-batch" open>
+    <summary>
+      <div class="card-title" style="margin:0">
+        <div><h2>${esc(batch)}</h2><div class="batch-hero">${orders.length} 筆｜對帳總金額 ${money(total)} <span>狀態 ${esc(status)}｜對帳人 ${esc(accountBySummary)}</span></div><div class="batch-toggle">點此可展開 / 收起批次明細</div></div>
+        <div class="actions"><button onclick="event.stopPropagation()" data-error-batch="${esc(batch)}" ${can('accounting')?'':'disabled'}>帳務錯誤通知</button><button onclick="event.stopPropagation()" class="primary" data-confirm-batch="${esc(batch)}" ${can('accounting')?'':'disabled'}>整批確認帳款</button></div>
+      </div>
+    </summary>
+    <div class="batch-body">
+      <div class="scroll-x"><table class="accounting-detail-table"><thead><tr>
+        <th>訂購單</th><th>雇主 / 工人</th><th>支付對象</th><th>訂購日</th><th>請款日</th><th>海外承辦</th><th>購買品項</th><th>拿庫存</th><th>退貨入庫</th><th>加買</th><th class="right">原金額</th><th class="right">調整</th><th class="right">對帳金額</th><th>狀態</th><th>對帳人</th><th>備註 / 錯誤</th><th class="nowrap">操作</th>
+      </tr></thead><tbody>
+        ${orders.map(o=>accountingOrderRow(o)).join('')}
+      </tbody></table></div>
+    </div>
+  </details>`;
+}
+function accountingOrderRow(o){
+  const err=o.errorNotice?`<div><span class="summary-chip bad">${esc(o.errorNotice.type)}｜${esc(o.errorNotice.note||'')}</span></div>`:'';
+  return `<tr>
+    <td><button class="link-btn" data-account-view="${esc(o.id)}">${esc(o.orderNo)}</button></td>
+    <td><b>${esc(o.employer||'-')}</b><br>${o.isStockOrder?'<span class="muted">庫存訂購</span>':esc(orderWorkers(o).join('、')||'-')}</td>
+    <td>${esc(o.paymentTarget||'雇主')}</td>
+    <td>${esc(dateSlash(o.orderDate)||'-')}</td>
+    <td>${esc(dateSlash(o.billingDate)||'-')}</td>
+    <td>${esc(o.overseasStaff || o.staff || '-')}</td>
+    <td>${lineSummaryByKey(o,'orderQty')}</td>
+    <td>${lineSummaryByKey(o,'useStockQty','warn')}</td>
+    <td>${lineSummaryByKey(o,'returnQty','bad')}</td>
+    <td>${lineSummaryByKey(o,'addQty','ok')}</td>
+    <td class="right nowrap">${money(orderAmount(o))}</td>
+    <td class="right nowrap">${num(o.accountingAdjust||0) ? money(o.accountingAdjust) : '<span class="muted">-</span>'}</td>
+    <td class="right nowrap"><b>${money(accountingAmount(o))}</b></td>
+    <td>${esc(o.accountingStatus||'待對帳')}</td>
+    <td>${o.accountingBy?esc(o.accountingBy):'<span class="muted">-</span>'}</td>
+    <td>${o.accountingNote?esc(o.accountingNote):'<span class="muted">無</span>'}${err}</td>
+    <td class="nowrap"><div class="actions">
+      <button class="small" data-account-edit="${esc(o.id)}" ${can('accounting')?'':'disabled'}>修改</button>
+      <button class="small" data-account-adjust="${esc(o.id)}" ${can('accounting')?'':'disabled'}>調整</button>
+      <button class="small" data-account-note="${esc(o.id)}" ${can('accounting')?'':'disabled'}>備註</button>
+      <button class="small danger" data-account-remove="${esc(o.id)}" ${can('accounting')?'':'disabled'}>刪除</button>
+    </div></td>
+  </tr>`;
+}
+function confirmAccountingBatch(batch){
+  const orders = state.orders.filter(o=>o.accountingBatch===batch);
+  const total = orders.reduce((s,o)=>s+accountingAmount(o),0);
+  if(!orders.length) return toast('此批次沒有資料');
+  const defaultBy = orders.find(o=>o.accountingBy)?.accountingBy || '';
+  const by = prompt(`確定整批確認帳款？
+批次：${batch}
+筆數：${orders.length} 筆
+對帳總金額：${money(total)}
+
+請輸入對帳人：`, defaultBy);
+  if(by===null) return;
+  if(!String(by).trim()) return toast('請輸入對帳人');
+  orders.forEach(o=>{ o.accountingStatus='對帳完成'; o.accountingDate=todayInput(); o.accountingBy=String(by).trim(); o.status='對帳完成'; });
+  save(); toast('對帳完成'); render();
+}
+function openAccountingEditModal(orderId, focusAdjust=false){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  showModal(`${focusAdjust?'調整對帳金額':'修改對帳資料'}｜${o.orderNo}`, `
+    <div class="grid two">
+      <div><label>訂購單</label><input value="${esc(o.orderNo)}" readonly></div>
+      <div><label>請款日</label><input type="date" id="acc_billingDate" value="${esc(o.billingDate||todayInput())}"></div>
+      <div><label>會計狀態</label><select id="acc_status">${accountingStatusOptions.map(s=>`<option ${o.accountingStatus===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div><label>支付對象</label><select id="acc_paymentTarget">${optionHTML(paymentTargets,o.paymentTarget||'工人')}</select></div>
+      <div><label>調整金額（可正可負）</label><input type="number" id="acc_adjust" value="${num(o.accountingAdjust||0)}" placeholder="例如 -400 或 200"></div>
+      <div><label>對帳人</label><input id="acc_by" value="${esc(o.accountingBy||'')}" placeholder="請輸入對帳人"></div>
+    </div>
+    <div style="margin-top:12px"><label>會計備註</label><textarea id="acc_note" placeholder="可輸入差異原因、修正說明、內部備註">${esc(o.accountingNote||'')}</textarea></div>`,{
+      width:'760px',
+      footer:`<button id="cancelModalBtn">取消</button><button class="primary" id="saveAccBtn">儲存對帳資料</button>`,
+      onOpen:(modal)=>{
+        $('#cancelModalBtn',modal).addEventListener('click',closeModal);
+        if(focusAdjust) setTimeout(()=>$('#acc_adjust',modal)?.focus(),50);
+        $('#saveAccBtn',modal).addEventListener('click',()=>{
+          o.billingDate=$('#acc_billingDate',modal).value || todayInput();
+          o.accountingStatus=$('#acc_status',modal).value || '待對帳';
+          o.accountingAdjust=num($('#acc_adjust',modal).value);
+          o.accountingBy=$('#acc_by',modal)?.value || '';
+          o.paymentTarget=$('#acc_paymentTarget',modal)?.value || o.paymentTarget || '雇主';
+          o.accountingNote=$('#acc_note',modal).value || '';
+          if(o.accountingStatus==='對帳完成'){ o.accountingDate=todayInput(); o.status='對帳完成'; }
+          else if(o.accountingStatus==='帳務錯誤'){ o.status='帳務錯誤'; }
+          else { o.status='待對帳'; }
+          save(); closeModal(); toast('對帳資料已更新'); render();
+        });
+      }
+    });
+}
+function openAccountingNoteModal(orderId){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  showModal(`會計備註｜${o.orderNo}`, `<label>備註</label><textarea id="acc_note_only" placeholder="請輸入會計備註">${esc(o.accountingNote||'')}</textarea>`,{
+    width:'720px',
+    footer:`<button id="cancelModalBtn">取消</button><button class="primary" id="saveAccNoteBtn">儲存備註</button>`,
+    onOpen:(modal)=>{
+      $('#cancelModalBtn',modal).addEventListener('click',closeModal);
+      $('#saveAccNoteBtn',modal).addEventListener('click',()=>{ o.accountingNote=$('#acc_note_only',modal).value||''; save(); closeModal(); toast('備註已更新'); render(); });
+    }
+  });
+}
+function removeFromAccounting(orderId){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  if(!confirm(`確定要從會計對帳刪除 ${o.orderNo}？\n此動作只會移出對帳批次，不會刪除原訂購資料。`)) return;
+  o.accountingBatch='';
+  o.billingDate='';
+  o.accountingDate='';
+  o.accountingStatus='未轉入';
+  o.accountingAdjust=0;
+  o.accountingNote='';
+  o.accountingBy='';
+  o.errorNotice=null;
+  o.status=o.receivedDate?'待請款':'已下單';
+  save(); toast('已從會計對帳刪除'); render();
+}
+function openAccountingErrorModal(batch){
+  const orders = state.orders.filter(o=>o.accountingBatch===batch);
+  const checkRows = orders.map(o=>`<label class="checkline"><input type="checkbox" class="err-order-check" value="${esc(o.id)}" checked><strong>${esc(o.orderNo)}</strong><span class="muted">${esc(o.employer||'-')} / ${o.isStockOrder?'庫存訂購':esc(o.worker||'-')} / ${money(accountingAmount(o))}</span></label>`).join('');
+  showModal('帳務錯誤通知', `
+    <div class="grid two"><div><label>請款批次</label><input id="err_batch" value="${esc(batch)}" readonly></div><div><label>錯誤項目</label><select id="err_type"><option>金額不符</option><option>數量不符</option><option>退貨未扣款</option><option>請款日期未填</option><option>進貨資料不完整</option><option>簽收單未完成</option><option>其他</option></select></div></div>
+    <div style="margin-top:12px"><label>選擇錯誤訂單號（可複選）</label><div class="mini-note" style="margin-bottom:8px"><label class="checkline"><input type="checkbox" id="err_select_all" checked><strong>全選 / 取消全選</strong></label></div><div class="card plain" style="padding:10px;margin:0;max-height:220px;overflow:auto">${checkRows || '<span class="muted">此批次無資料</span>'}</div></div>
+    <div style="margin-top:12px"><label>錯誤說明</label><textarea id="err_note" placeholder="請輸入要通知海外修正的內容"></textarea></div>`,{
+      width:'820px',
+      footer:`<button id="cancelModalBtn">取消</button><button class="primary" id="saveErrBtn">送出通知</button>`,
+      onOpen:(modal)=>{
+        $('#cancelModalBtn',modal).addEventListener('click',closeModal);
+        $('#err_select_all',modal)?.addEventListener('change',e=>$all('.err-order-check',modal).forEach(c=>c.checked=e.target.checked));
+        $('#saveErrBtn',modal).addEventListener('click',()=>{
+          const ids=$all('.err-order-check:checked',modal).map(c=>c.value);
+          if(!ids.length) return toast('請選擇至少一筆錯誤訂單');
+          const type=$('#err_type',modal).value; const note=$('#err_note',modal).value;
+          state.orders.forEach(o=>{ if(o.accountingBatch===batch && ids.includes(o.id)){ o.accountingStatus='帳務錯誤'; o.status='帳務錯誤'; o.errorNotice={type,note,date:todayInput(),by:'共用網址'}; o.accountingNote = [o.accountingNote||'', `帳務錯誤：${type} ${note}`].filter(Boolean).join('\n'); }});
+          save(); closeModal(); toast(`已建立 ${ids.length} 筆帳務錯誤通知`); render();
+        });
+      }
+    });
+}
+
+
+function availableStatYears(){
+  const set = new Set([String(new Date().getFullYear())]);
+  state.orders.forEach(o=>{ const y=String(o.orderDate||'').slice(0,4); if(/^\d{4}$/.test(y)) set.add(y); });
+  return Array.from(set).sort((a,b)=>b.localeCompare(a));
+}
+function filteredStatOrders(){
+  const mode = state.filters.statsMode || 'month';
+  return state.orders.filter(o=>{
+    const d = String(o.orderDate||'');
+    if(mode==='year') return d.slice(0,4) === String(state.filters.statsYear || new Date().getFullYear());
+    if(mode==='month') return d.slice(0,7) === String(state.filters.statsMonth || todayInput().slice(0,7));
+    if(mode==='range'){
+      const start = state.filters.statsStart || '';
+      const end = state.filters.statsEnd || '';
+      if(start && d < start) return false;
+      if(end && d > end) return false;
+      return !!d;
+    }
+    return true;
+  });
+}
+function statsRangeLabel(){
+  const mode = state.filters.statsMode || 'month';
+  if(mode==='year') return `${state.filters.statsYear || new Date().getFullYear()} 年`;
+  if(mode==='month') return `${String(state.filters.statsMonth || todayInput().slice(0,7)).replace('-',' 年 ')} 月`;
+  const s = state.filters.statsStart ? dateSlash(state.filters.statsStart) : '最早';
+  const e = state.filters.statsEnd ? dateSlash(state.filters.statsEnd) : '今日';
+  return `${s} ～ ${e}`;
+}
+function renderStats(root){
+  const years = availableStatYears();
+  const statOrders = filteredStatOrders();
+  const totalAmount = statOrders.reduce((s,o)=>s+orderAmount(o),0);
+  const supplierAmount = statOrders.reduce((s,o)=>s+orderSupplierAmount(o),0);
+  const orderCount = statOrders.length;
+  const workerCount = statOrders.reduce((s,o)=>s+(o.isStockOrder?0:Math.max(1,orderWorkers(o).length)),0);
+  const itemQty = statOrders.reduce((sum,o)=>sum+(o.items||[]).reduce((s,l)=>s+lineQty(l),0),0);
+  root.innerHTML = `
+    <div class="card plain">
+      <div class="card-title"><h2>統計條件</h2><span class="subtle">可依年度、月份或自訂日期區間統計</span></div>
+      <div class="stats-filter-bar">
+        <div><label>統計方式</label><select id="statsMode"><option value="year" ${state.filters.statsMode==='year'?'selected':''}>年</option><option value="month" ${state.filters.statsMode==='month'?'selected':''}>月</option><option value="range" ${state.filters.statsMode==='range'?'selected':''}>區間</option></select></div>
+        <div class="stats-year-field"><label>年度</label><select id="statsYear">${years.map(y=>`<option value="${esc(y)}" ${String(state.filters.statsYear)===String(y)?'selected':''}>${esc(y)}</option>`).join('')}</select></div>
+        <div class="stats-month-field"><label>月份</label><input type="month" id="statsMonth" value="${esc(state.filters.statsMonth || todayInput().slice(0,7))}"></div>
+        <div class="range-fields stats-range-field">
+          <div><label>起日</label><input type="date" id="statsStart" value="${esc(state.filters.statsStart||'')}"></div>
+          <div><label>迄日</label><input type="date" id="statsEnd" value="${esc(state.filters.statsEnd||'')}"></div>
+        </div>
+      </div>
+      <div class="mini-note">目前統計：<b>${esc(statsRangeLabel())}</b></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><div class="label">訂購總數</div><div class="num">${itemQty}</div></div>
+      <div class="stat"><div class="label">訂購總金額</div><div class="num">${money(totalAmount)}</div></div>
+      <div class="stat"><div class="label">訂購單金額</div><div class="num">${money(supplierAmount)}</div></div>
+      <div class="stat"><div class="label">訂購筆數 / 工人數</div><div class="num">${orderCount} / ${workerCount}</div></div>
+    </div>
+    <div class="split">
+      <div class="card plain"><div class="card-title"><h2>月統計</h2></div>${monthlyStatsHTML(statOrders)}</div>
+      <div class="card plain"><div class="card-title"><h2>年統計</h2></div>${yearlyStatsHTML(statOrders)}</div>
+    </div>
+    <div class="card plain"><div class="card-title"><h2>各品項訂購數據及金額</h2><span class="subtle">統計數量 = 訂購 + 加買 + 拿庫存 - 退貨</span></div>${itemStatsHTML(statOrders)}</div>`;
+  const mode = state.filters.statsMode || 'month';
+  $('.stats-year-field')?.classList.toggle('hidden', mode!=='year');
+  $('.stats-month-field')?.classList.toggle('hidden', mode!=='month');
+  $('.stats-range-field')?.classList.toggle('hidden', mode!=='range');
+  $('#statsMode')?.addEventListener('change',e=>{state.filters.statsMode=e.target.value;save();renderStats(root);});
+  $('#statsYear')?.addEventListener('change',e=>{state.filters.statsYear=e.target.value;save();renderStats(root);});
+  $('#statsMonth')?.addEventListener('change',e=>{state.filters.statsMonth=e.target.value;save();renderStats(root);});
+  $('#statsStart')?.addEventListener('change',e=>{state.filters.statsStart=e.target.value;save();renderStats(root);});
+  $('#statsEnd')?.addEventListener('change',e=>{state.filters.statsEnd=e.target.value;save();renderStats(root);});
+}
+function monthlyStatsHTML(orders=state.orders){
+  const map={};
+  orders.forEach(o=>{ const key=String(o.orderDate||'未填').slice(0,7); map[key]=map[key]||{count:0,total:0,orders:0}; map[key].orders++; map[key].count+=(o.items||[]).reduce((s,l)=>s+lineQty(l),0); map[key].total+=orderAmount(o); });
+  const rows=Object.entries(map).sort((a,b)=>b[0].localeCompare(a[0]));
+  return rows.length?`<table><thead><tr><th>月份</th><th class="right">訂購筆數</th><th class="right">訂購總數</th><th class="right">總金額</th></tr></thead><tbody>${rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="right">${v.orders||0}</td><td class="right"><b>${v.count}</b></td><td class="right">${money(v.total)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無統計資料。</div>';
+}
+function yearlyStatsHTML(orders=state.orders){
+  const map={};
+  orders.forEach(o=>{ const key=String(o.orderDate||'未填').slice(0,4); map[key]=map[key]||{count:0,total:0,orders:0}; map[key].orders++; map[key].count+=(o.items||[]).reduce((s,l)=>s+lineQty(l),0); map[key].total+=orderAmount(o); });
+  const rows=Object.entries(map).sort((a,b)=>b[0].localeCompare(a[0]));
+  return rows.length?`<table><thead><tr><th>年度</th><th class="right">訂購筆數</th><th class="right">訂購總數</th><th class="right">總金額</th></tr></thead><tbody>${rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="right">${v.orders||0}</td><td class="right"><b>${v.count}</b></td><td class="right">${money(v.total)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無統計資料。</div>';
+}
+function itemStatsHTML(orders=state.orders){
+  const map={};
+  for(const item of state.settings.items) map[item.code]={name:item.name, qty:0, orderQty:0, addQty:0, useStockQty:0, returnQty:0, amount:0};
+  orders.forEach(o=>{(o.items||[]).forEach(l=>{ const m=map[l.code]||(map[l.code]={name:itemLabel(l.code),qty:0,orderQty:0,addQty:0,useStockQty:0,returnQty:0,amount:0}); m.qty+=lineQty(l); m.orderQty+=num(l.orderQty); m.addQty+=num(l.addQty); m.useStockQty+=num(l.useStockQty); m.returnQty+=num(l.returnQty); m.amount+=lineAmount(l); });});
+  const rows=Object.values(map).filter(x=>x.qty||x.orderQty||x.addQty||x.useStockQty||x.returnQty).sort((a,b)=>b.amount-a.amount);
+  return rows.length?`<table><thead><tr><th>品項</th><th class="right">訂購</th><th class="right">加買</th><th class="right">拿庫存</th><th class="right">退貨</th><th class="right">統計數量</th><th class="right">金額</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.name)}</td><td class="right">${r.orderQty}</td><td class="right">${r.addQty}</td><td class="right">${r.useStockQty}</td><td class="right">${r.returnQty}</td><td class="right"><b>${r.qty}</b></td><td class="right"><b>${money(r.amount)}</b></td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無品項統計資料。</div>';
+}
+
+
+function renderVersionInfo(root){
+  root.innerHTML = `
+    <div class="card plain">
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.5｜Supabase 公開共用正式版</span></div>
+      <div class="split">
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.5 開啟網址即可直接使用，不需要建立帳號或設定角色權限。</p></div>
+        <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
+      </div>
+    </div>
+    ${versionNotes.map(v=>`<div class="card plain"><div class="card-title"><h2>${esc(v.version)}｜${esc(v.title)}</h2><span class="subtle">${esc(v.date)}</span></div><ul style="margin:0;padding-left:22px;line-height:1.9">${v.items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>`).join('')}`;
+}
+function renderControlInfo(root){
+  const deleted = Array.isArray(state.deletedOrders) ? state.deletedOrders : [];
+  const logs = Array.isArray(state.auditLogs) ? state.auditLogs : [];
+  root.innerHTML = `
+    <div class="toolbar"><div class="toolbar-left"><button id="exportAuditBtn">匯出異動紀錄 CSV</button></div><div class="toolbar-right"><span class="subtle">控管資訊包含異動紀錄與刪除訂單救回</span></div></div>
+    <div class="card plain">
+      <div class="card-title"><h2>刪除救回</h2><span class="subtle">刪除的訂購單會暫存在這裡，可恢復回訂購紀錄</span></div>
+      ${deleted.length ? `<div class="table-wrap"><table><thead><tr><th>刪除時間</th><th>刪除來源</th><th>訂購單號</th><th>雇主 / 對象</th><th class="right">金額</th><th>操作</th></tr></thead><tbody>${deleted.map(d=>`<tr><td>${esc(d.deletedAt)}</td><td>${esc(d.deletedBy)}</td><td><b>${esc(d.order?.orderNo||'-')}</b></td><td>${esc(d.order?.employer||'-')}<br><span class="muted">${esc(workerDisplay(d.order||{}))}</span></td><td class="right">${money(orderAmount(d.order||{}))}</td><td><div class="actions"><button class="small primary" data-restore-order="${esc(d.id)}" ${can('settings')?'':'disabled'}>救回</button><button class="small danger" data-purge-order="${esc(d.id)}" ${can('settings')?'':'disabled'}>永久移除</button></div></td></tr>`).join('')}</tbody></table></div>` : `<div class="empty">目前沒有可救回的刪除資料。</div>`}
+    </div>
+    <div class="card plain">
+      <div class="card-title"><h2>控管資訊異動紀錄</h2><span class="subtle">保留最近 500 筆異動</span></div>
+      ${logs.length ? `<div class="table-wrap"><table><thead><tr><th>時間</th><th>來源</th><th>動作</th><th>對象</th><th>名稱 / 單號</th><th>內容</th></tr></thead><tbody>${logs.map(l=>`<tr><td>${esc(l.time)}</td><td>${esc(l.source||l.user||l.role||'共用網址')}</td><td><span class="pill">${esc(l.action)}</span></td><td>${esc(l.targetType)}</td><td><b>${esc(l.targetName||l.targetId)}</b></td><td>${esc(l.detail||'')}</td></tr>`).join('')}</tbody></table></div>` : `<div class="empty">尚無異動紀錄。</div>`}
+    </div>`;
+  $('#exportAuditBtn')?.addEventListener('click', exportAuditCSV);
+  $all('[data-restore-order]').forEach(btn=>btn.addEventListener('click',()=>restoreDeletedOrder(btn.dataset.restoreOrder)));
+  $all('[data-purge-order]').forEach(btn=>btn.addEventListener('click',()=>purgeDeletedOrder(btn.dataset.purgeOrder)));
+}
+function restoreDeletedOrder(deleteId){
+  const deleted = (state.deletedOrders||[]).find(d=>d.id===deleteId);
+  if(!deleted || !deleted.order) return;
+  if(!confirm(`確定救回訂購單 ${deleted.order.orderNo||''}？`)) return;
+  const restored = snapshotOrder(deleted.order);
+  if(state.orders.some(o=>o.id===restored.id)) restored.id = uid('ORD');
+  state.orders.push(restored);
+  state.deletedOrders = (state.deletedOrders||[]).filter(d=>d.id!==deleteId);
+  audit('救回訂購','訂購單',restored.id,restored.orderNo,`${restored.employer||''}｜${workerDisplay(restored)}`);
+  save(); toast('已救回訂購單'); renderControlInfo($('#content'));
+}
+function purgeDeletedOrder(deleteId){
+  const deleted = (state.deletedOrders||[]).find(d=>d.id===deleteId);
+  if(!deleted) return;
+  if(!confirm('確定永久移除？移除後無法再救回。')) return;
+  state.deletedOrders = (state.deletedOrders||[]).filter(d=>d.id!==deleteId);
+  audit('永久移除刪除資料','訂購單',deleted.order?.id,deleted.order?.orderNo,'已從刪除救回清單移除');
+  save(); toast('已永久移除'); renderControlInfo($('#content'));
+}
+function exportAuditCSV(){
+  const rows=[['時間','來源','動作','對象','ID','名稱/單號','內容']];
+  (state.auditLogs||[]).forEach(l=>rows.push([l.time,l.source||l.user||l.role||'共用網址',l.action,l.targetType,l.targetId,l.targetName,l.detail]));
+  downloadBlob('FOR-e寢具訂購_控管異動紀錄_'+todayInput()+'.csv', toCSV(rows), 'text/csv;charset=utf-8');
+}
+
+function renderSettings(root){
+  root.innerHTML = `
+    <div class="split">
+      <div class="card"><div class="card-title"><h2>基本資料</h2></div>
+        <div class="grid two">
+          <div><label>部門（一行一筆）</label><textarea id="set_departments">${esc(state.settings.departments.join('\n'))}</textarea></div>
+          <div><label>承辦人（一行一筆）</label><textarea id="set_staff">${esc(state.settings.staff.join('\n'))}</textarea><div class="mini-note" style="margin-top:6px">灃康聯絡窗口固定：貝貝#369、阿金#186、明明#186</div></div>
+          <div><label>公司別 / 發票抬頭（一行一筆）</label><textarea id="set_companyTitles">${esc(state.settings.companyTitles.join('\n'))}</textarea></div>
+          <div><label>送貨地點（一行一筆）</label><textarea id="set_deliveryPlaces">${esc(state.settings.deliveryPlaces.join('\n'))}</textarea></div>
+          <div><label>常用雇主（一行一筆）</label><textarea id="set_employers">${esc(state.settings.employers.join('\n'))}</textarea></div>
+        </div>
+        <div class="toolbar" style="margin-top:12px"><div></div><button class="primary" id="saveBasicSettingsBtn" ${can('settings')?'':'disabled'}>儲存基本資料</button></div>
+      </div>
+      <div class="card"><div class="card-title"><h2>備份 / 還原</h2></div>
+        <p class="mini-note">正式資料已連接 Supabase；目前瀏覽器另保留快取，網路恢復後會繼續同步。</p>
+        <div class="actions" style="margin-bottom:12px"><button id="exportJsonBtn">下載備份 JSON</button><button id="loadDemoBtn">建立測試資料</button><button class="danger" id="clearAllBtn" ${can('settings')?'':'disabled'}>清空資料</button></div>
+        <label>還原 JSON</label><input type="file" id="importJsonFile" accept="application/json">
+      </div>
+    </div>
+    <div class="card plain"><div class="card-title"><h2>寢具廠商資訊</h2><button id="settingsAddVendorBtn" ${can('settings')?'':'disabled'}>＋新增廠商</button></div>
+      <div class="table-wrap"><table><thead><tr><th>公司名稱</th><th>公司地址</th><th>聯絡窗口</th><th>電話</th><th>手機</th><th>傳真</th><th>LINE</th><th>eMAIL</th><th>操作</th></tr></thead><tbody>${(state.settings.vendors||[]).length ? state.settings.vendors.map(v=>`<tr><td><b>${esc(v.companyName)}</b></td><td>${esc(v.companyAddress)}</td><td>${esc(v.contactPerson)}</td><td>${esc(v.phone)}</td><td>${esc(v.mobile)}</td><td>${esc(v.fax)}</td><td>${esc(v.line)}</td><td>${esc(v.email)}</td><td><div class="actions"><button class="small" data-settings-edit-vendor="${esc(v.id)}" ${can('settings')?'':'disabled'}>修改</button><button class="small danger" data-settings-delete-vendor="${esc(v.id)}" ${can('settings')?'':'disabled'}>刪除</button></div></td></tr>`).join('') : `<tr><td colspan="9" class="center muted">尚未建立寢具廠商資訊</td></tr>`}</tbody></table></div>
+    </div>
+    <div class="card plain"><div class="card-title"><h2>品項資料</h2><button id="settingsAddItemBtn" ${can('settings')?'':'disabled'}>＋新增品項</button></div>
+      <div class="table-wrap"><table><thead><tr><th>代碼</th><th>品名</th><th>規格</th><th>單位</th><th class="right">廠商訂購價</th><th class="right">工人訂購價</th><th class="right">期初庫存</th><th>狀態</th><th>操作</th></tr></thead><tbody>${state.settings.items.map(i=>`<tr><td>${esc(i.code)}</td><td><b>${esc(i.name)}</b></td><td>${esc(i.spec)}</td><td>${esc(i.unit)}</td><td class="right">${money(i.vendorPrice ?? i.price)}</td><td class="right">${money(i.price)}</td><td class="right">${num(i.openingStock)}</td><td>${i.active!==false?'啟用':'停用'}</td><td><button class="small" data-settings-edit-item="${esc(i.code)}" ${can('settings')?'':'disabled'}>修改</button></td></tr>`).join('')}</tbody></table></div>
+    </div>`;
+  $('#saveBasicSettingsBtn')?.addEventListener('click',saveBasicSettings);
+  $('#exportJsonBtn')?.addEventListener('click',exportJSON);
+  $('#importJsonFile')?.addEventListener('change',importJSON);
+  $('#clearAllBtn')?.addEventListener('click',clearAllData);
+  $('#loadDemoBtn')?.addEventListener('click',loadDemoData);
+  $('#settingsAddItemBtn')?.addEventListener('click',()=>openItemModal());
+  $all('[data-settings-edit-item]').forEach(btn=>btn.addEventListener('click',()=>openItemModal(btn.dataset.settingsEditItem)));
+  $('#settingsAddVendorBtn')?.addEventListener('click',()=>openVendorModal());
+  $all('[data-settings-edit-vendor]').forEach(btn=>btn.addEventListener('click',()=>openVendorModal(btn.dataset.settingsEditVendor)));
+  $all('[data-settings-delete-vendor]').forEach(btn=>btn.addEventListener('click',()=>deleteVendor(btn.dataset.settingsDeleteVendor)));
+}
+function linesFrom(id){ return ($('#'+id)?.value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean); }
+function saveBasicSettings(){
+  state.settings.departments=linesFrom('set_departments');
+  state.settings.staff=linesFrom('set_staff');
+  state.settings.companyTitles=linesFrom('set_companyTitles');
+  state.settings.deliveryPlaces=linesFrom('set_deliveryPlaces');
+  state.settings.employers=linesFrom('set_employers');
+  state.settings.contacts=[];
+  audit('修改設定','基本資料','settings','資料設定','部門 / 承辦 / 公司別 / 送貨地點 / 常用雇主');
+  save(); toast('基本資料已儲存'); render();
+}
+function exportJSON(){ downloadBlob('FOR-e寢具訂購備份_'+todayInput()+'.json', JSON.stringify(state,null,2), 'application/json;charset=utf-8'); }
+function importJSON(e){
+  const file=e.target.files?.[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{ try{ state=normalizeState(JSON.parse(reader.result)); save(); toast('資料已匯入，正在同步至 Supabase'); render(); }catch(err){ alert('JSON 檔案格式錯誤'); } };
+  reader.readAsText(file);
+}
+function clearAllData(){
+  if(!confirm('確定要清空全部訂購、庫存調整與設定？')) return;
+  state=defaultState(); save(); toast('已清空'); render();
+}
+function loadDemoData(){
+  const o=createBlankOrder();
+  o.employer='宏電科技股份有限公司'; o.worker='阮文勇'; o.workerEnglish=''; o.nationality='越南'; o.entryDate=todayInput(); o.companyTitle='灃康人力'; o.orderNo=makeOrderNo(o.companyTitle,o.dept,o.orderDate); o.deliveryPlace=KANG_PLACE; o.staff='貝貝'; o.contact=staffContact('貝貝'); o.deliveryAddress=KANG_ADDRESS; o.batchNo='';
+  o.items.forEach(l=>{ if(['MATTRESS','QUILT','PILLOW','TOILETRIES'].includes(l.code)) l.orderQty=1; if(l.code==='CLOSET') l.orderQty=0; });
+  state.orders.push(o); save(); toast('已建立一筆測試資料'); render();
+}
+function showModal(title, body, opts={}){
+  const root=$('#modalRoot');
+  const width=opts.width || '900px';
+  root.innerHTML=`<div class="modal-backdrop"><div class="modal ${width==='720px'?'small':''}" style="width:min(${width},100%)"><div class="modal-head"><h2>${esc(title)}</h2><button class="ghost" id="modalCloseBtn">✕</button></div><div class="modal-body">${body}</div><div class="modal-foot">${opts.footer||'<button id="cancelModalBtn">關閉</button>'}</div></div></div>`;
+  $('#modalCloseBtn').addEventListener('click',closeModal);
+  $('.modal-backdrop').addEventListener('click',e=>{if(e.target.classList.contains('modal-backdrop')) closeModal();});
+  if(opts.onOpen) opts.onOpen($('.modal'));
+}
+function closeModal(){ $('#modalRoot').innerHTML=''; }
+
+function openVendorModal(id){
+  const vendor = (state.settings.vendors||[]).find(v=>v.id===id) || {id:'', companyName:'', companyAddress:'', contactPerson:'', phone:'', mobile:'', fax:'', line:'', email:''};
+  const body = `
+    <div class="form-section"><h3>廠商基本資料</h3>
+      <div class="grid two">
+        <div><label>公司名稱</label><input id="vendor_companyName" value="${esc(vendor.companyName)}" placeholder="請輸入公司名稱"></div>
+        <div><label>聯絡窗口</label><input id="vendor_contactPerson" value="${esc(vendor.contactPerson)}" placeholder="請輸入聯絡窗口"></div>
+      </div>
+      <div style="margin-top:9px"><label>公司地址</label><input id="vendor_companyAddress" value="${esc(vendor.companyAddress)}" placeholder="請輸入公司地址"></div>
+    </div>
+    <div class="form-section"><h3>聯絡方式</h3>
+      <div class="grid three">
+        <div><label>電話</label><input id="vendor_phone" value="${esc(vendor.phone)}" placeholder="電話"></div>
+        <div><label>手機</label><input id="vendor_mobile" value="${esc(vendor.mobile)}" placeholder="手機"></div>
+        <div><label>傳真</label><input id="vendor_fax" value="${esc(vendor.fax)}" placeholder="傳真"></div>
+        <div><label>LINE</label><input id="vendor_line" value="${esc(vendor.line)}" placeholder="LINE ID / 群組名稱"></div>
+        <div><label>eMAIL</label><input id="vendor_email" value="${esc(vendor.email)}" placeholder="email@example.com"></div>
+      </div>
+    </div>`;
+  showModal(id?'修改寢具廠商':'新增寢具廠商', body, {
+    width:'900px',
+    footer:`<button id="cancelModalBtn">取消</button><button class="primary" id="saveVendorBtn">儲存廠商</button>`,
+    onOpen:(modal)=>{
+      $('#cancelModalBtn',modal).addEventListener('click',closeModal);
+      $('#saveVendorBtn',modal).addEventListener('click',()=>saveVendorFromModal(id,modal));
+    }
+  });
+}
+function saveVendorFromModal(id, modal){
+  const data = {
+    id: id || uid('V'),
+    companyName: $('#vendor_companyName',modal).value.trim(),
+    companyAddress: $('#vendor_companyAddress',modal).value.trim(),
+    contactPerson: $('#vendor_contactPerson',modal).value.trim(),
+    phone: $('#vendor_phone',modal).value.trim(),
+    mobile: $('#vendor_mobile',modal).value.trim(),
+    fax: $('#vendor_fax',modal).value.trim(),
+    line: $('#vendor_line',modal).value.trim(),
+    email: $('#vendor_email',modal).value.trim()
+  };
+  if(!data.companyName){ alert('請輸入公司名稱'); return; }
+  state.settings.vendors = Array.isArray(state.settings.vendors) ? state.settings.vendors : [];
+  const idx = state.settings.vendors.findIndex(v=>v.id===id);
+  const beforeVendor = idx>=0 ? JSON.parse(JSON.stringify(state.settings.vendors[idx])) : null;
+  if(idx>=0) state.settings.vendors[idx] = data;
+  else state.settings.vendors.push(data);
+  audit(idx>=0?'修改廠商':'新增廠商','寢具廠商',data.id,data.companyName,`${data.contactPerson||''} ${data.phone||''}`,beforeVendor);
+  save(); toast('寢具廠商資訊已儲存'); closeModal(); render();
+}
+function deleteVendor(id){
+  const vendor = (state.settings.vendors||[]).find(v=>v.id===id);
+  if(!vendor) return;
+  if(!confirm(`確定刪除寢具廠商「${vendor.companyName}」？`)) return;
+  state.settings.vendors = (state.settings.vendors||[]).filter(v=>v.id!==id);
+  audit('刪除廠商','寢具廠商',id,vendor.companyName,'已從廠商資料移除',vendor);
+  save(); toast('寢具廠商已刪除'); render();
+}
+
+function openLineModal(orderId){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  const msg = lineMessage(o);
+  showModal('LINE 訊息', `<div class="line-preview" id="linePreview">${esc(msg)}</div><textarea id="lineText" class="hidden">${esc(msg)}</textarea>`,{
+    width:'720px',
+    footer:`<button id="cancelModalBtn">關閉</button><button class="primary" id="copyLineBtn">複製 LINE 訊息</button>`,
+    onOpen:(modal)=>{
+      $('#cancelModalBtn',modal).addEventListener('click',closeModal);
+      $('#copyLineBtn',modal).addEventListener('click',async()=>{
+        const text=msg;
+        try{ await navigator.clipboard.writeText(text); toast('已複製 LINE 訊息'); }catch(e){ const ta=$('#lineText',modal); ta.classList.remove('hidden'); ta.select(); document.execCommand('copy'); toast('已複製 LINE 訊息'); }
+      });
+    }
+  });
+}
+function lineMessage(o){
+  const lines = [
+    '您好，麻煩協助安排寢具，資訊如下：',
+    `雇主：${o.employer||''}`,
+    `訂購日期：${dateSlash(o.orderDate)||today()}`,
+    ...(formatDeliveryDeadline(o) ? [`送達時間：${formatDeliveryDeadline(o)}`] : []),
+    `公司別（發票開立抬頭）：${o.companyTitle||'灃禾管顧'}`,
+    `承辦人：${o.staff||''}`
+  ];
+  if(o.deliveryPlace && o.deliveryPlace!==KANG_PLACE){
+    lines.splice(4,0,`送貨地點：${o.deliveryPlace||''}`);
+    lines.push(`收貨聯絡人：${deliveryContact(o)||''}`);
+    lines.push(`送貨地址：${deliveryAddress(o)||''}`);
+    if(o.note) lines.push(`備註：${o.note}`);
+  }
+  return lines.join('\n');
+}
+const toiletriesDetails = {
+  '印尼': [['塑膠口杯','Gelas plastik'],['牙刷','Sikat gigi'],['牙膏','Odol'],['毛巾','Handuk'],['香皂','Sabun mandi'],['衣架','Gantungan'],['臉盆','Baskom'],['洗衣粉','Rinso cuci baju'],['衛生紙','Tissue']],
+  '泰國': [['塑膠口杯','ถ้วยพลาสติก'],['牙刷','แปรงสีฟัน'],['牙膏','ยาสีฟัน'],['毛巾','ผ้าขนหนู'],['香皂','สบู่'],['衣架','ไม้แขวนเสื้อ'],['臉盆','อ่างล้างหน้า'],['洗衣粉','ผงซักฟอก'],['衛生紙','กระดาษชำระ']],
+  '菲律賓': [['塑膠口杯','Plastic cup'],['牙刷','Toothbrush'],['牙膏','Toothpaste'],['毛巾','Towel'],['香皂','Soap'],['衣架','Hanger'],['臉盆','Washbasin'],['洗衣粉','Detergent'],['衛生紙','Toilet paper']],
+  '越南': [['塑膠口杯','Cốc nhựa'],['牙刷','Bàn chải đánh răng'],['牙膏','Kem đánh răng'],['毛巾','Khăn mặt'],['香皂','Xà bông'],['衣架','Móc áo'],['臉盆','Chậu nhựa rửa mặt'],['洗衣粉','Bột giặt'],['衛生紙','Giấy vệ sinh']],
+  '其他': [['塑膠口杯','Plastic cup'],['牙刷','Toothbrush'],['牙膏','Toothpaste'],['毛巾','Towel'],['香皂','Soap'],['衣架','Hanger'],['臉盆','Washbasin'],['洗衣粉','Detergent'],['衛生紙','Toilet paper']]
+};
+function receiptProductHTML(code, langKey, lang){
+  const it=getItem(code);
+  const tname=lang.names?.[code] || it.name;
+  const details = code==='TOILETRIES' ? `<div class="toiletry-list">${(toiletriesDetails[langKey]||toiletriesDetails['其他']).map(([zh,tr])=>`*${esc(zh)} ${esc(tr)}`).join('<br>')}</div>` : '';
+  return `<b>${esc(it.name)}</b><br><span>${esc(tname)}</span>${details}`;
+}
+function purchaseOrderHTML(o){
+  const lines = (o.items||[]).filter(l=>hasOrderLineForPrint(l));
+  const itemRows = lines.length ? lines.map((l,idx)=>{
+    const it = getItem(l.code);
+    const note=[l.note||'', num(l.returnQty)>0?`退貨 ${num(l.returnQty)}`:'', num(l.addQty)>0?`加買 ${num(l.addQty)}`:''].filter(Boolean).join(' / ');
+    return `<tr><td>${idx+1}</td><td><b>${esc(it.name)}</b></td><td class="spec-cell">${esc(it.spec||'')}</td><td>${esc(it.unit||'')}</td><td>${supplierQty(l)||''}</td><td>${num(l.useStockQty)||''}</td><td>${esc(note)}</td></tr>`;
+  }).join('') : `<tr><td colspan="7" class="center">尚無有訂購數量的品項</td></tr>`;
+  const deadline = formatDeliveryDeadline(o) || '未填寫';
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境外國人寢具訂購單</title><style>
+    *{box-sizing:border-box} body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;margin:20px;background:#fff;text-align:center} button{padding:8px 12px;margin-bottom:12px} h1{text-align:center;margin:0 0 10px;font-size:26px;letter-spacing:.06em} table{width:100%;border-collapse:collapse;margin-bottom:10px} th,td{border:1px solid #222;padding:6px 8px;font-size:14px;vertical-align:middle;text-align:center;line-height:1.3} th{background:#f2f2f2;white-space:nowrap}.secondary td{font-size:14px;color:#222;font-weight:700}.secondary .label{font-size:12px}.label{display:block;font-size:12px;color:#555;font-weight:700;margin-bottom:4px}.value{display:block;font-size:18px;font-weight:800;line-height:1.22}.value.large{font-size:16px}.value.mid{font-size:17px}.hero{border:2px solid #111;padding:7px 10px;margin:7px 0 10px}.hero .label{font-size:12px}.hero .value{font-size:21px;line-height:1.18}.info td{height:66px}.address td{height:56px}.note-box td{height:50px}.items th{font-size:13px}.items td{font-size:14px}.items td.spec-cell{white-space:normal;word-break:break-word;line-height:1.45}.sign{text-align:center;height:78px;vertical-align:bottom}.no-border td{border:0}.print-note{font-size:13px;color:#555;margin-bottom:12px}@media print{button{display:none}body{margin:12mm} }
+  </style></head><body><button onclick="window.print()">列印</button><h1>${esc(o.companyTitle||'公司別')}入境外國人寢具訂購單</h1>
+    <table class="secondary"><tr><td><span class="label">訂購單號</span>${esc(o.orderNo||'')}</td><td><span class="label">公司別（發票開立抬頭）</span>${esc(o.companyTitle||'')}</td><td><span class="label">部門</span>${esc(o.dept||'')}</td><td><span class="label">承辦</span>${esc(o.staff||'')}</td><td><span class="label">支付對象</span>${esc(o.paymentTarget||'雇主')}</td></tr></table>
+    <div class="hero"><span class="label">送達時間</span><span class="value large">${esc(deadline)}</span></div>
+    <table class="info">
+      <tr><td><span class="label">客戶名稱</span><span class="value large">${esc(o.employer||'')}</span></td><td><span class="label">入境工人</span><span class="value large">${esc(workerDisplay(o))}</span></td></tr>
+      <tr><td><span class="label">入境日</span><span class="value mid">${esc(entryDateDisplay(o))}</span></td><td><span class="label">收貨聯絡人</span><span class="value mid">${esc(deliveryContact(o)||'')}</span></td></tr>
+    </table>
+    <table class="address"><tr><td><span class="label">送貨地址</span><span class="value mid">${esc(deliveryDisplay(o)||'')}</span></td></tr></table>
+    <table class="note-box"><tr><td><span class="label">備註</span><span class="value mid">${esc(o.note||'')}</span></td></tr></table>
+    <table class="items"><thead><tr><th>項目</th><th>品名</th><th>規格</th><th>單位</th><th>訂購數量</th><th>使用庫存</th><th>備註</th></tr></thead><tbody>${itemRows}</tbody></table>
+    <table class="no-border"><tr><td class="sign">____________________<br>營管主管</td><td class="sign">____________________<br>營管承辦</td><td class="sign">____________________<br>海外承辦</td></tr></table>
+  </body></html>`;
+}
+function printPurchaseOrder(orderId){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  const w=window.open('','_blank'); w.document.open(); w.document.write(purchaseOrderHTML(o)); w.document.close(); w.focus();
+}
+function printReceipt(orderId){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  if(o.isStockOrder) return toast('訂庫存不需要列印入境寢具訂購單');
+  const groups = orderWorkerGroups(o).filter(g=>(g.items||[]).some(l=>hasReceiptLine(l)) || g.name);
+  const pages = groups.length ? groups : [{name:o.worker||'-', nationality:o.nationality||'其他', entryDate:o.entryDate||'', items:o.items||[]}];
+  const pageHTML = pages.map(g=>{
+    const langKey = g.nationality || o.nationality || '其他';
+    const lang = itemTranslations[langKey] || itemTranslations['其他'];
+    const receiptLines = (g.items||[]).filter(l=>hasReceiptLine(l) && !isBedItem(l.code));
+    const rows = receiptLines.length ? receiptLines.map((l,idx)=>{
+      const qty=lineQty(l);
+      return `<tr><td class="center">${idx+1}</td><td>${receiptProductHTML(l.code, langKey, lang)}</td><td class="right">${money(l.price)}</td><td class="center"><b>${qty}</b></td><td>${esc(l.note||'')}</td></tr>`;
+    }).join('') : `<tr><td colspan="5" class="center">尚無有訂購數量的品項</td></tr>`;
+    const total=groupAmount(g);
+    return `<section class="receipt-page">
+      <h1>入境寢具訂購單</h1><h2>${esc(lang.title)}</h2>
+      <table class="info"><tr><td>雇主名稱 ${esc(lang.employer)}：<b>${esc(o.employer||'')}</b></td></tr><tr><td>外國人姓名 ${esc(lang.worker)}：<b>${esc(g.name||'-')}</b></td></tr><tr><td>入境日期 ${esc(lang.entry)}：<b>${esc(dateSlash(g.entryDate)||'')}</b></td></tr></table>
+      <table><thead><tr><th>${esc(lang.item)}</th><th>${esc(lang.product)}</th><th>${esc(lang.price)}</th><th>${esc(lang.qty)}</th><th>${esc(lang.note)}</th></tr></thead><tbody>${rows}</tbody></table>
+      <p class="total">總金額 ${esc(lang.total)}：${money(total)}</p>
+      <table class="info"><tr><td class="sign">翻譯人員 ${esc(lang.translator)}：____________________</td><td class="sign">訂購人簽名+簽收日期 ${esc(lang.signature)}：____________________</td></tr></table>
+    </section>`;
+  }).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境寢具訂購單</title><style>
+    *{box-sizing:border-box}body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;margin:26px;background:#fff}button{padding:8px 12px;margin-bottom:12px}h1{text-align:center;margin:0 0 8px;font-size:28px;text-decoration:underline}h2{text-align:center;margin:0 0 22px;font-size:20px;font-weight:600}table{width:100%;border-collapse:collapse;margin-bottom:14px}th,td{border:1px solid #222;padding:9px 10px;font-size:15px;vertical-align:middle;line-height:1.45}th{background:#f3f3f3}.info td{border:0;font-size:17px;padding:8px 4px}.center{text-align:center}.right{text-align:right}.toiletry-list{font-size:13px;line-height:1.55;margin-top:5px;font-weight:400}.total{text-align:right;font-size:20px;font-weight:800}.sign{height:76px;vertical-align:bottom}.receipt-page{page-break-after:always}.receipt-page:last-child{page-break-after:auto}@media print{button{display:none}body{margin:12mm}.receipt-page{break-after:page}.receipt-page:last-child{break-after:auto}}
+  </style></head><body><button onclick="window.print()">列印</button>${pageHTML}</body></html>`;
+  const w=window.open('','_blank'); w.document.open(); w.document.write(html); w.document.close(); w.focus();
+}
+
+function drawCenteredWrap(ctx, text, x, y, maxWidth, lineHeight, maxLines=2){
+  text=String(text||'');
+  if(!text) return;
+  const oldAlign=ctx.textAlign;
+  ctx.textAlign='center';
+  let line='', lines=[];
+  for(let i=0;i<text.length;i++){
+    const test=line+text[i];
+    if(ctx.measureText(test).width>maxWidth && line){ lines.push(line); line=text[i]; if(lines.length>=maxLines-1){ if(i<text.length-1) line += '…'; break; } }
+    else line=test;
+  }
+  if(line) lines.push(line);
+  const startY = y - ((lines.length-1)*lineHeight/2);
+  lines.forEach((ln,idx)=>ctx.fillText(ln, x+maxWidth/2, startY+idx*lineHeight));
+  ctx.textAlign=oldAlign;
+}
+function canvasWrapLines(ctx, text, maxWidth){
+  text = String(text||'');
+  if(!text) return [''];
+  const lines=[]; let line='';
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(ch==='\n'){ lines.push(line); line=''; continue; }
+    const test=line+ch;
+    if(ctx.measureText(test).width>maxWidth && line){ lines.push(line); line=ch; }
+    else line=test;
+  }
+  if(line || !lines.length) lines.push(line);
+  return lines;
+}
+function drawCenteredWrapFull(ctx, text, x, y, maxWidth, boxH, lineHeight){
+  const oldAlign=ctx.textAlign;
+  ctx.textAlign='center';
+  const lines=canvasWrapLines(ctx, text, maxWidth);
+  const totalH=lines.length*lineHeight;
+  let startY=y + Math.max(lineHeight, (boxH-totalH)/2 + lineHeight*.78);
+  lines.forEach((ln,idx)=>ctx.fillText(ln, x+maxWidth/2, startY+idx*lineHeight));
+  ctx.textAlign=oldAlign;
+}
+function drawInfoBox(ctx, x, y, w, h, label, value, valueSize=32){
+  ctx.strokeRect(x,y,w,h);
+  ctx.fillStyle='#555'; ctx.font='bold 18px Noto Sans TC, Microsoft JhengHei, Arial';
+  drawCenteredWrap(ctx, label, x+12, y+24, w-24, 20, 1);
+  ctx.fillStyle='#111'; ctx.font=`bold ${valueSize}px Noto Sans TC, Microsoft JhengHei, Arial`;
+  drawCenteredWrap(ctx, value||'', x+18, y+h/2+18, w-36, valueSize+4, 2);
+}
+function drawSmallInfo(ctx, x, y, w, h, label, value){
+  ctx.strokeRect(x,y,w,h);
+  ctx.fillStyle='#666'; ctx.font='bold 16px Noto Sans TC, Arial';
+  drawCenteredWrap(ctx, label, x+8, y+18, w-16, 16, 2);
+  ctx.fillStyle='#222'; ctx.font='bold 19px Noto Sans TC, Arial';
+  drawCenteredWrap(ctx, value||'', x+8, y+44, w-16, 18, 1);
+}
+function downloadOrderImage(orderId){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  const rows=(o.items||[]).filter(l=>hasOrderLineForPrint(l));
+  const width=1400; const margin=70;
+  const headers=['項目','品名','規格','單位','訂購數量','使用庫存','備註'];
+  const widths=[70,230,430,80,120,120,210];
+  const useRows=rows.length?rows:[null];
+  const measureCanvas=document.createElement('canvas');
+  const measureCtx=measureCanvas.getContext('2d');
+  measureCtx.font='20px Noto Sans TC, Arial';
+  const rowHeights=useRows.map((l,r)=>{
+    const it=l?getItem(l.code):{};
+    const vals=l?[String(r+1),it.name||'',it.spec||'',it.unit||'',String(supplierQty(l)||''),String(num(l.useStockQty)||''),[l.note||'',num(l.returnQty)>0?`退貨${num(l.returnQty)}`:'',num(l.addQty)>0?`加買${num(l.addQty)}`:''].filter(Boolean).join(' / ')]:['1','尚無有訂購數量的品項','','','','',''];
+    const maxLines=Math.max(...vals.map((v,i)=>canvasWrapLines(measureCtx, v, widths[i]-12).length));
+    return Math.max(48, maxLines*22+18);
+  });
+  const height=900+rowHeights.reduce((s,h)=>s+h,0);
+  const canvas=document.createElement('canvas'); canvas.width=width; canvas.height=height;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,width,height);
+  ctx.strokeStyle='#111'; ctx.fillStyle='#111'; ctx.lineWidth=2; ctx.textAlign='center';
+
+  ctx.font='bold 38px Noto Sans TC, Microsoft JhengHei, Arial';
+  ctx.fillText(`${o.companyTitle||'公司別'}入境外國人寢具訂購單`, width/2, 58);
+
+  let y=86; const usable=width-margin*2;
+  const smallW=usable/5;
+  [['訂購單號',o.orderNo],['公司別（發票開立抬頭）',o.companyTitle],['部門',o.dept],['承辦',o.staff],['支付對象',o.paymentTarget||'雇主']].forEach((pair,i)=>drawSmallInfo(ctx, margin+i*smallW, y, smallW, 56, pair[0], pair[1]));
+  y += 74;
+
+  ctx.strokeRect(margin,y,usable,76);
+  ctx.fillStyle='#555'; ctx.font='bold 18px Noto Sans TC, Arial';
+  drawCenteredWrap(ctx,'送達時間',margin+20,y+25,usable-40,20,1);
+  ctx.fillStyle='#111'; ctx.font='bold 26px Noto Sans TC, Microsoft JhengHei, Arial';
+  drawCenteredWrap(ctx, formatDeliveryDeadline(o)||'未填寫', margin+24, y+55, usable-48, 34, 1);
+  y += 96;
+
+  const half=usable/2;
+  drawInfoBox(ctx, margin, y, half, 92, '客戶名稱', o.employer||'', 22);
+  drawInfoBox(ctx, margin+half, y, half, 92, '入境工人', workerDisplay(o), 22);
+  y += 92;
+  drawInfoBox(ctx, margin, y, half, 82, '入境日', entryDateDisplay(o), 24);
+  drawInfoBox(ctx, margin+half, y, half, 82, '收貨聯絡人', deliveryContact(o)||'', 24);
+  y += 100;
+
+  drawInfoBox(ctx, margin, y, usable, 86, '送貨地址', deliveryDisplay(o)||'', 26);
+  y += 94;
+  drawInfoBox(ctx, margin, y, usable, 72, '備註', o.note||'', 20);
+  y += 90;
+
+  let cx=margin; ctx.font='bold 20px Noto Sans TC, Arial'; ctx.fillStyle='#111';
+  headers.forEach((h,i)=>{ctx.strokeRect(cx,y,widths[i],44); drawCenteredWrap(ctx,h,cx+4,y+28,widths[i]-8,20,1); cx+=widths[i];});
+  y+=44;
+  ctx.font='20px Noto Sans TC, Arial';
+  useRows.forEach((l,r)=>{
+    cx=margin;
+    const rowH=rowHeights[r] || 48;
+    const it=l?getItem(l.code):{};
+    const vals=l?[String(r+1),it.name||'',it.spec||'',it.unit||'',String(supplierQty(l)||''),String(num(l.useStockQty)||''),[l.note||'',num(l.returnQty)>0?`退貨${num(l.returnQty)}`:'',num(l.addQty)>0?`加買${num(l.addQty)}`:''].filter(Boolean).join(' / ')]:['1','尚無有訂購數量的品項','','','','',''];
+    vals.forEach((v,i)=>{ctx.strokeRect(cx,y,widths[i],rowH); drawCenteredWrapFull(ctx,v,cx+6,y,widths[i]-12,rowH,21); cx+=widths[i];});
+    y+=rowH;
+  });
+
+  y += 96; ctx.font='22px Noto Sans TC, Arial'; ctx.textAlign='center'; ctx.fillStyle='#111';
+  ['營管主管','營管承辦','海外承辦'].forEach((s,i)=>{ const sx=250+i*430; ctx.beginPath(); ctx.moveTo(sx-150,y); ctx.lineTo(sx+150,y); ctx.stroke(); ctx.fillText(s,sx,y+38); });
+  const a=document.createElement('a'); a.download=orderDownloadFileName(o)+'.png'; a.href=canvas.toDataURL('image/png'); a.click();
+  if(!o.accountingBatch && !['已收貨','待請款','待對帳','對帳完成','帳務錯誤'].includes(o.status)){ o.status='已下單'; }
+  o.orderDownloadedAt=todayInput();
+  save(); toast('已下載訂購單，狀態已更新為已下單'); render();
+}
+function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines=3){
+  text=String(text||''); if(!text){return;} let line=''; let lineCount=0;
+  for(let i=0;i<text.length;i++){
+    const test=line+text[i];
+    if(ctx.measureText(test).width>maxWidth && line){ ctx.fillText(line,x,y); line=text[i]; y+=lineHeight; lineCount++; if(lineCount>=maxLines-1){ if(i<text.length-1) line += '…'; break; } } else line=test;
+  }
+  if(line) ctx.fillText(line,x,y);
+}
+
+
+function exportDateFilterHTML(){
+  const f = state.filters;
+  const mode = f.exportMode || 'month';
+  const years = Array.from(new Set(state.orders.map(o=>String(o.orderDate||'').slice(0,4)).filter(Boolean).concat([String(new Date().getFullYear())]))).sort().reverse();
+  return `<div class="export-filter">
+    <span class="subtle">匯出日期</span>
+    <select id="exportMode"><option value="range" ${mode==='range'?'selected':''}>區間</option><option value="year" ${mode==='year'?'selected':''}>年</option><option value="month" ${mode==='month'?'selected':''}>月</option><option value="day" ${mode==='day'?'selected':''}>日</option></select>
+    <select id="exportYear" class="export-year-field">${years.map(y=>`<option value="${esc(y)}" ${String(f.exportYear)===String(y)?'selected':''}>${esc(y)}</option>`).join('')}</select>
+    <input type="month" id="exportMonth" class="export-month-field" value="${esc(f.exportMonth || todayInput().slice(0,7))}">
+    <input type="date" id="exportDay" class="export-day-field" value="${esc(f.exportDay || todayInput())}">
+    <span class="range-field export-range-field"><input type="date" id="exportStart" value="${esc(f.exportStart||'')}"><span class="subtle">至</span><input type="date" id="exportEnd" value="${esc(f.exportEnd||'')}"></span>
+  </div>`;
+}
+function bindExportDateFilter(renderFn, root){
+  const updateVisibility = ()=>{
+    const mode = $('#exportMode')?.value || 'month';
+    $all('.export-year-field').forEach(el=>el.style.display = mode==='year' ? '' : 'none');
+    $all('.export-month-field').forEach(el=>el.style.display = mode==='month' ? '' : 'none');
+    $all('.export-day-field').forEach(el=>el.style.display = mode==='day' ? '' : 'none');
+    $all('.export-range-field').forEach(el=>el.style.display = mode==='range' ? '' : 'none');
+  };
+  const bind = (id, key)=>{
+    const el = $('#'+id);
+    if(!el) return;
+    el.addEventListener('change', e=>{ state.filters[key] = e.target.value; save(); if(id==='exportMode'){ updateVisibility(); } });
+  };
+  bind('exportMode','exportMode');
+  bind('exportYear','exportYear');
+  bind('exportMonth','exportMonth');
+  bind('exportDay','exportDay');
+  bind('exportStart','exportStart');
+  bind('exportEnd','exportEnd');
+  updateVisibility();
+}
+function exportDateMatches(o){
+  const f = state.filters;
+  const mode = f.exportMode || 'month';
+  const d = String(o.orderDate || o.billingDate || '').slice(0,10);
+  if(!d) return false;
+  if(mode==='year') return d.slice(0,4) === String(f.exportYear || new Date().getFullYear());
+  if(mode==='month') return d.slice(0,7) === String(f.exportMonth || todayInput().slice(0,7));
+  if(mode==='day') return d === String(f.exportDay || todayInput());
+  if(mode==='range'){
+    const start = f.exportStart || '';
+    const end = f.exportEnd || '';
+    return (!start || d >= start) && (!end || d <= end);
+  }
+  return true;
+}
+function filteredOrdersForCSV(orders){ return (orders || state.orders).filter(exportDateMatches); }
+function exportDateLabel(){
+  const f = state.filters, mode = f.exportMode || 'month';
+  if(mode==='year') return `${f.exportYear || new Date().getFullYear()}年`;
+  if(mode==='month') return `${f.exportMonth || todayInput().slice(0,7)}`;
+  if(mode==='day') return `${f.exportDay || todayInput()}`;
+  return `${f.exportStart || '最早'}_${f.exportEnd || '今日'}`;
+}
+
+function exportRecordsCSV(){
+  const rows=[['訂購單','部門','承辦','雇主','工人','國籍','入境日','訂購日','收貨日','請款日','公司別','支付對象','送貨地點','收貨聯絡人','送貨地址','品項','廠商訂購價','工人訂購價','訂購','拿庫存','退貨','加買','小計','狀態','會計狀態','備註']];
+  filteredOrdersForCSV(state.orders).forEach(o=>{
+    const lines=(o.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || num(l.returnQty)>0 || num(l.useStockQty)>0 || num(l.addQty)>0);
+    if(!lines.length){ rows.push([o.orderNo,o.dept,o.staff,o.employer,o.worker,o.nationality,dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),'',0,0,0,0,0,0,0,o.status,o.accountingStatus,o.note||'']); }
+    lines.forEach(l=>rows.push([o.orderNo,o.dept,o.staff,o.employer,o.isStockOrder?'':o.worker,o.isStockOrder?'':o.nationality,o.isStockOrder?'':dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),itemLabel(l.code),itemVendorPrice(l.code),num(l.price),num(l.orderQty),num(l.useStockQty),num(l.returnQty),num(l.addQty),lineAmount(l),o.status,o.accountingStatus,o.note||'']));
+  });
+  downloadCSV('訂購紀錄詳細_'+exportDateLabel()+'.csv',rows);
+}
+function exportInventoryCSV(){
+  const rows=[['品項代碼','品名','規格','單位','廠商訂購價','工人訂購價','期初庫存','目前庫存']];
+  state.settings.items.filter(i=>i.active!==false).forEach(i=>rows.push([i.code,i.name,i.spec,i.unit,i.vendorPrice ?? i.price,i.price,i.openingStock,currentStock(i.code)]));
+  downloadCSV('寢具庫存.csv',rows);
+}
+
+function plainQtySummary(o, key){
+  return (o.items||[]).filter(l=>num(l[key])>0).map(l=>`${itemLabel(l.code)} ${num(l[key])}`).join('、');
+}
+function exportAccountingCSV(){
+  const rows=[['對帳批次','訂購單','雇主','工人','支付對象','訂購日','請款日','海外承辦','購買品項','拿庫存','退貨入庫','加買','原金額','調整金額','對帳金額','會計狀態','對帳人','會計備註','錯誤通知']];
+  filteredOrdersForCSV(state.orders.filter(o=>o.accountingBatch)).forEach(o=>rows.push([
+    o.accountingBatch,o.orderNo,o.employer,o.worker,o.paymentTarget||'雇主',dateSlash(o.orderDate),dateSlash(o.billingDate),o.overseasStaff||o.staff||'',
+    plainQtySummary(o,'orderQty'),plainQtySummary(o,'useStockQty'),plainQtySummary(o,'returnQty'),plainQtySummary(o,'addQty'),
+    orderAmount(o),num(o.accountingAdjust||0),accountingAmount(o),o.accountingStatus||'待對帳',o.accountingBy||'',o.accountingNote||'',o.errorNotice?(o.errorNotice.type+' '+o.errorNotice.note):''
+  ]));
+  downloadCSV('會計對帳_'+exportDateLabel()+'.csv',rows);
+}
+
+function downloadCSV(filename, rows){ const csv='\ufeff'+rows.map(r=>r.map(cell=>`"${String(cell??'').replace(/"/g,'""')}"`).join(',')).join('\n'); downloadBlob(filename,csv,'text/csv;charset=utf-8'); }
+function downloadBlob(filename, text, type){ const blob=new Blob([text],{type}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }
+function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v; return div.textContent||div.innerText||''; }
+
+
+function renderConfigError(message=''){
+  $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
+    <h1>FOR-e 寢具訂購</h1>
+    <div class="auth-subtitle">V4.5 Supabase 公開共用正式版</div>
+    <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
+  </div></div>`;
+}
+async function bootstrap(){
+  if(!supabase){ renderConfigError(); return; }
+  $('#app').innerHTML = '<div class="auth-shell"><div class="auth-card system-message">正在載入 Supabase 共用資料…</div></div>';
+  try{
+    await loadRemoteState();
+    subscribeRemoteState();
+    render();
+  }catch(err){
+    console.error(err);
+    renderConfigError(err.message || '無法載入 Supabase 共用資料。請確認 SQL 與環境變數設定。');
+  }
+}
+window.addEventListener('beforeunload', ()=>{ if(sharedJSON()!==lastSharedJSON) localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); });
+bootstrap();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+【本機測試】
+cd 
+# cd 後空一格，把專案資料夾拖入終端機，再按 Enter
+
+cp .env.example .env.local
+# 編輯 .env.local，填入 Supabase URL 與 anon public key
+
+npm install
+npm run dev
+
+【GitHub 第一次上傳】
+git init
+git add .
+git commit -m "FOR-e bedding order V4.5 public Supabase production"
+git branch -M main
+git remote add origin https://github.com/你的帳號/for-e-bedding-order.git
+git push -u origin main
+
+【既有 Repository 更新】
+git add .
+git commit -m "Update to V4.5 no login public Supabase"
+git push
+
+【之後每次更新】
+git add .
+git commit -m "更新內容"
+git push
