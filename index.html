@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.12</title>
+  <title>FOR-e寢具訂購 V4.12.1</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -39,6 +39,10 @@
     button:active{transform:none}
     button.primary{background:linear-gradient(180deg,#d0a16f,#a97648);color:#241a12;border-color:#d5ad82;font-weight:800}
     button.primary:hover{background:linear-gradient(180deg,#d9ad7e,#b88455)}
+    button.line-action{background:#06c755;color:#fff;border-color:#08a947;font-weight:900;box-shadow:0 0 0 1px rgba(255,255,255,.1) inset,0 5px 14px rgba(6,199,85,.18)}
+    button.line-action:hover{background:#08b94f;color:#fff;border-color:#079a41}
+    button.accounting-action{background:linear-gradient(180deg,#ffd079,#e49a33);color:#2b1b0b;border-color:#ffe0a5;font-weight:900;box-shadow:0 0 0 1px rgba(255,255,255,.16) inset,0 5px 14px rgba(228,154,51,.18)}
+    button.accounting-action:hover{background:linear-gradient(180deg,#ffda91,#efa947);color:#24170a;border-color:#ffe7ba}
     button.ghost{background:transparent;box-shadow:none}
     button.danger{border-color:#9d6257;color:#f0b0a2;background:#47312d}
     button.small{padding:4px 7px;border-radius:9px;font-size:12px}
@@ -77,6 +81,7 @@
     .worker-item-matrix .worker-meta{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
     .matrix-cell{display:flex;flex-direction:column;gap:3px;align-items:flex-start;min-width:92px;line-height:1.35}
     .matrix-cell .mini{font-size:12px;color:#efd1aa}
+    .matrix-cell .order-qty{font-size:18px;line-height:1;font-weight:950;color:#fff0df}
     .matrix-cell .amount{font-weight:900;color:#ffd49b}
     .matrix-cell .return-line{color:#ffb3a2;font-weight:900}
     .matrix-cell .remaining-line{color:#b9d8ad;font-weight:900}
@@ -349,6 +354,7 @@ function normalizePaymentRule(rule,idx=0){
     mode,
     itemKeywords:[...new Set(rawKeywords.map(x=>String(x||'').trim()).filter(Boolean))],
     fallbackTarget:allowedTargets.includes(rule?.fallbackTarget)?rule.fallbackTarget:'工人',
+    note:String(rule?.note||'').trim(),
     active:rule?.active!==false
   };
 }
@@ -405,7 +411,7 @@ function paymentRuleSummary(rule){
   if(!rule) return '';
   if(rule.mode==='all') return `${paymentTargetLabel(rule.target)}｜全部品項`;
   const keywords=(rule.itemKeywords||[]).join('、') || '尚未指定';
-  return `${paymentTargetLabel(rule.target)}｜${paymentRuleModeLabel(rule.mode)}：${keywords}｜其他：${paymentTargetLabel(rule.fallbackTarget)}`;
+  return `${paymentTargetLabel(rule.target)}｜${paymentRuleModeLabel(rule.mode)}：${keywords}｜其他：${paymentTargetLabel(rule.fallbackTarget)}${rule.note?`｜備註：${rule.note}`:''}`;
 }
 function paymentRuleHint(employer){
   const rule=matchedEmployerPaymentRule(employer);
@@ -422,6 +428,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.12.1', date:'2026/07/13', title:'列印邊界、操作按鈕與支付規則備註', items:['A4 訂購單與簽收單固定上下左右 1 公分邊界，表格文字可換行避免裁切','LINE 按鈕套用官方綠色，請款轉對帳按鈕改為醒目金橘色','工人 × 訂購項目的原訂購數量只顯示數字，無異動時不再重複顯示目前有效','支付對象自動規則新增可輸入與修改的備註欄位']},
   {version:'V4.12', date:'2026/07/13', title:'一鍵列印、一般下載與可編輯支付規則', items:['訂購單與簽收單可在同一視窗一鍵連續列印','訂購單圖片下載恢復內容版面，不再強制套入 A4 畫布','支付對象只顯示簡潔結果，不再附帶規則明細','資料設定新增支付對象規則管理，可新增、修改、停用及設定品項範圍']},
   {version:'V4.11.1', date:'2026/07/13', title:'退貨入庫明細與修改修正', items:['訂購明細新增獨立退貨入庫資訊區塊，依工人與品項顯示','完全退貨品項不再只顯示購買，會標示已全數退貨入庫','退貨入庫按鈕可重新開啟既有退貨並修改品項、數量與備註','修改一般訂購資料時保留退貨數量，不再因儲存而清除']},
   {version:'V4.11', date:'2026/07/13', title:'多人姓名、工人別異動、支付規則與 A4 列印', items:['訂購單超過兩位工人仍完整顯示全部姓名','退貨入庫與加買依工人逐筆記錄並於訂購單、明細及紀錄顯示','訂購單、簽收單與下載版統一採 A4 直式版面','依雇主及指定品項自動判斷仲介公司、雇主或工人支付']},
@@ -1098,7 +1105,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.12 Supabase 公開共用版</small></div></div>
+        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.12.1 Supabase 公開共用版</small></div></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -1151,7 +1158,7 @@ function renderOrders(root){
         <input type="date" id="batchReceiveDate" value="${todayInput()}">
         <button id="applyReceiveBtn" ${can('orderWrite')?'':'disabled'}>選取批次輸入收貨日</button>
         <input type="date" id="batchBillingDate" value="${todayInput()}">
-        <button id="requestAccountingBtn" ${can('requestPayment')?'':'disabled'}>選取批次請款 / 轉會計對帳</button>
+        <button class="accounting-action" id="requestAccountingBtn" ${can('requestPayment')?'':'disabled'}>選取批次請款 / 轉會計對帳</button>
       </div>
     </div>
     <div class="card plain">
@@ -1178,8 +1185,8 @@ function renderOrders(root){
                 <button class="small" data-act="edit" data-id="${esc(o.id)}" ${can('orderWrite')?'':'disabled'}>修改</button>
                 <button class="small" data-act="image" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>下載訂購單</button>
                 <button class="small primary" data-act="printBundle" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>${o.isStockOrder?'列印 A4 訂購單':'一鍵列印訂購單＋簽收單'}</button>
-                <button class="small" data-act="line" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>LINE</button>
-                <button class="small" data-act="requestAccounting" data-id="${esc(o.id)}" ${can('requestPayment')?'':'disabled'}>請款/轉對帳</button>
+                <button class="small line-action" data-act="line" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>LINE</button>
+                <button class="small accounting-action" data-act="requestAccounting" data-id="${esc(o.id)}" ${can('requestPayment')?'':'disabled'}>請款/轉對帳</button>
               </div></td>
             </tr>`).join('')}
         </tbody>
@@ -1800,7 +1807,7 @@ function workerRecordHTML(o){
     <td>${esc(o.dept||'-')}<br><span class="muted">${esc(o.staff||'-')}</span></td>
     <td><b>${esc(o.employer||'-')}</b><br>${workerText}</td>
     <td>${(o.isStockOrder||specialOnly)?'<span class="muted">不適用</span>':`${esc(entryDateDisplay(o)||'-')}<br><span class="pill">${esc(nationalityDisplay(o)||'-')}</span>`}</td>
-    <td>${esc(paymentTargetLabel(effectivePaymentTarget(o)))}</td>
+    <td>${esc(paymentTargetLabel(effectivePaymentTarget(o)))}<br><span class="muted">${esc(paymentBreakdownText(o))}</span></td>
     <td><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
     <td>${returnSummary(o)}</td>
     <td class="right">${orderAmountBreakdownHTML(o)}</td>
@@ -2005,11 +2012,12 @@ function recordDetailHTML(o){
 function matrixLineCell(l){
   if(!l || !positiveLineQty(l)) return '<span class="muted">-</span>';
   const parts=[];
-  if(num(l.orderQty)>0) parts.push(`<span>原訂購 ${num(l.orderQty)}</span>`);
-  if(num(l.useStockQty)>0) parts.push(`<span>拿庫存 ${num(l.useStockQty)}</span>`);
-  if(num(l.addQty)>0) parts.push(`<span>加買 ${num(l.addQty)}</span>`);
-  if(num(l.returnQty)>0) parts.push(`<span class="return-line">退貨入庫 ${num(l.returnQty)}</span>`);
-  parts.push(`<span class="remaining-line">目前有效 ${lineQty(l)}</span>`);
+  const ordered=num(l.orderQty), stock=num(l.useStockQty), added=num(l.addQty), returned=num(l.returnQty);
+  if(ordered>0) parts.push(`<span class="order-qty">${ordered}</span>`);
+  if(stock>0) parts.push(`<span>拿庫存 ${stock}</span>`);
+  if(added>0) parts.push(`<span>加買 ${added}</span>`);
+  if(returned>0) parts.push(`<span class="return-line">退貨入庫 ${returned}</span>`);
+  if(stock>0 || added>0 || returned>0) parts.push(`<span class="remaining-line">目前有效 ${lineQty(l)}</span>`);
   const note = l.returnNote ? `<span class="mini">退貨備註：${esc(l.returnNote)}</span>` : (l.note ? `<span class="mini">${esc(l.note)}</span>` : '');
   return `<div class="matrix-cell">${parts.join('')}${note}</div>`;
 }
@@ -2228,7 +2236,7 @@ function accountingOrderRow(o){
   return `<tr>
     <td><button class="link-btn" data-account-view="${esc(o.id)}">${esc(o.orderNo)}</button></td>
     <td><b>${esc(o.employer||'-')}</b><br>${o.isStockOrder?'<span class="muted">庫存訂購</span>':esc(orderWorkers(o).join('、')||'-')}</td>
-    <td>${esc(paymentTargetLabel(effectivePaymentTarget(o)))}</td>
+    <td>${esc(paymentTargetLabel(effectivePaymentTarget(o)))}<br><span class="muted">${esc(paymentBreakdownText(o))}</span></td>
     <td>${esc(dateSlash(o.orderDate)||'-')}</td>
     <td>${esc(dateSlash(o.billingDate)||'-')}</td>
     <td>${esc(o.overseasStaff || o.staff || '-')}</td>
@@ -2447,9 +2455,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.12｜一鍵列印與支付規則設定版</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.12.1｜列印邊界與操作辨識修正版</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.12 新增訂購單＋簽收單一鍵列印，訂購單圖片下載不再強制 A4，並可在資料設定自行管理支付對象自動規則。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.12.1 修正 A4 列印邊界與文字裁切，強化 LINE／請款轉對帳按鈕辨識，並為支付對象規則新增備註欄位。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -2553,7 +2561,7 @@ function renderSettings(root){
       <section class="card plain settings-section" id="settings-payment">
         <div class="settings-section-head"><div class="settings-heading"><div class="settings-step">4</div><div><h2>支付對象自動規則</h2><p>依雇主名稱自動帶入支付對象；可設定全部品項、僅指定品項或指定品項除外。</p></div></div><button id="settingsAddPaymentRuleBtn">＋新增支付規則</button></div>
         <div class="settings-table-note">新增訂購輸入雇主後會自動判斷。若同一雇主同時符合多筆規則，系統會採用列表中較前面的規則。</div>
-        <div class="table-wrap"><table><thead><tr><th class="center">順序</th><th>雇主關鍵字</th><th>主要支付對象</th><th>適用範圍</th><th>其他品項</th><th>狀態</th><th>操作</th></tr></thead><tbody>${(state.settings.paymentRules||[]).length ? state.settings.paymentRules.map((rule,idx)=>`<tr><td><div class="actions" style="justify-content:center"><button class="small" data-payment-rule-move="up" data-payment-rule-id="${esc(rule.id)}" ${idx===0?'disabled':''}>↑</button><button class="small" data-payment-rule-move="down" data-payment-rule-id="${esc(rule.id)}" ${idx===(state.settings.paymentRules||[]).length-1?'disabled':''}>↓</button></div></td><td><b>${esc(rule.employer)}</b></td><td>${esc(paymentTargetLabel(rule.target))}</td><td>${esc(paymentRuleModeLabel(rule.mode))}${rule.mode==='all'?'':`<br><span class="muted">${esc((rule.itemKeywords||[]).join('、')||'尚未指定')}</span>`}</td><td>${rule.mode==='all'?'<span class="muted">不適用</span>':esc(paymentTargetLabel(rule.fallbackTarget))}</td><td>${rule.active!==false?'<span class="pill ok">啟用</span>':'<span class="pill">停用</span>'}</td><td><div class="actions"><button class="small" data-settings-edit-payment-rule="${esc(rule.id)}">修改</button><button class="small danger" data-settings-delete-payment-rule="${esc(rule.id)}">刪除</button></div></td></tr>`).join('') : `<tr><td colspan="7" class="center muted">尚未建立支付對象自動規則</td></tr>`}</tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>雇主關鍵字</th><th>主要支付對象</th><th>適用範圍</th><th>其他品項</th><th>備註</th><th>狀態</th><th>操作</th></tr></thead><tbody>${(state.settings.paymentRules||[]).length ? state.settings.paymentRules.map(rule=>`<tr><td><b>${esc(rule.employer)}</b></td><td>${esc(paymentTargetLabel(rule.target))}</td><td>${esc(paymentRuleModeLabel(rule.mode))}${rule.mode==='all'?'':`<br><span class="muted">${esc((rule.itemKeywords||[]).join('、')||'尚未指定')}</span>`}</td><td>${rule.mode==='all'?'<span class="muted">不適用</span>':esc(paymentTargetLabel(rule.fallbackTarget))}</td><td><div style="white-space:pre-wrap;min-width:150px">${rule.note?esc(rule.note):'<span class="muted">無</span>'}</div></td><td>${rule.active!==false?'<span class="pill ok">啟用</span>':'<span class="pill">停用</span>'}</td><td><div class="actions"><button class="small" data-settings-edit-payment-rule="${esc(rule.id)}">修改</button><button class="small danger" data-settings-delete-payment-rule="${esc(rule.id)}">刪除</button></div></td></tr>`).join('') : `<tr><td colspan="7" class="center muted">尚未建立支付對象自動規則</td></tr>`}</tbody></table></div>
       </section>
 
       <section class="card plain settings-section" id="settings-vendors">
@@ -2589,26 +2597,14 @@ function renderSettings(root){
   $('#settingsAddPaymentRuleBtn')?.addEventListener('click',()=>openPaymentRuleModal());
   $all('[data-settings-edit-payment-rule]').forEach(btn=>btn.addEventListener('click',()=>openPaymentRuleModal(btn.dataset.settingsEditPaymentRule)));
   $all('[data-settings-delete-payment-rule]').forEach(btn=>btn.addEventListener('click',()=>deletePaymentRule(btn.dataset.settingsDeletePaymentRule)));
-  $all('[data-payment-rule-move]').forEach(btn=>btn.addEventListener('click',()=>movePaymentRule(btn.dataset.paymentRuleId,btn.dataset.paymentRuleMove)));
   $('#settingsAddVendorBtn')?.addEventListener('click',()=>openVendorModal());
   $all('[data-settings-edit-vendor]').forEach(btn=>btn.addEventListener('click',()=>openVendorModal(btn.dataset.settingsEditVendor)));
   $all('[data-settings-delete-vendor]').forEach(btn=>btn.addEventListener('click',()=>deleteVendor(btn.dataset.settingsDeleteVendor)));
 }
 
-function movePaymentRule(id,direction){
-  const rules=state.settings.paymentRules||[];
-  const idx=rules.findIndex(r=>r.id===id);
-  if(idx<0) return;
-  const target=direction==='up'?idx-1:idx+1;
-  if(target<0 || target>=rules.length) return;
-  const [rule]=rules.splice(idx,1);
-  rules.splice(target,0,rule);
-  audit('調整支付規則順序','支付規則',rule.id,rule.employer,`${direction==='up'?'上移':'下移'}至第 ${target+1} 順位`);
-  save(); toast('支付規則順序已更新'); renderSettings($('#content'));
-}
 function openPaymentRuleModal(id){
   const existing=(state.settings.paymentRules||[]).find(r=>r.id===id);
-  const rule=existing ? normalizePaymentRule(existing) : normalizePaymentRule({id:'',employer:'',target:'仲介',mode:'all',itemKeywords:[],fallbackTarget:'工人',active:true});
+  const rule=existing ? normalizePaymentRule(existing) : normalizePaymentRule({id:'',employer:'',target:'仲介',mode:'all',itemKeywords:[],fallbackTarget:'工人',note:'',active:true});
   const body=`
     <div class="form-section"><h3>支付規則</h3>
       <div class="grid two">
@@ -2619,6 +2615,7 @@ function openPaymentRuleModal(id){
         <div><label>狀態</label><select id="payrule_active"><option value="true" ${rule.active!==false?'selected':''}>啟用</option><option value="false" ${rule.active===false?'selected':''}>停用</option></select></div>
       </div>
       <div id="payrule_keyword_wrap" style="margin-top:12px"><label>指定品項關鍵字</label><textarea id="payrule_keywords" placeholder="每行一筆，例如：腳踏車">${esc((rule.itemKeywords||[]).join('\n'))}</textarea><div class="field-help">可輸入品項名稱或品項代碼。系統會依關鍵字比對目前與日後新增的品項。</div></div>
+      <div style="margin-top:12px"><label>備註</label><textarea id="payrule_note" placeholder="可輸入付款範圍、請款提醒或內部說明">${esc(rule.note||'')}</textarea><div class="field-help">備註只顯示於資料設定後台，不會顯示在訂購單、LINE 或前台支付對象欄位。</div></div>
       <div class="mini-note" id="payrule_example" style="margin-top:10px"></div>
     </div>`;
   showModal(id?'修改支付規則':'新增支付規則',body,{
@@ -2654,6 +2651,7 @@ function savePaymentRuleFromModal(id,modal){
     target:$('#payrule_target',modal).value,
     mode, itemKeywords,
     fallbackTarget:$('#payrule_fallback',modal).value,
+    note:$('#payrule_note',modal)?.value||'',
     active:$('#payrule_active',modal).value==='true'
   });
   const idx=(state.settings.paymentRules||[]).findIndex(r=>r.id===id);
@@ -2850,7 +2848,7 @@ function openLineModal(orderId){
   const msg = lineMessage(o);
   showModal('LINE 訊息', `<div class="line-preview" id="linePreview">${esc(msg)}</div><textarea id="lineText" class="hidden">${esc(msg)}</textarea>`,{
     width:'720px',
-    footer:`<button id="cancelModalBtn">關閉</button><button class="primary" id="copyLineBtn">複製 LINE 訊息</button>`,
+    footer:`<button id="cancelModalBtn">關閉</button><button class="line-action" id="copyLineBtn">複製 LINE 訊息</button>`,
     onOpen:(modal)=>{
       $('#cancelModalBtn',modal).addEventListener('click',closeModal);
       $('#copyLineBtn',modal).addEventListener('click',async()=>{
@@ -2903,7 +2901,7 @@ function purchaseOrderHTML(o){
   const changeHTML=workerChangeHTML(o);
   const deadline=formatDeliveryDeadline(o)||'未填寫';
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境外國人寢具訂購單</title><style>
-    @page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}html,body{width:210mm;min-height:297mm}body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;margin:0 auto;background:#fff;text-align:center;padding:0}button{padding:8px 12px;margin-bottom:8px}h1{text-align:center;margin:0 0 7px;font-size:22px;letter-spacing:.04em}table{width:100%;border-collapse:collapse;margin-bottom:7px;page-break-inside:auto}tr{page-break-inside:avoid;page-break-after:auto}th,td{border:1px solid #222;padding:4px 5px;font-size:11px;vertical-align:middle;text-align:center;line-height:1.28}th{background:#f2f2f2;white-space:nowrap}.secondary td{font-size:10px;color:#222;font-weight:700}.secondary .label{font-size:9px}.label{display:block;font-size:9px;color:#555;font-weight:700;margin-bottom:2px}.value{display:block;font-size:13px;font-weight:800;line-height:1.3;white-space:normal;word-break:break-word}.value.large{font-size:12px}.value.mid{font-size:12px}.hero{border:2px solid #111;padding:4px 8px;margin:4px 0 7px}.hero .label{font-size:9px}.hero .value{font-size:15px;line-height:1.2}.info td{min-height:46px}.address td{min-height:42px}.note-box td{min-height:38px}.items th{font-size:10px}.items td{font-size:10.5px}.items td.spec-cell{white-space:normal;word-break:break-word;line-height:1.35}.sign{text-align:center;height:52px;vertical-align:bottom}.no-border td{border:0}.section-title{font-weight:900;text-align:left;font-size:12px;margin:6px 0 3px}.change-table th,.change-table td{font-size:10px}.worker-change-block{page-break-inside:avoid}.payment-note{font-size:10px;text-align:left;border:1px solid #222;padding:5px 7px;margin-bottom:7px}.print-only-wrap{width:194mm;margin:0 auto}@media screen{body{padding:10px}.print-only-wrap{box-shadow:0 0 0 1px #ddd;padding:7mm;background:#fff}}@media print{button{display:none}body{margin:0;padding:0}.print-only-wrap{width:auto;margin:0;box-shadow:none;padding:0}}
+    @page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{width:auto;min-height:0;margin:0;padding:0}body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff;text-align:center}button{padding:8px 12px;margin-bottom:8px}h1{text-align:center;margin:0 0 7px;font-size:22px;letter-spacing:.04em}table{width:100%;max-width:100%;border-collapse:collapse;margin-bottom:7px;page-break-inside:auto;table-layout:fixed}tr{page-break-inside:avoid;page-break-after:auto}th,td{border:1px solid #222;padding:4px 5px;font-size:11px;vertical-align:middle;text-align:center;line-height:1.28;white-space:normal;word-break:break-word;overflow-wrap:anywhere}th{background:#f2f2f2}.secondary td{font-size:10px;color:#222;font-weight:700}.secondary .label{font-size:9px}.label{display:block;font-size:9px;color:#555;font-weight:700;margin-bottom:2px}.value{display:block;font-size:13px;font-weight:800;line-height:1.3;white-space:normal;word-break:break-word}.value.large{font-size:12px}.value.mid{font-size:12px}.hero{border:2px solid #111;padding:4px 8px;margin:4px 0 7px}.hero .label{font-size:9px}.hero .value{font-size:15px;line-height:1.2}.info td{min-height:46px}.address td{min-height:42px}.note-box td{min-height:38px}.items th{font-size:10px}.items td{font-size:10.5px}.items td.spec-cell{white-space:normal;word-break:break-word;line-height:1.35}.sign{text-align:center;height:52px;vertical-align:bottom}.no-border td{border:0}.section-title{font-weight:900;text-align:left;font-size:12px;margin:6px 0 3px}.change-table th,.change-table td{font-size:10px}.worker-change-block{page-break-inside:avoid}.payment-note{font-size:10px;text-align:left;border:1px solid #222;padding:5px 7px;margin-bottom:7px}.print-only-wrap{width:190mm;max-width:100%;margin:0 auto}@media screen{body{padding:10px}.print-only-wrap{box-shadow:0 0 0 1px #ddd;padding:5mm;background:#fff}}@media print{button{display:none}html,body{margin:0;padding:0}.print-only-wrap{width:190mm;max-width:100%;margin:0 auto;box-shadow:none;padding:0}}
   </style></head><body><button onclick="window.print()">列印 A4 訂購單</button><div class="print-only-wrap"><h1>${esc(o.companyTitle||'公司別')}入境外國人寢具訂購單</h1>
     <table class="secondary"><tr><td><span class="label">訂購單號</span>${esc(o.orderNo||'')}</td><td><span class="label">公司別</span>${esc(o.companyTitle||'')}</td><td><span class="label">發票開立抬頭</span>${esc(orderInvoiceTitle(o)||'')}</td><td><span class="label">部門</span>${esc(o.dept||'')}</td><td><span class="label">承辦</span>${esc(o.staff||'')}</td><td><span class="label">支付對象</span>${esc(paymentTargetLabel(effectivePaymentTarget(o)))}</td></tr></table>
     <div class="hero"><span class="label">送達時間</span><span class="value large">${esc(deadline)}</span></div>
@@ -2947,10 +2945,10 @@ function receiptPagesHTML(o){
   }).join('');
 }
 function receiptPrintCSS(){ return `
-  .receipt-page{width:190mm;min-height:277mm;margin:0 auto;page-break-after:always;break-after:page;page-break-inside:avoid;padding:2mm;font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff}.receipt-page:last-child{page-break-after:auto;break-after:auto}
-  .receipt-page h1{text-align:center;margin:0 0 6px;font-size:24px;text-decoration:underline}.receipt-page h2{text-align:center;margin:0 0 14px;font-size:17px;font-weight:600}.receipt-page table{width:100%;border-collapse:collapse;margin-bottom:9px}.receipt-page th,.receipt-page td{border:1px solid #222;padding:6px 7px;font-size:12px;vertical-align:middle;line-height:1.35}.receipt-page th{background:#f3f3f3}.receipt-page .info td{border:0;font-size:13px;padding:5px 3px}.receipt-page .center{text-align:center}.receipt-page .right{text-align:right}.receipt-page .toiletry-list{font-size:10px;line-height:1.45;margin-top:4px;font-weight:400}.receipt-page .amount-breakdown{text-align:right;margin:3px 0 8px}.receipt-page .amount-breakdown p{margin:3px 0}.receipt-page .sub-total{text-align:right;font-size:13px;font-weight:700}.receipt-page .bike-total{text-align:right;font-size:14px;font-weight:900}.receipt-page .total{text-align:right;font-size:16px;font-weight:800;border-top:1px solid #333;padding-top:4px}.receipt-page .sign{height:55px;vertical-align:bottom}`; }
+  .receipt-page{width:190mm;max-width:100%;min-height:277mm;margin:0 auto;page-break-after:always;break-after:page;page-break-inside:avoid;padding:2mm;font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff}
+  .receipt-page h1{text-align:center;margin:0 0 6px;font-size:24px;text-decoration:underline}.receipt-page h2{text-align:center;margin:0 0 14px;font-size:17px;font-weight:600}.receipt-page table{width:100%;border-collapse:collapse;margin-bottom:9px}.receipt-page th,.receipt-page td{border:1px solid #222;padding:6px 7px;font-size:12px;vertical-align:middle;line-height:1.35;white-space:normal;word-break:break-word;overflow-wrap:anywhere}.receipt-page th{background:#f3f3f3}.receipt-page .info td{border:0;font-size:13px;padding:5px 3px}.receipt-page .center{text-align:center}.receipt-page .right{text-align:right}.receipt-page .toiletry-list{font-size:10px;line-height:1.45;margin-top:4px;font-weight:400}.receipt-page .amount-breakdown{text-align:right;margin:3px 0 8px}.receipt-page .amount-breakdown p{margin:3px 0}.receipt-page .sub-total{text-align:right;font-size:13px;font-weight:700}.receipt-page .bike-total{text-align:right;font-size:14px;font-weight:900}.receipt-page .total{text-align:right;font-size:16px;font-weight:800;border-top:1px solid #333;padding-top:4px}.receipt-page .sign{height:55px;vertical-align:bottom}`; }
 function receiptDocumentHTML(o){
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境寢具訂購單</title><style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}body{margin:0;background:#fff;padding:10px}button{padding:8px 12px;margin:0 0 8px 10px}${receiptPrintCSS()}@media print{button{display:none}body{margin:0;padding:0}.receipt-page{margin:0;width:auto;min-height:277mm}}</style></head><body><button onclick="window.print()">列印 A4 簽收單</button>${receiptPagesHTML(o)}</body></html>`;
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境寢具訂購單</title><style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}body{margin:0;background:#fff;padding:10px}button{padding:8px 12px;margin:0 0 8px 10px}${receiptPrintCSS()}@media print{button{display:none}html,body{margin:0;padding:0}.receipt-page{margin:0 auto;width:190mm;max-width:100%;min-height:277mm}}</style></head><body><button onclick="window.print()">列印 A4 簽收單</button>${receiptPagesHTML(o)}</body></html>`;
 }
 function printReceipt(orderId){
   const o=state.orders.find(x=>x.id===orderId); if(!o) return;
@@ -2963,7 +2961,7 @@ function printOrderAndReceipt(orderId){
   const orderMarkup=parsed.querySelector('.print-only-wrap')?.innerHTML || '';
   const receiptMarkup=o.isStockOrder?'':receiptPagesHTML(o);
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>訂購單與簽收單</title><style>
-    @page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;margin:0;background:#fff;padding:8px}button{padding:9px 14px;margin:0 0 8px}.order-page{width:194mm;min-height:281mm;margin:0 auto;page-break-after:${o.isStockOrder?'auto':'always'};break-after:${o.isStockOrder?'auto':'page'};page-break-inside:avoid;text-align:center}.order-page h1{text-align:center;margin:0 0 7px;font-size:22px;letter-spacing:.04em}.order-page table{width:100%;border-collapse:collapse;margin-bottom:7px;page-break-inside:auto}.order-page tr{page-break-inside:avoid;page-break-after:auto}.order-page th,.order-page td{border:1px solid #222;padding:4px 5px;font-size:11px;vertical-align:middle;text-align:center;line-height:1.28}.order-page th{background:#f2f2f2;white-space:nowrap}.order-page .secondary td{font-size:10px;color:#222;font-weight:700}.order-page .secondary .label{font-size:9px}.order-page .label{display:block;font-size:9px;color:#555;font-weight:700;margin-bottom:2px}.order-page .value{display:block;font-size:13px;font-weight:800;line-height:1.3;white-space:normal;word-break:break-word}.order-page .value.large,.order-page .value.mid{font-size:12px}.order-page .hero{border:2px solid #111;padding:4px 8px;margin:4px 0 7px}.order-page .hero .label{font-size:9px}.order-page .hero .value{font-size:15px;line-height:1.2}.order-page .items th{font-size:10px}.order-page .items td{font-size:10.5px}.order-page .items td.spec-cell{white-space:normal;word-break:break-word;line-height:1.35}.order-page .sign{text-align:center;height:52px;vertical-align:bottom}.order-page .no-border td{border:0}.order-page .section-title{font-weight:900;text-align:left;font-size:12px;margin:6px 0 3px}.order-page .change-table th,.order-page .change-table td{font-size:10px}.order-page .worker-change-block{page-break-inside:avoid}${receiptPrintCSS()}@media print{button{display:none}body{margin:0;padding:0}.order-page,.receipt-page{margin:0;width:auto}.receipt-page{min-height:277mm}}
+    @page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff;padding:8px}button{padding:9px 14px;margin:0 0 8px}.order-page{width:190mm;max-width:100%;min-height:277mm;margin:0 auto;page-break-after:${o.isStockOrder?'auto':'always'};break-after:${o.isStockOrder?'auto':'page'};page-break-inside:auto;break-inside:auto;text-align:center}.order-page h1{text-align:center;margin:0 0 7px;font-size:22px;letter-spacing:.04em}.order-page table{width:100%;max-width:100%;border-collapse:collapse;margin-bottom:7px;page-break-inside:auto;table-layout:fixed}.order-page tr{page-break-inside:avoid;page-break-after:auto}.order-page th,.order-page td{border:1px solid #222;padding:4px 5px;font-size:11px;vertical-align:middle;text-align:center;line-height:1.28;white-space:normal;word-break:break-word;overflow-wrap:anywhere}.order-page th{background:#f2f2f2}.order-page .secondary td{font-size:10px;color:#222;font-weight:700}.order-page .secondary .label{font-size:9px}.order-page .label{display:block;font-size:9px;color:#555;font-weight:700;margin-bottom:2px}.order-page .value{display:block;font-size:13px;font-weight:800;line-height:1.3;white-space:normal;word-break:break-word}.order-page .value.large,.order-page .value.mid{font-size:12px}.order-page .hero{border:2px solid #111;padding:4px 8px;margin:4px 0 7px}.order-page .hero .label{font-size:9px}.order-page .hero .value{font-size:15px;line-height:1.2}.order-page .items th{font-size:10px}.order-page .items td{font-size:10.5px}.order-page .items td.spec-cell{white-space:normal;word-break:break-word;line-height:1.35}.order-page .sign{text-align:center;height:52px;vertical-align:bottom}.order-page .no-border td{border:0}.order-page .section-title{font-weight:900;text-align:left;font-size:12px;margin:6px 0 3px}.order-page .change-table th,.order-page .change-table td{font-size:10px}.order-page .worker-change-block{page-break-inside:avoid}${receiptPrintCSS()}@media print{button{display:none}html,body{margin:0;padding:0}.order-page,.receipt-page{margin:0 auto;width:190mm;max-width:100%}.order-page,.receipt-page{min-height:277mm}}
   </style></head><body><button onclick="window.print()">${o.isStockOrder?'列印 A4 訂購單':'一鍵列印訂購單＋簽收單'}</button><section class="order-page">${orderMarkup}</section>${receiptMarkup}</body></html>`;
   const w=window.open('','_blank');
   if(!w) return toast('瀏覽器封鎖了列印視窗，請允許彈出式視窗');
@@ -3176,7 +3174,7 @@ function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v;
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.12 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.12.1 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
