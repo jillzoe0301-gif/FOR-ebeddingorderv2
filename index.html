@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.10.2</title>
+  <title>FOR-e寢具訂購 V4.10.3</title>
   <meta name="theme-color" content="#c49767" />
-  <link rel="icon" href="/favicon-v4102.ico" sizes="any" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4102-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-v4102-16x16.png" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon-v4102.png" />
-  <link rel="manifest" href="/site-v4102.webmanifest" />
+  <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-v4103-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon-v4103.png" />
+  <link rel="manifest" href="/site-v4103.webmanifest" />
   <style>
 
     :root{
@@ -51,7 +51,7 @@
     .app{display:flex;min-height:100vh;width:100%;max-width:100%;overflow-x:hidden}
     .sidebar{width:238px;background:rgba(47,39,32,.94);border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh;overflow:auto;backdrop-filter:blur(8px)}
     .brand{display:flex;align-items:center;gap:11px;margin:4px 5px 20px;color:#fff2e0;min-width:0}
-    .brand img{width:48px;height:48px;flex:0 0 48px;border-radius:14px;object-fit:cover;border:0;box-shadow:0 8px 20px rgba(22,16,12,.28);background:transparent}
+    .brand img{width:54px;height:54px;flex:0 0 54px;border-radius:14px;object-fit:cover;object-position:center;border:0;box-shadow:0 8px 20px rgba(22,16,12,.28);background:transparent}
     .brand-copy{min-width:0}
     .brand strong{display:block;font-size:18px;font-weight:900;letter-spacing:.25px;line-height:1.25;white-space:nowrap}
     .brand small{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:4px;line-height:1.35}
@@ -313,6 +313,7 @@ const paymentTargets = ['工人','雇主','仲介'];
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.10.3', date:'2026/07/13', title:'LOGO 滿版與上方夾子完整顯示', items:['系統左上角 LOGO 放大顯示，減少圖示四周留白','重新調整圖示構圖，上方夾子完整保留、不再被裁切','網站分頁、我的最愛與手機主畫面圖示同步更新為同一版本']},
   {version:'V4.10.2', date:'2026/07/13', title:'系統 LOGO 白框移除與網站圖示更新', items:['系統左上角 LOGO 改用最新深棕色 Order 圖示','移除 LOGO 外圍白色邊框及淺色背景，讓圖示直接融入系統側欄','網站分頁、我的最愛與手機主畫面圖示同步更新，並使用版本化檔名降低快取問題']},
   {version:'V4.10.1', date:'2026/07/13', title:'公司別標示簡化與橫向滑動穩定修正', items:['新增訂購、訂單明細、訂購單及 LINE 訊息的公司欄位名稱統一簡化為「公司別」','寬表格改由表格區域獨立橫向捲動，不再撐開整個頁面','阻止橫向滑到底後將滑動傳遞給整個瀏覽器視窗，避免頁面跳動或意外返回']},
   {version:'V4.9.1', date:'2026/07/13', title:'深棕色 Order 網站圖示與系統 LOGO 更新', items:['網站分頁、我的最愛與手機主畫面圖示更換為指定深棕色 Order 圖','系統左上角 LOGO 同步更換為相同圖示','採用版本化圖示檔名，降低瀏覽器沿用舊圖示快取的情況']},
@@ -950,7 +951,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand"><img src="/brand-logo-v4102.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.10.2 Supabase 公開共用版</small></div></div>
+        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.10.3 Supabase 公開共用版</small></div></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -2219,9 +2220,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.10.2｜LOGO 白框移除與網站圖示更新版</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.10.3｜LOGO 滿版與夾子完整顯示版</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.10.2 使用最新深棕色 Order 圖示，移除系統左上角 LOGO 外圍白框與淺色背景，並同步更新網站分頁、我的最愛及手機主畫面圖示。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.10.3 將深棕色 Order LOGO 放大為接近滿版，同時保留上方夾子完整顯示；網站分頁、我的最愛及手機主畫面圖示同步更新。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -2863,7 +2864,7 @@ function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v;
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.10.2 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.10.3 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
