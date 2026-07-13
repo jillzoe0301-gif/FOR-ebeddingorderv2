@@ -1,5 +1,3 @@
-FOR-e 寢具訂購系統 V4.9.1
-Supabase 公開共用免登入版
-深棕色 Order 網站圖示與系統 LOGO 更新正式版
-狀態：official-stable
-更新日期：2026/07/13
+V4.10
+2026-07-13
+official-stable

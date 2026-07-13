@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.9.1</title>
+  <title>FOR-e寢具訂購 V4.10</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v491.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v491-32x32.png" />
@@ -445,6 +445,36 @@ const itemTranslations = {
   }
 };
 
+const DEFAULT_INVOICE_TITLE_MAP = {
+  '灃康人力':'灃康人力',
+  '灃禾管顧':'灃康人力',
+  '乾坤國際':'乾坤國際'
+};
+function invoiceTitleFromSettings(companyTitle, settings){
+  const company=String(companyTitle||'').trim();
+  const map=settings?.invoiceTitleMap || {};
+  return String(map[company] || DEFAULT_INVOICE_TITLE_MAP[company] || company).trim();
+}
+function orderInvoiceTitle(o){
+  return String(o?.invoiceTitle||'').trim() || invoiceTitleFromSettings(o?.companyTitle, state?.settings);
+}
+function companyInvoiceSettingsText(){
+  return (state.settings.companyTitles||[]).map(name=>`${name}｜${invoiceTitleFromSettings(name,state.settings)}`).join('\n');
+}
+function parseCompanyInvoiceSettings(text){
+  const titles=[];
+  const invoiceTitleMap={};
+  String(text||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean).forEach(line=>{
+    const parts=line.split(/[|｜]/);
+    const company=String(parts.shift()||'').trim();
+    if(!company || titles.includes(company)) return;
+    const invoice=String(parts.join('｜')||company).trim() || company;
+    titles.push(company);
+    invoiceTitleMap[company]=invoice;
+  });
+  return {titles,invoiceTitleMap};
+}
+
 const defaultState = () => ({
   currentPage:'orders',
   filters:{orders:'', records:'', accounting:'', status:'全部', statsMode:'month', statsYear:String(new Date().getFullYear()), statsMonth:todayInput().slice(0,7), statsStart:'', statsEnd:'', exportMode:'month', exportYear:String(new Date().getFullYear()), exportMonth:todayInput().slice(0,7), exportDay:todayInput(), exportStart:'', exportEnd:''},
@@ -452,6 +482,7 @@ const defaultState = () => ({
     departments:['一部','二部'],
     staff:['貝貝','阿金','明明'],
     companyTitles:['灃康人力','灃禾管顧','乾坤國際'],
+    invoiceTitleMap:Object.assign({},DEFAULT_INVOICE_TITLE_MAP),
     deliveryPlaces:['灃康人力','工廠','宿舍'],
     employers:['測試雇主股份有限公司'],
     contacts:DEFAULT_DELIVERY_CONTACTS.map(c=>Object.assign({},c)),
@@ -686,7 +717,13 @@ function normalizeState(s){
   s.settings = Object.assign(d.settings, s.settings || {});
   s.settings.items = mergeDefaultItems(Array.isArray(s.settings.items) && s.settings.items.length ? s.settings.items : defaultItems);
   if(!Array.isArray(s.settings.staff) || !s.settings.staff.length || s.settings.staff.includes('海外承辦')) s.settings.staff = ['貝貝','阿金','明明'];
+  if(!Array.isArray(s.settings.companyTitles)) s.settings.companyTitles=[];
   ['灃康人力','灃禾管顧','乾坤國際'].forEach(x=>{ if(!s.settings.companyTitles.includes(x)) s.settings.companyTitles.push(x); });
+  const oldInvoiceMap=(s.settings.invoiceTitleMap && typeof s.settings.invoiceTitleMap==='object') ? s.settings.invoiceTitleMap : {};
+  s.settings.invoiceTitleMap={};
+  s.settings.companyTitles.forEach(company=>{
+    s.settings.invoiceTitleMap[company]=String(oldInvoiceMap[company] || DEFAULT_INVOICE_TITLE_MAP[company] || company).trim() || company;
+  });
   const contactsWereInitialized = s.settings.contactsInitialized === true;
   if(Array.isArray(s.settings.contacts)){
     s.settings.contacts = (s.settings.contacts.length || contactsWereInitialized)
@@ -712,6 +749,7 @@ function normalizeState(s){
     o.status = normalizeStatusValue(o.status);
     o.accountingStatus = normalizeAccountingStatusValue(o.accountingStatus, !!o.accountingBatch);
     if(!o.overseasStaff) o.overseasStaff = o.staff || '';
+    if(!o.invoiceTitle) o.invoiceTitle = invoiceTitleFromSettings(o.companyTitle, s.settings);
     if(typeof o.deliveryDate === 'undefined') o.deliveryDate = '';
     if(typeof o.deliveryHour === 'undefined') o.deliveryHour = '16';
   });
@@ -899,7 +937,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand"><img src="/brand-logo-v491.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.9.1 Supabase 公開共用版</small></div></div>
+        <div class="brand"><img src="/brand-logo-v491.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.10 Supabase 公開共用版</small></div></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -1079,7 +1117,7 @@ function createBlankOrder(){
   return {
     id:uid('ORD'), orderNo:makeOrderNo(companyTitle, dept, orderDate), batchNo:'', isStockOrder:false,
     dept, employer:'', worker:'', workerEnglish:'', nationality:'越南', entryDate:'', workerGroups,
-    provideDate:orderDate, companyTitle, deliveryPlace:KANG_PLACE, deliveryAddress:KANG_ADDRESS, staff, contact:staffContact(staff),
+    provideDate:orderDate, companyTitle, invoiceTitle:invoiceTitleFromSettings(companyTitle,state.settings), deliveryPlace:KANG_PLACE, deliveryAddress:KANG_ADDRESS, staff, contact:staffContact(staff),
     deliveryDate:'', deliveryHour:'16',
     orderDate, receivedDate:'', signDate:'', billingDate:'', accountingDate:'', accountingBatch:'', status:'已下單', accountingStatus:'未轉入', paymentTarget:'工人', note:'', errorNotice:null, overseasStaff:staff,
     items:createEmptyItemLines()
@@ -1096,12 +1134,14 @@ function openOrderModal(orderId){
       updateDeliveryInputs(modal,false);
       toggleStockOrderFields(modal);
       updateOrderNoPreview(modal, !!existing, order.id);
+      updateInvoiceTitlePreview(modal);
       modal.querySelector('#f_deliveryPlace')?.addEventListener('change',()=>updateDeliveryInputs(modal,true));
       modal.querySelector('#f_contact')?.addEventListener('change',()=>applyConfiguredContact(modal));
       modal.querySelector('#f_contact')?.addEventListener('blur',()=>applyConfiguredContact(modal));
       modal.querySelector('#f_staff')?.addEventListener('change',()=>updateDeliveryInputs(modal,false));
       modal.querySelector('#f_dept')?.addEventListener('change',()=>{applyDepartmentDefaultStaff(modal);toggleStockOrderFields(modal);updateDeliveryInputs(modal,false);updateOrderNoPreview(modal, !!existing, order.id);});
-      ['#f_isStockOrder','#f_companyTitle','#f_orderDate'].forEach(sel=>modal.querySelector(sel)?.addEventListener('change',()=>{toggleStockOrderFields(modal);updateOrderNoPreview(modal, !!existing, order.id);}));
+      ['#f_isStockOrder','#f_orderDate'].forEach(sel=>modal.querySelector(sel)?.addEventListener('change',()=>{toggleStockOrderFields(modal);updateOrderNoPreview(modal, !!existing, order.id);}));
+      modal.querySelector('#f_companyTitle')?.addEventListener('change',()=>{toggleStockOrderFields(modal);updateOrderNoPreview(modal, !!existing, order.id);updateInvoiceTitlePreview(modal);});
       $all('#applyBasicSet',modal).forEach(btn=>btn.addEventListener('click',()=>applyBasicSet(modal)));
       modal.querySelector('#bulkAddWorkersBtn')?.addEventListener('click',()=>bulkAddWorkers(modal));
       modal.querySelector('#applyWorkerMetaBtn')?.addEventListener('click',()=>applyBulkWorkerMeta(modal));
@@ -1167,6 +1207,11 @@ function updateOrderNoPreview(modal, isExisting, id){
   const next = makeOrderNo(company, dept, date, id);
   if(input) input.value = next;
   if(badge) badge.textContent = next;
+}
+function updateInvoiceTitlePreview(modal){
+  const company=$('#f_companyTitle',modal)?.value || '';
+  const input=$('#f_invoiceTitlePreview',modal);
+  if(input) input.value=invoiceTitleFromSettings(company,state.settings);
 }
 function optionHTML(list, value){ return list.map(v=>`<option value="${esc(v)}" ${v===value?'selected':''}>${esc(v)}</option>`).join(''); }
 function deliveryContact(o){ return (o.deliveryPlace===KANG_PLACE) ? staffContact(o.staff) : (o.contact||''); }
@@ -1405,7 +1450,8 @@ function orderFormHTML(o){
     <div class="form-section">
       <h3>發票與送貨資料</h3>
       <div class="grid">
-        <div><label>公司別（發票開立抬頭）</label><select id="f_companyTitle">${optionHTML(state.settings.companyTitles,o.companyTitle)}</select></div>
+        <div><label>公司別（訂單抬頭）</label><select id="f_companyTitle">${optionHTML(state.settings.companyTitles,o.companyTitle)}</select><div class="mini-note" style="margin-top:5px">廠商訂購單最上方抬頭會依此公司顯示。</div></div>
+        <div><label>發票開立抬頭（自動帶入）</label><input id="f_invoiceTitlePreview" value="${esc(orderInvoiceTitle(o))}" readonly><div class="mini-note" style="margin-top:5px">灃禾管顧預設開立為灃康人力，可至資料設定調整。</div></div>
         <div><label>支付對象（工人、雇主、仲介）</label><select id="f_paymentTarget">${optionHTML(paymentTargets,o.paymentTarget||'工人')}</select></div>
         <div><label>送達日期</label><input type="date" id="f_deliveryDate" value="${esc(o.deliveryDate||'')}"></div>
         <div><label>送達時間（小時）</label><select id="f_deliveryHour">${hourOptionsHTML(o.deliveryHour||'16')}</select></div>
@@ -1505,6 +1551,7 @@ function saveOrderFromModal(id, isExisting, modal){
   const fields = ['dept','staff','employer','orderDate','companyTitle','paymentTarget','deliveryDate','deliveryHour','deliveryPlace','contact','deliveryAddress','receivedDate','status','note'];
   const map = {dept:'f_dept',staff:'f_staff',employer:'f_employer',orderDate:'f_orderDate',companyTitle:'f_companyTitle',paymentTarget:'f_paymentTarget',deliveryDate:'f_deliveryDate',deliveryHour:'f_deliveryHour',deliveryPlace:'f_deliveryPlace',contact:'f_contact',deliveryAddress:'f_deliveryAddress',receivedDate:'f_receivedDate',status:'f_status',note:'f_note'};
   fields.forEach(k=>{ order[k] = modal.querySelector('#'+map[k])?.value || ''; });
+  order.invoiceTitle = invoiceTitleFromSettings(order.companyTitle,state.settings);
   order.provideDate = order.orderDate;
   if(order.isStockOrder){
     order.employer=KANG_PLACE; order.worker=''; order.workerGroups=[]; order.nationality=''; order.entryDate='';
@@ -1741,7 +1788,8 @@ function recordDetailHTML(o){
       <div class="meta-box"><span>請款日</span><b>${esc(dateSlash(o.billingDate)||'-')}</b></div>
       <div class="meta-box"><span>目前狀態</span><b>${esc(displayStatus(o))}</b></div>
       <div class="meta-box"><span>會計狀態</span><b>${esc(o.accountingStatus||'未轉入')}</b></div>
-      <div class="meta-box"><span>公司別</span><b>${esc(o.companyTitle||'-')}</b></div>
+      <div class="meta-box"><span>公司別／訂單抬頭</span><b>${esc(o.companyTitle||'-')}</b></div>
+      <div class="meta-box"><span>發票開立抬頭</span><b>${esc(orderInvoiceTitle(o)||'-')}</b></div>
       <div class="meta-box"><span>收貨聯絡人</span><b>${esc(deliveryContact(o)||'-')}</b></div>
       <div class="meta-box" style="grid-column:span 6"><span>送貨地點 / 地址</span><b>${esc(deliveryDisplay(o)||'-')}</b></div>
     </div>
@@ -2158,9 +2206,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.9.1｜深棕色 Order 網站圖示與系統 LOGO 更新正式版</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.10｜訂單公司抬頭與發票開立抬頭分開顯示正式版</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.9.1 將網站圖示及系統左上角 LOGO 更換為指定的深棕色 Order 圖；收貨聯絡人與資料設定功能維持 V4.9 邏輯。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.10 將訂單公司抬頭與發票開立抬頭分開：訂單抬頭依所選公司顯示；灃禾管顧的發票開立抬頭預設為灃康人力，並同步註明於廠商訂購單、訂單圖片、訂單明細與 LINE 訊息。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -2253,7 +2301,7 @@ function renderSettings(root){
       <section class="card settings-section" id="settings-company">
         <div class="settings-section-head"><div class="settings-heading"><div class="settings-step">3</div><div><h2>公司、送貨地點與常用雇主</h2><p>這些資料會成為新增訂購表單的選項；常用雇主也可在新增訂購時直接選取。</p></div></div></div>
         <div class="settings-form-grid">
-          <div class="settings-field"><label>公司別／發票抬頭</label><textarea id="set_companyTitles" placeholder="每行一筆">${esc(state.settings.companyTitles.join('\n'))}</textarea><div class="field-help">例如：灃康人力、灃禾管顧、乾坤國際。</div></div>
+          <div class="settings-field"><label>公司別｜發票開立抬頭</label><textarea id="set_companyInvoiceTitles" placeholder="每行一筆，例如：灃禾管顧｜灃康人力">${esc(companyInvoiceSettingsText())}</textarea><div class="field-help">每行格式為「公司別｜發票開立抬頭」。訂單抬頭顯示左側公司；LINE 與訂購單另註明右側發票抬頭。</div></div>
           <div class="settings-field"><label>送貨地點</label><textarea id="set_deliveryPlaces" placeholder="每行一筆">${esc(state.settings.deliveryPlaces.join('\n'))}</textarea><div class="field-help">例如：灃康人力、工廠、宿舍。聯絡人可設定對應地點。</div></div>
           <div class="settings-field" style="grid-column:1/-1"><label>常用雇主</label><textarea id="set_employers" placeholder="每行一筆">${esc(state.settings.employers.join('\n'))}</textarea><div class="field-help">新增訂購時仍可輸入未在清單中的雇主，儲存訂單後會自動加入。</div></div>
         </div>
@@ -2317,15 +2365,16 @@ function saveOrgSettings(){
   save(); toast('部門與承辦已儲存'); renderSettings($('#content'));
 }
 function saveCompanySettings(){
-  const companyTitles=linesFrom('set_companyTitles');
+  const companySettings=parseCompanyInvoiceSettings($('#set_companyInvoiceTitles')?.value||'');
   const deliveryPlaces=linesFrom('set_deliveryPlaces');
-  if(!companyTitles.length) return toast('請至少保留一個公司別／發票抬頭');
+  if(!companySettings.titles.length) return toast('請至少保留一筆公司別與發票開立抬頭');
   if(!deliveryPlaces.length) return toast('請至少保留一個送貨地點');
-  state.settings.companyTitles=companyTitles;
+  state.settings.companyTitles=companySettings.titles;
+  state.settings.invoiceTitleMap=companySettings.invoiceTitleMap;
   state.settings.deliveryPlaces=deliveryPlaces;
   state.settings.employers=linesFrom('set_employers');
-  audit('修改設定','公司與雇主','settings-company','資料設定','公司別 / 送貨地點 / 常用雇主');
-  save(); toast('公司與雇主資料已儲存'); renderSettings($('#content'));
+  audit('修改設定','公司與雇主','settings-company','資料設定','公司別 / 發票開立抬頭 / 送貨地點 / 常用雇主');
+  save(); toast('公司與發票抬頭資料已儲存'); renderSettings($('#content'));
 }
 function exportJSON(){ downloadBlob('FOR-e寢具訂購備份_'+todayInput()+'.json', JSON.stringify(state,null,2), 'application/json;charset=utf-8'); }
 function importJSON(e){
@@ -2489,11 +2538,12 @@ function lineMessage(o){
     `雇主：${o.employer||''}`,
     `訂購日期：${dateSlash(o.orderDate)||today()}`,
     ...(formatDeliveryDeadline(o) ? [`送達時間：${formatDeliveryDeadline(o)}`] : []),
-    `公司別（發票開立抬頭）：${o.companyTitle||'灃禾管顧'}`,
+    `公司別（訂單抬頭）：${o.companyTitle||''}`,
+    `發票開立抬頭：${orderInvoiceTitle(o)||''}`,
     `承辦人：${o.staff||''}`
   ];
   if(o.deliveryPlace && o.deliveryPlace!==KANG_PLACE){
-    lines.splice(4,0,`送貨地點：${o.deliveryPlace||''}`);
+    lines.push(`送貨地點：${o.deliveryPlace||''}`);
     lines.push(`收貨聯絡人：${deliveryContact(o)||''}`);
     lines.push(`送貨地址：${deliveryAddress(o)||''}`);
     if(o.note) lines.push(`備註：${o.note}`);
@@ -2524,7 +2574,7 @@ function purchaseOrderHTML(o){
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境外國人寢具訂購單</title><style>
     *{box-sizing:border-box} body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;margin:20px;background:#fff;text-align:center} button{padding:8px 12px;margin-bottom:12px} h1{text-align:center;margin:0 0 10px;font-size:26px;letter-spacing:.06em} table{width:100%;border-collapse:collapse;margin-bottom:10px} th,td{border:1px solid #222;padding:6px 8px;font-size:14px;vertical-align:middle;text-align:center;line-height:1.3} th{background:#f2f2f2;white-space:nowrap}.secondary td{font-size:14px;color:#222;font-weight:700}.secondary .label{font-size:12px}.label{display:block;font-size:12px;color:#555;font-weight:700;margin-bottom:4px}.value{display:block;font-size:18px;font-weight:800;line-height:1.22}.value.large{font-size:16px}.value.mid{font-size:17px}.hero{border:2px solid #111;padding:7px 10px;margin:7px 0 10px}.hero .label{font-size:12px}.hero .value{font-size:21px;line-height:1.18}.info td{height:66px}.address td{height:56px}.note-box td{height:50px}.items th{font-size:13px}.items td{font-size:14px}.items td.spec-cell{white-space:normal;word-break:break-word;line-height:1.45}.sign{text-align:center;height:78px;vertical-align:bottom}.no-border td{border:0}.print-note{font-size:13px;color:#555;margin-bottom:12px}@media print{button{display:none}body{margin:12mm} }
   </style></head><body><button onclick="window.print()">列印</button><h1>${esc(o.companyTitle||'公司別')}入境外國人寢具訂購單</h1>
-    <table class="secondary"><tr><td><span class="label">訂購單號</span>${esc(o.orderNo||'')}</td><td><span class="label">公司別（發票開立抬頭）</span>${esc(o.companyTitle||'')}</td><td><span class="label">部門</span>${esc(o.dept||'')}</td><td><span class="label">承辦</span>${esc(o.staff||'')}</td><td><span class="label">支付對象</span>${esc(o.paymentTarget||'雇主')}</td></tr></table>
+    <table class="secondary"><tr><td><span class="label">訂購單號</span>${esc(o.orderNo||'')}</td><td><span class="label">公司別／訂單抬頭</span>${esc(o.companyTitle||'')}</td><td><span class="label">發票開立抬頭</span>${esc(orderInvoiceTitle(o)||'')}</td><td><span class="label">部門</span>${esc(o.dept||'')}</td><td><span class="label">承辦</span>${esc(o.staff||'')}</td><td><span class="label">支付對象</span>${esc(o.paymentTarget||'雇主')}</td></tr></table>
     <div class="hero"><span class="label">送達時間</span><span class="value large">${esc(deadline)}</span></div>
     <table class="info">
       <tr><td><span class="label">客戶名稱</span><span class="value large">${esc(o.employer||'')}</span></td><td><span class="label">入境工人</span><span class="value large">${esc(workerDisplay(o))}</span></td></tr>
@@ -2652,8 +2702,8 @@ function downloadOrderImage(orderId){
   ctx.fillText(`${o.companyTitle||'公司別'}入境外國人寢具訂購單`, width/2, 58);
 
   let y=86; const usable=width-margin*2;
-  const smallW=usable/5;
-  [['訂購單號',o.orderNo],['公司別（發票開立抬頭）',o.companyTitle],['部門',o.dept],['承辦',o.staff],['支付對象',o.paymentTarget||'雇主']].forEach((pair,i)=>drawSmallInfo(ctx, margin+i*smallW, y, smallW, 56, pair[0], pair[1]));
+  const smallW=usable/6;
+  [['訂購單號',o.orderNo],['公司別／訂單抬頭',o.companyTitle],['發票開立抬頭',orderInvoiceTitle(o)],['部門',o.dept],['承辦',o.staff],['支付對象',o.paymentTarget||'雇主']].forEach((pair,i)=>drawSmallInfo(ctx, margin+i*smallW, y, smallW, 56, pair[0], pair[1]));
   y += 74;
 
   ctx.strokeRect(margin,y,usable,76);
@@ -2765,11 +2815,11 @@ function exportDateLabel(){
 }
 
 function exportRecordsCSV(){
-  const rows=[['訂購單','部門','承辦','雇主','工人','國籍','入境日','訂購日','收貨日','請款日','公司別','支付對象','送貨地點','收貨聯絡人','送貨地址','品項','訂購類型','廠商訂購價','工人訂購價','訂購','拿庫存','退貨','加買','小計','費用分類','訂單寢具及用品費用','訂單腳踏車費用','訂單總金額','狀態','會計狀態','備註']];
+  const rows=[['訂購單','部門','承辦','雇主','工人','國籍','入境日','訂購日','收貨日','請款日','公司別','發票開立抬頭','支付對象','送貨地點','收貨聯絡人','送貨地址','品項','訂購類型','廠商訂購價','工人訂購價','訂購','拿庫存','退貨','加買','小計','費用分類','訂單寢具及用品費用','訂單腳踏車費用','訂單總金額','狀態','會計狀態','備註']];
   filteredOrdersForCSV(state.orders).forEach(o=>{
     const lines=orderedLines(o.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || (isGeneralItem(l.code) && (num(l.returnQty)>0 || num(l.useStockQty)>0 || num(l.addQty)>0)));
-    if(!lines.length){ rows.push([o.orderNo,o.dept,o.staff,o.employer,o.worker,o.nationality,dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),'','',0,0,0,'','','',0,'',orderBeddingAmount(o),orderBicycleAmount(o),orderAmount(o),o.status,o.accountingStatus,o.note||'']); }
-    lines.forEach(l=>{ const special=isSpecialItem(l.code); rows.push([o.orderNo,o.dept,o.staff,o.employer,o.isStockOrder?'':o.worker,o.isStockOrder?'':o.nationality,o.isStockOrder?'':dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),itemLabel(l.code),itemOrderTypeLabel(l.code),itemVendorPrice(l.code),num(l.price),special?lineQty(l):num(l.orderQty),special?'':num(l.useStockQty),special?'':num(l.returnQty),special?'':num(l.addQty),lineAmount(l),isBicycleItem(l.code)?'腳踏車費用':'寢具及用品費用',orderBeddingAmount(o),orderBicycleAmount(o),orderAmount(o),o.status,o.accountingStatus,o.note||'']); });
+    if(!lines.length){ rows.push([o.orderNo,o.dept,o.staff,o.employer,o.worker,o.nationality,dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,orderInvoiceTitle(o),o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),'','',0,0,0,'','','',0,'',orderBeddingAmount(o),orderBicycleAmount(o),orderAmount(o),o.status,o.accountingStatus,o.note||'']); }
+    lines.forEach(l=>{ const special=isSpecialItem(l.code); rows.push([o.orderNo,o.dept,o.staff,o.employer,o.isStockOrder?'':o.worker,o.isStockOrder?'':o.nationality,o.isStockOrder?'':dateSlash(o.entryDate),dateSlash(o.orderDate),dateSlash(o.receivedDate),dateSlash(o.billingDate),o.companyTitle,orderInvoiceTitle(o),o.paymentTarget||'雇主',o.deliveryPlace,deliveryContact(o),deliveryAddress(o),itemLabel(l.code),itemOrderTypeLabel(l.code),itemVendorPrice(l.code),num(l.price),special?lineQty(l):num(l.orderQty),special?'':num(l.useStockQty),special?'':num(l.returnQty),special?'':num(l.addQty),lineAmount(l),isBicycleItem(l.code)?'腳踏車費用':'寢具及用品費用',orderBeddingAmount(o),orderBicycleAmount(o),orderAmount(o),o.status,o.accountingStatus,o.note||'']); });
   });
   downloadCSV('訂購紀錄詳細_'+exportDateLabel()+'.csv',rows);
 }
@@ -2800,7 +2850,7 @@ function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v;
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.9.1 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.10 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
