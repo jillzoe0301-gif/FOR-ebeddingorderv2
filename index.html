@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.12.1</title>
+  <title>FOR-e寢具訂購 V4.12.2</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -428,6 +428,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.12.2', date:'2026/07/13', title:'訂購明細隱藏支付對象', items:['訂購紀錄列表移除支付對象欄位','點選訂購單號開啟的訂單明細移除支付對象欄位','後台支付對象規則、會計對帳與 CSV 維持不變']},
   {version:'V4.12.1', date:'2026/07/13', title:'列印邊界、操作按鈕與支付規則備註', items:['A4 訂購單與簽收單固定上下左右 1 公分邊界，表格文字可換行避免裁切','LINE 按鈕套用官方綠色，請款轉對帳按鈕改為醒目金橘色','工人 × 訂購項目的原訂購數量只顯示數字，無異動時不再重複顯示目前有效','支付對象自動規則新增可輸入與修改的備註欄位']},
   {version:'V4.12', date:'2026/07/13', title:'一鍵列印、一般下載與可編輯支付規則', items:['訂購單與簽收單可在同一視窗一鍵連續列印','訂購單圖片下載恢復內容版面，不再強制套入 A4 畫布','支付對象只顯示簡潔結果，不再附帶規則明細','資料設定新增支付對象規則管理，可新增、修改、停用及設定品項範圍']},
   {version:'V4.11.1', date:'2026/07/13', title:'退貨入庫明細與修改修正', items:['訂購明細新增獨立退貨入庫資訊區塊，依工人與品項顯示','完全退貨品項不再只顯示購買，會標示已全數退貨入庫','退貨入庫按鈕可重新開啟既有退貨並修改品項、數量與備註','修改一般訂購資料時保留退貨數量，不再因儲存而清除']},
@@ -1105,7 +1106,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.12.1 Supabase 公開共用版</small></div></div>
+        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.12.2 Supabase 公開共用版</small></div></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -1791,7 +1792,7 @@ function renderRecords(root){
     <div class="toolbar"><div class="toolbar-left"><input id="recordsSearch" placeholder="搜尋訂購單 / 部門 / 承辦 / 雇主 / 工人 / 品項" value="${esc(state.filters.records||'')}"><label class="checkline"><input type="checkbox" id="hideClosedRecords" ${hideClosed?'checked':''}><strong>隱藏對帳完成 / 帳務錯誤</strong></label></div><div class="toolbar-right">${exportDateFilterHTML()}<button id="exportRecordsBtn">匯出詳細 CSV</button></div></div>
     <div class="card plain">
       <div class="card-title"><h2>訂購紀錄</h2><span class="subtle">點選訂購單號即可查看；其他操作請進入訂單後使用</span></div>
-      ${orders.length ? `<div class="table-wrap"><table class="record-table"><thead><tr><th>訂購單</th><th>部門 / 承辦</th><th>雇主 / 工人</th><th>入境日 / 國籍</th><th>支付對象</th><th>訂購／異動品項</th><th>退貨狀況</th><th class="right">金額</th><th>目前狀態</th></tr></thead><tbody>${orders.map(o=>workerRecordHTML(o)).join('')}</tbody></table></div>` : `<div class="empty">尚無訂購紀錄。</div>`}
+      ${orders.length ? `<div class="table-wrap"><table class="record-table"><thead><tr><th>訂購單</th><th>部門 / 承辦</th><th>雇主 / 工人</th><th>入境日 / 國籍</th><th>訂購／異動品項</th><th>退貨狀況</th><th class="right">金額</th><th>目前狀態</th></tr></thead><tbody>${orders.map(o=>workerRecordHTML(o)).join('')}</tbody></table></div>` : `<div class="empty">尚無訂購紀錄。</div>`}
     </div>`;
   $('#recordsSearch')?.addEventListener('input',e=>{state.filters.records=e.target.value;save();renderRecords(root);});
   $('#hideClosedRecords')?.addEventListener('change',e=>{state.filters.hideClosed=e.target.checked;save();renderRecords(root);});
@@ -1807,7 +1808,6 @@ function workerRecordHTML(o){
     <td>${esc(o.dept||'-')}<br><span class="muted">${esc(o.staff||'-')}</span></td>
     <td><b>${esc(o.employer||'-')}</b><br>${workerText}</td>
     <td>${(o.isStockOrder||specialOnly)?'<span class="muted">不適用</span>':`${esc(entryDateDisplay(o)||'-')}<br><span class="pill">${esc(nationalityDisplay(o)||'-')}</span>`}</td>
-    <td>${esc(paymentTargetLabel(effectivePaymentTarget(o)))}<br><span class="muted">${esc(paymentBreakdownText(o))}</span></td>
     <td><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
     <td>${returnSummary(o)}</td>
     <td class="right">${orderAmountBreakdownHTML(o)}</td>
@@ -1985,7 +1985,6 @@ function recordDetailHTML(o){
   const err = o.errorNotice ? `<span class="pill bad">${esc(o.errorNotice.type)}｜${esc(o.errorNotice.note||'')}</span>` : '<span class="muted">無</span>';
   const groupHTML = (!o.isStockOrder && orderWorkerGroups(o).length>1) ? workerItemMatrixHTML(o) : '';
   return `<div class="record-meta">
-      <div class="meta-box"><span>支付對象</span><b>${esc(paymentTargetLabel(effectivePaymentTarget(o)))}</b></div>
       <div class="meta-box"><span>部門 / 承辦</span><b>${esc(o.dept||'-')} / ${esc(o.staff||'-')}</b></div>
       <div class="meta-box"><span>雇主</span><b>${esc(o.employer||'-')}</b></div>
       <div class="meta-box"><span>工人</span><b>${(o.isStockOrder||isSpecialOnlyOrder(o))?'不適用':esc(orderWorkers(o).join('、')||'-')}</b></div>
@@ -2455,9 +2454,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.12.1｜列印邊界與操作辨識修正版</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.12.2｜訂購明細欄位簡化版</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.12.1 修正 A4 列印邊界與文字裁切，強化 LINE／請款轉對帳按鈕辨識，並為支付對象規則新增備註欄位。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.12.2 移除訂購紀錄與訂單明細中的支付對象欄位；支付規則仍保留於資料設定與會計用途。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -3174,7 +3173,7 @@ function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v;
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.12.1 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.12.2 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
