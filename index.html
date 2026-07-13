@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.10</title>
+  <title>FOR-e寢具訂購 V4.10.1</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v491.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v491-32x32.png" />
@@ -31,7 +31,7 @@
       --radius:18px;
     }
     *{box-sizing:border-box}
-    html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 20% 0%,#3b3027 0,#241f1a 42%,#201c18 100%)}
+    html,body{margin:0;height:100%;width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-x:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 20% 0%,#3b3027 0,#241f1a 42%,#201c18 100%)}
     button,input,select,textarea{font:inherit}
     button{border:1px solid var(--line);background:linear-gradient(180deg,#4a4037,#3d342c);color:var(--text);border-radius:10px;padding:6px 10px;cursor:pointer;white-space:nowrap;box-shadow:0 2px 0 rgba(255,255,255,.03) inset;transition:.16s ease}
     button:hover{background:linear-gradient(180deg,#574b40,#453b32);transform:none}
@@ -48,7 +48,7 @@
     input[readonly]{background:#3a322b;color:#c9bba9}
     textarea{min-height:62px;resize:vertical;line-height:1.45}
     label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:650}
-    .app{display:flex;min-height:100vh}
+    .app{display:flex;min-height:100vh;width:100%;max-width:100%;overflow-x:hidden}
     .sidebar{width:238px;background:rgba(47,39,32,.94);border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh;overflow:auto;backdrop-filter:blur(8px)}
     .brand{display:flex;align-items:center;gap:11px;margin:4px 5px 20px;color:#fff2e0;min-width:0}
     .brand img{width:48px;height:48px;flex:0 0 48px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,240,223,.26);box-shadow:0 8px 20px rgba(22,16,12,.28);background:#f8f2e9}
@@ -57,16 +57,16 @@
     .brand small{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:4px;line-height:1.35}
     .nav button{width:100%;text-align:left;margin:5px 0;border:1px solid transparent;border-radius:14px;padding:12px 13px;background:transparent;box-shadow:none;color:#ddcfbd}
     .nav button.active{background:linear-gradient(180deg,#c49767,#8b613f);color:#211813;border-color:#ddb789;font-weight:900}
-    .main{flex:1;min-width:0}
+    .main{flex:1;min-width:0;max-width:100%;overflow-x:hidden}
     .topbar{height:68px;background:rgba(52,44,37,.9);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:5;backdrop-filter:blur(10px)}
     .topbar h1{font-size:21px;margin:0;color:#fff0df}
     .rolebar{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px}
     .rolebar select{width:125px;padding:7px 9px}
-    .content{padding:24px;max-width:1680px;margin:0 auto}
+    .content{padding:24px;width:100%;max-width:1680px;min-width:0;margin:0 auto}
     .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
     .toolbar-left,.toolbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .toolbar input,.toolbar select{width:180px}
-    .card{background:linear-gradient(180deg,rgba(58,49,41,.98),rgba(47,40,34,.98));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:18px}
+    .card{background:linear-gradient(180deg,rgba(58,49,41,.98),rgba(47,40,34,.98));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:18px;min-width:0;max-width:100%}
     .card.plain{box-shadow:var(--shadow)}
     .card-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
     .card-title h2,.card-title h3{margin:0;font-size:18px;color:#fff0df}
@@ -110,7 +110,7 @@
     .modal.small{width:min(720px,100%)}
     .modal-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);background:#3b322a}
     .modal-head h2{margin:0;font-size:18px;color:#fff0df}
-    .modal-body{padding:14px;max-height:80vh;overflow:auto}
+    .modal-body{padding:14px;max-height:80vh;max-width:100%;min-width:0;overflow:auto;overscroll-behavior:contain}
     .modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:10px 16px;border-top:1px solid var(--line);background:#302821}
     .item-table input{padding:4px 5px;border-radius:8px;min-width:48px;min-height:28px}
     .item-table td,.item-table th{font-size:12px;padding:5px 4px;line-height:1.25}
@@ -137,7 +137,7 @@
     .meta-box span{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}
     .meta-box b{font-size:14px;color:#f5eadc}
     .detail-pill{display:inline-flex;border:1px solid var(--line);background:#42382f;border-radius:999px;padding:3px 8px;font-size:12px;margin:2px;color:#e9d7c3}
-    .scroll-x{overflow:auto;overscroll-behavior:contain}
+    .table-wrap,.scroll-x{width:100%;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;overscroll-behavior-y:auto;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable}
 
     .checkline{display:flex;align-items:center;gap:8px;background:#42382f;border:1px solid var(--line);border-radius:10px;padding:6px 9px;min-height:34px;margin-bottom:0}
     .checkline.order-type-toggle{min-height:34px;padding:6px 9px}
@@ -287,6 +287,17 @@ document.addEventListener('click', e=>{
   buttonPointerGuard = null;
 }, true);
 
+
+// 寬表格只在自己的區域內橫向捲動，避免滑到底後把手勢傳給整個視窗。
+document.addEventListener('wheel', e=>{
+  const target = e.target && e.target.closest ? e.target.closest('.table-wrap,.scroll-x') : null;
+  if(!target || target.scrollWidth <= target.clientWidth + 1) return;
+  const horizontalDelta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : (e.shiftKey ? e.deltaY : 0);
+  if(!horizontalDelta) return;
+  e.preventDefault();
+  target.scrollLeft += horizontalDelta;
+}, {passive:false, capture:true});
+
 const STORAGE_KEY = 'for_e_bedding_order_system_v3_1_20260711';
 const pages = [
   {id:'orders', label:'寢具訂購'},
@@ -302,6 +313,7 @@ const paymentTargets = ['工人','雇主','仲介'];
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.10.1', date:'2026/07/13', title:'公司別標示簡化與橫向滑動穩定修正', items:['新增訂購、訂單明細、訂購單及 LINE 訊息的公司欄位名稱統一簡化為「公司別」','寬表格改由表格區域獨立橫向捲動，不再撐開整個頁面','阻止橫向滑到底後將滑動傳遞給整個瀏覽器視窗，避免頁面跳動或意外返回']},
   {version:'V4.9.1', date:'2026/07/13', title:'深棕色 Order 網站圖示與系統 LOGO 更新', items:['網站分頁、我的最愛與手機主畫面圖示更換為指定深棕色 Order 圖','系統左上角 LOGO 同步更換為相同圖示','採用版本化圖示檔名，降低瀏覽器沿用舊圖示快取的情況']},
   {version:'V4.9', date:'2026/07/12', title:'網站圖示、系統 LOGO、收貨聯絡人與資料設定重整', items:['使用指定 Order 圖示作為瀏覽器分頁、我的最愛與主畫面圖示','系統左上角 LOGO 同步更換','資料設定新增可管理的收貨聯絡人、聯絡方式、送貨地點與地址','資料設定依實際使用流程分區，操作與儲存位置更直覺']},
   {version:'V4.8', date:'2026/07/12', title:'腳踏車／電風扇簽收單顯示與腳踏車費用獨立計算', items:['腳踏車與電風扇不列入寢具廠商訂購單及訂購單圖片','腳踏車與電風扇保留顯示於工人簽收單','腳踏車費用與寢具及用品費用分開計算，並於明細、對帳、統計及 CSV 顯示']},
@@ -937,7 +949,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand"><img src="/brand-logo-v491.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.10 Supabase 公開共用版</small></div></div>
+        <div class="brand"><img src="/brand-logo-v491.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.10.1 Supabase 公開共用版</small></div></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -1450,7 +1462,7 @@ function orderFormHTML(o){
     <div class="form-section">
       <h3>發票與送貨資料</h3>
       <div class="grid">
-        <div><label>公司別（訂單抬頭）</label><select id="f_companyTitle">${optionHTML(state.settings.companyTitles,o.companyTitle)}</select><div class="mini-note" style="margin-top:5px">廠商訂購單最上方抬頭會依此公司顯示。</div></div>
+        <div><label>公司別</label><select id="f_companyTitle">${optionHTML(state.settings.companyTitles,o.companyTitle)}</select><div class="mini-note" style="margin-top:5px">廠商訂購單最上方抬頭會依此公司顯示。</div></div>
         <div><label>發票開立抬頭（自動帶入）</label><input id="f_invoiceTitlePreview" value="${esc(orderInvoiceTitle(o))}" readonly><div class="mini-note" style="margin-top:5px">灃禾管顧預設開立為灃康人力，可至資料設定調整。</div></div>
         <div><label>支付對象（工人、雇主、仲介）</label><select id="f_paymentTarget">${optionHTML(paymentTargets,o.paymentTarget||'工人')}</select></div>
         <div><label>送達日期</label><input type="date" id="f_deliveryDate" value="${esc(o.deliveryDate||'')}"></div>
@@ -1788,7 +1800,7 @@ function recordDetailHTML(o){
       <div class="meta-box"><span>請款日</span><b>${esc(dateSlash(o.billingDate)||'-')}</b></div>
       <div class="meta-box"><span>目前狀態</span><b>${esc(displayStatus(o))}</b></div>
       <div class="meta-box"><span>會計狀態</span><b>${esc(o.accountingStatus||'未轉入')}</b></div>
-      <div class="meta-box"><span>公司別／訂單抬頭</span><b>${esc(o.companyTitle||'-')}</b></div>
+      <div class="meta-box"><span>公司別</span><b>${esc(o.companyTitle||'-')}</b></div>
       <div class="meta-box"><span>發票開立抬頭</span><b>${esc(orderInvoiceTitle(o)||'-')}</b></div>
       <div class="meta-box"><span>收貨聯絡人</span><b>${esc(deliveryContact(o)||'-')}</b></div>
       <div class="meta-box" style="grid-column:span 6"><span>送貨地點 / 地址</span><b>${esc(deliveryDisplay(o)||'-')}</b></div>
@@ -2206,9 +2218,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.10｜訂單公司抬頭與發票開立抬頭分開顯示正式版</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.10.1｜公司別標示與橫向滑動穩定修正版</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.10 將訂單公司抬頭與發票開立抬頭分開：訂單抬頭依所選公司顯示；灃禾管顧的發票開立抬頭預設為灃康人力，並同步註明於廠商訂購單、訂單圖片、訂單明細與 LINE 訊息。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.10.1 將畫面上的「公司別」統一簡化為「公司別」，並修正寬表格橫向滑到底時整個頁面跟著位移或跳動的問題。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -2538,7 +2550,7 @@ function lineMessage(o){
     `雇主：${o.employer||''}`,
     `訂購日期：${dateSlash(o.orderDate)||today()}`,
     ...(formatDeliveryDeadline(o) ? [`送達時間：${formatDeliveryDeadline(o)}`] : []),
-    `公司別（訂單抬頭）：${o.companyTitle||''}`,
+    `公司別：${o.companyTitle||''}`,
     `發票開立抬頭：${orderInvoiceTitle(o)||''}`,
     `承辦人：${o.staff||''}`
   ];
@@ -2574,7 +2586,7 @@ function purchaseOrderHTML(o){
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境外國人寢具訂購單</title><style>
     *{box-sizing:border-box} body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;margin:20px;background:#fff;text-align:center} button{padding:8px 12px;margin-bottom:12px} h1{text-align:center;margin:0 0 10px;font-size:26px;letter-spacing:.06em} table{width:100%;border-collapse:collapse;margin-bottom:10px} th,td{border:1px solid #222;padding:6px 8px;font-size:14px;vertical-align:middle;text-align:center;line-height:1.3} th{background:#f2f2f2;white-space:nowrap}.secondary td{font-size:14px;color:#222;font-weight:700}.secondary .label{font-size:12px}.label{display:block;font-size:12px;color:#555;font-weight:700;margin-bottom:4px}.value{display:block;font-size:18px;font-weight:800;line-height:1.22}.value.large{font-size:16px}.value.mid{font-size:17px}.hero{border:2px solid #111;padding:7px 10px;margin:7px 0 10px}.hero .label{font-size:12px}.hero .value{font-size:21px;line-height:1.18}.info td{height:66px}.address td{height:56px}.note-box td{height:50px}.items th{font-size:13px}.items td{font-size:14px}.items td.spec-cell{white-space:normal;word-break:break-word;line-height:1.45}.sign{text-align:center;height:78px;vertical-align:bottom}.no-border td{border:0}.print-note{font-size:13px;color:#555;margin-bottom:12px}@media print{button{display:none}body{margin:12mm} }
   </style></head><body><button onclick="window.print()">列印</button><h1>${esc(o.companyTitle||'公司別')}入境外國人寢具訂購單</h1>
-    <table class="secondary"><tr><td><span class="label">訂購單號</span>${esc(o.orderNo||'')}</td><td><span class="label">公司別／訂單抬頭</span>${esc(o.companyTitle||'')}</td><td><span class="label">發票開立抬頭</span>${esc(orderInvoiceTitle(o)||'')}</td><td><span class="label">部門</span>${esc(o.dept||'')}</td><td><span class="label">承辦</span>${esc(o.staff||'')}</td><td><span class="label">支付對象</span>${esc(o.paymentTarget||'雇主')}</td></tr></table>
+    <table class="secondary"><tr><td><span class="label">訂購單號</span>${esc(o.orderNo||'')}</td><td><span class="label">公司別</span>${esc(o.companyTitle||'')}</td><td><span class="label">發票開立抬頭</span>${esc(orderInvoiceTitle(o)||'')}</td><td><span class="label">部門</span>${esc(o.dept||'')}</td><td><span class="label">承辦</span>${esc(o.staff||'')}</td><td><span class="label">支付對象</span>${esc(o.paymentTarget||'雇主')}</td></tr></table>
     <div class="hero"><span class="label">送達時間</span><span class="value large">${esc(deadline)}</span></div>
     <table class="info">
       <tr><td><span class="label">客戶名稱</span><span class="value large">${esc(o.employer||'')}</span></td><td><span class="label">入境工人</span><span class="value large">${esc(workerDisplay(o))}</span></td></tr>
@@ -2703,7 +2715,7 @@ function downloadOrderImage(orderId){
 
   let y=86; const usable=width-margin*2;
   const smallW=usable/6;
-  [['訂購單號',o.orderNo],['公司別／訂單抬頭',o.companyTitle],['發票開立抬頭',orderInvoiceTitle(o)],['部門',o.dept],['承辦',o.staff],['支付對象',o.paymentTarget||'雇主']].forEach((pair,i)=>drawSmallInfo(ctx, margin+i*smallW, y, smallW, 56, pair[0], pair[1]));
+  [['訂購單號',o.orderNo],['公司別',o.companyTitle],['發票開立抬頭',orderInvoiceTitle(o)],['部門',o.dept],['承辦',o.staff],['支付對象',o.paymentTarget||'雇主']].forEach((pair,i)=>drawSmallInfo(ctx, margin+i*smallW, y, smallW, 56, pair[0], pair[1]));
   y += 74;
 
   ctx.strokeRect(margin,y,usable,76);
@@ -2850,7 +2862,7 @@ function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v;
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.10 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.10.1 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
