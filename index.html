@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.9</title>
+  <title>FOR-e寢具訂購 V4.9.1</title>
   <meta name="theme-color" content="#c49767" />
-  <link rel="icon" href="/favicon.ico" sizes="any" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="icon" href="/favicon-v491.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v491-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-v491-16x16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon-v491.png" />
+  <link rel="manifest" href="/site-v491.webmanifest" />
   <style>
 
     :root{
@@ -302,6 +302,7 @@ const paymentTargets = ['工人','雇主','仲介'];
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.9.1', date:'2026/07/13', title:'深棕色 Order 網站圖示與系統 LOGO 更新', items:['網站分頁、我的最愛與手機主畫面圖示更換為指定深棕色 Order 圖','系統左上角 LOGO 同步更換為相同圖示','採用版本化圖示檔名，降低瀏覽器沿用舊圖示快取的情況']},
   {version:'V4.9', date:'2026/07/12', title:'網站圖示、系統 LOGO、收貨聯絡人與資料設定重整', items:['使用指定 Order 圖示作為瀏覽器分頁、我的最愛與主畫面圖示','系統左上角 LOGO 同步更換','資料設定新增可管理的收貨聯絡人、聯絡方式、送貨地點與地址','資料設定依實際使用流程分區，操作與儲存位置更直覺']},
   {version:'V4.8', date:'2026/07/12', title:'腳踏車／電風扇簽收單顯示與腳踏車費用獨立計算', items:['腳踏車與電風扇不列入寢具廠商訂購單及訂購單圖片','腳踏車與電風扇保留顯示於工人簽收單','腳踏車費用與寢具及用品費用分開計算，並於明細、對帳、統計及 CSV 顯示']},
   {version:'V4.7', date:'2026/07/12', title:'入境日與狀態顯示、多工人一鍵批次帶入', items:['寢具訂購清單新增入境日與目前狀態','一部自動帶承辦貝貝，二部自動帶承辦阿金','可一次輸入多位工人姓名並一鍵建立','國籍與入境日可一鍵套用全部工人','第一位工人的購買品項可一鍵套用全部工人']},
@@ -898,7 +899,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand"><img src="/brand-logo.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.9 Supabase 公開共用版</small></div></div>
+        <div class="brand"><img src="/brand-logo-v491.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.9.1 Supabase 公開共用版</small></div></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -2157,9 +2158,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.9｜網站圖示、系統 LOGO 與資料設定重整正式版</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.9.1｜深棕色 Order 網站圖示與系統 LOGO 更新正式版</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.9 使用指定 Order 圖示作為網站圖示與系統 LOGO；新增可維護的收貨聯絡人，並將資料設定依使用流程重新分區。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.9.1 將網站圖示及系統左上角 LOGO 更換為指定的深棕色 Order 圖；收貨聯絡人與資料設定功能維持 V4.9 邏輯。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -2799,7 +2800,7 @@ function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v;
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.9 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.9.1 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
