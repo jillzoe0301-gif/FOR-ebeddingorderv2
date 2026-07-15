@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.12.2</title>
+  <title>FOR-e寢具訂購 V4.12.3</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -428,6 +428,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.12.3', date:'2026/07/15', title:'LINE 支付對象移除與灃康送貨顯示', items:['LINE 訊息不再顯示支付對象','送貨地點為灃康人力時，地址欄直接顯示灃康人力，不再顯示完整地址','LINE 訊息固定顯示送貨地點：灃康人力，其他送貨地點仍顯示原地點與地址']},
   {version:'V4.12.2', date:'2026/07/13', title:'訂購明細隱藏支付對象', items:['訂購紀錄列表移除支付對象欄位','點選訂購單號開啟的訂單明細移除支付對象欄位','後台支付對象規則、會計對帳與 CSV 維持不變']},
   {version:'V4.12.1', date:'2026/07/13', title:'列印邊界、操作按鈕與支付規則備註', items:['A4 訂購單與簽收單固定上下左右 1 公分邊界，表格文字可換行避免裁切','LINE 按鈕套用官方綠色，請款轉對帳按鈕改為醒目金橘色','工人 × 訂購項目的原訂購數量只顯示數字，無異動時不再重複顯示目前有效','支付對象自動規則新增可輸入與修改的備註欄位']},
   {version:'V4.12', date:'2026/07/13', title:'一鍵列印、一般下載與可編輯支付規則', items:['訂購單與簽收單可在同一視窗一鍵連續列印','訂購單圖片下載恢復內容版面，不再強制套入 A4 畫布','支付對象只顯示簡潔結果，不再附帶規則明細','資料設定新增支付對象規則管理，可新增、修改、停用及設定品項範圍']},
@@ -1106,7 +1107,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.12.2 Supabase 公開共用版</small></div></div>
+        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.12.3 Supabase 公開共用版</small></div></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -1386,9 +1387,14 @@ function updateInvoiceTitlePreview(modal){
   if(input) input.value=invoiceTitleFromSettings(company,state.settings);
 }
 function optionHTML(list, value){ return list.map(v=>`<option value="${esc(v)}" ${v===value?'selected':''}>${esc(v)}</option>`).join(''); }
-function deliveryContact(o){ return (o.deliveryPlace===KANG_PLACE) ? staffContact(o.staff) : (o.contact||''); }
-function deliveryAddress(o){ return (o.deliveryPlace===KANG_PLACE) ? staffDeliveryAddress(o.staff) : (o.deliveryAddress||''); }
-function deliveryPlaceLabel(o){ return (o.deliveryPlace===KANG_PLACE) ? '' : (o.deliveryPlace||''); }
+function isKangDelivery(o){
+  const place=String(o?.deliveryPlace||'').trim();
+  const address=String(o?.deliveryAddress||'').trim();
+  return place===KANG_PLACE || address===KANG_PLACE || address===KANG_ADDRESS;
+}
+function deliveryContact(o){ return isKangDelivery(o) ? staffContact(o.staff) : (o.contact||''); }
+function deliveryAddress(o){ return isKangDelivery(o) ? KANG_PLACE : (o.deliveryAddress||''); }
+function deliveryPlaceLabel(o){ return isKangDelivery(o) ? '' : (o.deliveryPlace||''); }
 function deliveryDisplay(o){ return [deliveryPlaceLabel(o), deliveryAddress(o)].filter(Boolean).join('　'); }
 function deliveryHourLabel(hour){
   const h = num(hour);
@@ -1458,7 +1464,7 @@ function updateDeliveryInputs(modal, fromPlaceChange){
   if(place===KANG_PLACE){
     contact.value = staffContact(staff);
     contact.readOnly = true;
-    address.value = staffDeliveryAddress(staff);
+    address.value = KANG_PLACE;
     address.readOnly = true;
     return;
   }
@@ -1763,7 +1769,7 @@ function saveOrderFromModal(id, isExisting, modal){
   order.batchNo = '';
   order.workerEnglish = '';
   if(!order.accountingBatch) order.overseasStaff = order.staff || '';
-  if(order.deliveryPlace===KANG_PLACE){ order.contact = staffContact(order.staff); order.deliveryAddress = staffDeliveryAddress(order.staff); }
+  if(order.deliveryPlace===KANG_PLACE){ order.contact = staffContact(order.staff); order.deliveryAddress = KANG_PLACE; }
   if(!isExisting){ state.orders.push(order); }
   if(order.employer && !state.settings.employers.includes(order.employer)) state.settings.employers.push(order.employer);
   audit(isExisting?'修改訂購':'新增訂購','訂購單',order.id,order.orderNo,`${order.employer||''}｜${workerDisplay(order)}｜${money(orderAmount(order))}`,beforeOrder);
@@ -2454,9 +2460,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.12.2｜訂購明細欄位簡化版</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.12.3｜LINE 與灃康送貨顯示修正版</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.12.2 移除訂購紀錄與訂單明細中的支付對象欄位；支付規則仍保留於資料設定與會計用途。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.12.3 LINE 訊息移除支付對象；灃康人力送貨地址與 LINE 送貨地點統一顯示為「灃康人力」。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -2866,17 +2872,20 @@ function lineMessage(o){
     `公司別：${o.companyTitle||''}`,
     `發票開立抬頭：${orderInvoiceTitle(o)||''}`,
     `工人：${workerFullDisplay(o)}`,
-    `支付對象：${paymentTargetLabel(effectivePaymentTarget(o))}`,
     `承辦人：${o.staff||''}`
   ];
-  if(o.deliveryPlace && o.deliveryPlace!==KANG_PLACE){
-    lines.push(`送貨地點：${o.deliveryPlace||''}`);
-    lines.push(`收貨聯絡人：${deliveryContact(o)||''}`);
-    lines.push(`送貨地址：${deliveryAddress(o)||''}`);
-    if(o.note) lines.push(`備註：${o.note}`);
+  if(isKangDelivery(o)){
+    lines.push(`送貨地點：${KANG_PLACE}`);
+    if(deliveryContact(o)) lines.push(`收貨聯絡人：${deliveryContact(o)}`);
+  }else if(o.deliveryPlace || o.deliveryAddress){
+    if(o.deliveryPlace) lines.push(`送貨地點：${o.deliveryPlace}`);
+    if(deliveryContact(o)) lines.push(`收貨聯絡人：${deliveryContact(o)}`);
+    if(deliveryAddress(o)) lines.push(`送貨地址：${deliveryAddress(o)}`);
   }
+  if(o.note) lines.push(`備註：${o.note}`);
   return lines.join('\n');
 }
+
 const toiletriesDetails = {
   '印尼': [['塑膠口杯','Gelas plastik'],['牙刷','Sikat gigi'],['牙膏','Odol'],['毛巾','Handuk'],['香皂','Sabun mandi'],['衣架','Gantungan'],['臉盆','Baskom'],['洗衣粉','Rinso cuci baju'],['衛生紙','Tissue']],
   '泰國': [['塑膠口杯','ถ้วยพลาสติก'],['牙刷','แปรงสีฟัน'],['牙膏','ยาสีฟัน'],['毛巾','ผ้าขนหนู'],['香皂','สบู่'],['衣架','ไม้แขวนเสื้อ'],['臉盆','อ่างล้างหน้า'],['洗衣粉','ผงซักฟอก'],['衛生紙','กระดาษชำระ']],
@@ -3173,7 +3182,7 @@ function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v;
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.12.2 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.12.3 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
