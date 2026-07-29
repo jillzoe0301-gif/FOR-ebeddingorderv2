@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.13.2</title>
+  <title>FOR-e寢具訂購 V4.13.4</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -428,6 +428,8 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.13.4', date:'2026/07/29', title:'訂購單單鍵下載與一鍵列印全部', items:['下載訂購單恢復為單一按鈕；按一次會依訂單內容分別下載獨立寢具訂購單與獨立腳踏車訂購單','列印保留單一一鍵列印按鈕，依序產出寢具訂購單、腳踏車訂購單及四國語言綜合簽收單','沒有腳踏車或沒有寢具品項時自動略過對應空白訂購單','簽收單仍為整筆訂單一張，寢具與腳踏車品項同張並依工人國籍顯示對應語言']},
+  {version:'V4.13.3', date:'2026/07/29', title:'訂購單分開下載、四國語言簽收單保留', items:['下載區分為寢具訂購單與腳踏車訂購單兩個獨立檔案','寢具訂購單與腳踏車訂購單各自獨立下載，不再由同一按鈕同時下載','簽收單維持整筆訂單同一張，寢具與腳踏車品項合併顯示','簽收單依每位工人國籍帶入印尼、越南、菲律賓、泰國對應翻譯']},
   {version:'V4.13.2', date:'2026/07/29', title:'訂購單分開、簽收單整筆一張', items:['寢具訂購單與腳踏車訂購單維持各自獨立 A4 頁面','同一筆訂單的所有工人改集中在一張簽收單，不再每位工人各印一張','簽收單依工人分組顯示品項、小計與個別簽名日期欄位','一鍵列印順序維持寢具訂購單、腳踏車訂購單、單張綜合簽收單']},
   {version:'V4.13.1', date:'2026/07/29', title:'腳踏車訂購單獨立單頁修正', items:['腳踏車訂購單強制獨立 A4 單頁，不與寢具訂購單或簽收單共用頁面','訂購列表與訂單明細新增單獨列印腳踏車訂購單按鈕','一鍵列印仍依序產出寢具訂購單、獨立腳踏車訂購單與簽收單','下載時腳踏車訂購單維持獨立 PNG 檔案']},
   {version:'V4.13', date:'2026/07/29', title:'腳踏車獨立訂購單與固定廠商資訊', items:['腳踏車不併入寢具訂購單，改為獨立腳踏車訂購單','腳踏車廠商固定帶入信昌宏工業股份有限公司，聯絡人陳先生，電話 04-8929632 分機 814','一鍵列印依序產出寢具訂購單、腳踏車訂購單與工人簽收單','下載訂購單時若有腳踏車，會同時下載寢具訂購單與腳踏車訂購單圖片']},
@@ -1044,20 +1046,10 @@ function bicycleOrderUnitPrice(order){
   return line ? itemVendorPrice(line.code) : itemVendorPrice('BIKE');
 }
 function combinedPrintButtonLabel(order){
-  const hasBike=hasBicycleOrder(order), hasBedding=hasBeddingPurchaseOrder(order);
-  if(order?.isStockOrder){
-    if(hasBike && hasBedding) return '列印 A4 訂購單＋腳踏車單';
-    if(hasBike) return '列印 A4 腳踏車訂購單';
-    return '列印 A4 訂購單';
-  }
-  if(hasBike && hasBedding) return '一鍵列印訂購單＋腳踏車單＋單張簽收單';
-  if(hasBike) return '一鍵列印腳踏車單＋單張簽收單';
-  return '一鍵列印訂購單＋單張簽收單';
+  if(order?.isStockOrder) return '列印訂購單';
+  return '一鍵列印全部';
 }
 function downloadOrderButtonLabel(order){
-  const hasBike=hasBicycleOrder(order), hasBedding=hasBeddingPurchaseOrder(order);
-  if(hasBike && hasBedding) return '下載訂購單＋腳踏車單';
-  if(hasBike) return '下載腳踏車訂購單';
   return '下載訂購單';
 }
 function orderAmountBreakdownHTML(order){
@@ -1157,7 +1149,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.13.2 Supabase 公開共用版</small></div></div>
+        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.13.4 Supabase 公開共用版</small></div></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -1236,7 +1228,6 @@ function renderOrders(root){
                 <button class="small" data-act="view" data-id="${esc(o.id)}">查看</button>
                 <button class="small" data-act="edit" data-id="${esc(o.id)}" ${can('orderWrite')?'':'disabled'}>修改</button>
                 <button class="small" data-act="image" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>${downloadOrderButtonLabel(o)}</button>
-                ${hasBicycleOrder(o)?`<button class="small" data-act="printBike" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>單獨列印腳踏車單</button>`:''}
                 <button class="small primary" data-act="printBundle" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>${combinedPrintButtonLabel(o)}</button>
                 <button class="small line-action" data-act="line" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>LINE</button>
                 <button class="small accounting-action" data-act="requestAccounting" data-id="${esc(o.id)}" ${can('requestPayment')?'':'disabled'}>請款/轉對帳</button>
@@ -1256,7 +1247,6 @@ function renderOrders(root){
     if(btn.dataset.act==='view') openRecordDetailModal(id);
     if(btn.dataset.act==='edit') openOrderModal(id);
     if(btn.dataset.act==='image') downloadOrderImage(id);
-    if(btn.dataset.act==='printBike') printBicyclePurchaseOrder(id);
     if(btn.dataset.act==='printBundle') printOrderAndReceipt(id);
     if(btn.dataset.act==='requestAccounting') requestSingleAccounting(id);
     if(btn.dataset.act==='line') openLineModal(id);
@@ -2015,7 +2005,6 @@ function openRecordDetailModal(orderId){
       <button id="addBuyFromRecordBtn" ${can('orderWrite')?'':'disabled'}>加買</button>
       <button class="return-btn" id="returnFromRecordBtn" ${(can('orderWrite')&&hasEditableReturnItems(o))?'':'disabled'}>${hasReturn(o)?'修改退貨入庫':'退貨入庫'}</button>
       <button id="downloadFromRecordBtn" ${can('orderPrint')?'':'disabled'}>${downloadOrderButtonLabel(o)}</button>
-      ${hasBicycleOrder(o)?`<button id="printBikeFromRecordBtn" ${can('orderPrint')?'':'disabled'}>單獨列印腳踏車單</button>`:''}
       <button class="primary" id="printBundleFromRecordBtn" ${can('orderPrint')?'':'disabled'}>${combinedPrintButtonLabel(o)}</button>
       <button id="editFromRecordBtn" ${can('orderWrite')?'':'disabled'}>修改</button>
       <button class="danger" id="deleteFromRecordBtn" ${can('orderWrite')?'':'disabled'}>刪除</button>`,
@@ -2024,7 +2013,6 @@ function openRecordDetailModal(orderId){
       $('#addBuyFromRecordBtn',modal)?.addEventListener('click',()=>openAddPurchaseFlow(orderId));
       $('#returnFromRecordBtn',modal)?.addEventListener('click',()=>{closeModal();openReturnToStockModal(orderId);});
       $('#downloadFromRecordBtn',modal)?.addEventListener('click',()=>downloadOrderImage(orderId));
-      $('#printBikeFromRecordBtn',modal)?.addEventListener('click',()=>printBicyclePurchaseOrder(orderId));
       $('#printBundleFromRecordBtn',modal)?.addEventListener('click',()=>printOrderAndReceipt(orderId));
       $('#editFromRecordBtn',modal)?.addEventListener('click',()=>{closeModal();openOrderModal(orderId);});
       $('#deleteFromRecordBtn',modal)?.addEventListener('click',()=>deleteOrder(orderId));
@@ -2514,9 +2502,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.13.2｜訂購單分開、簽收單整筆一張</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.13.4｜單鍵下載與一鍵列印全部</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.13.2 寢具訂購單與腳踏車訂購單各自獨立一張；同筆訂單的所有工人集中在一張綜合簽收單，並保留個別簽名與日期欄位。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.13.4 下載訂購單恢復為單一按鈕，會依訂單內容分別產出獨立寢具單與獨立腳踏車單；一鍵列印會直接依序列印寢具單、腳踏車單及四國語言綜合簽收單。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -3187,14 +3175,25 @@ function downloadBicycleOrderImage(o){
   const contentH=Math.min(canvas.height,y+70);const output=document.createElement('canvas');output.width=canvas.width;output.height=contentH;const out=output.getContext('2d');out.fillStyle='#fff';out.fillRect(0,0,output.width,output.height);out.drawImage(canvas,0,0,canvas.width,contentH,0,0,canvas.width,contentH);
   triggerCanvasDownload(output,orderDownloadFileName(o)+'_腳踏車訂購單.png');
 }
+function downloadBicycleOrderImageById(orderId){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  if(!hasBicycleOrder(o)) return toast('此訂單沒有腳踏車品項');
+  downloadBicycleOrderImage(o);
+  if(!o.accountingBatch&&!['已收貨','待請款','待對帳','對帳完成','帳務錯誤'].includes(o.status))o.status='已下單';
+  o.orderDownloadedAt=todayInput();save();toast('已下載獨立腳踏車訂購單，狀態已更新為已下單');render();
+}
 function downloadOrderImage(orderId){
   const o=state.orders.find(x=>x.id===orderId); if(!o) return;
   const withBike=hasBicycleOrder(o);
   const withBedding=hasBeddingPurchaseOrder(o) || !withBike;
-  if(withBike && !withBedding){
-    downloadBicycleOrderImage(o);
-    if(!o.accountingBatch&&!['已收貨','待請款','待對帳','對帳完成','帳務錯誤'].includes(o.status))o.status='已下單';
-    o.orderDownloadedAt=todayInput();save();toast('已下載腳踏車訂購單，狀態已更新為已下單');render();return;
+  if(!withBedding){
+    if(withBike){
+      downloadBicycleOrderImage(o);
+      if(!o.accountingBatch&&!['已收貨','待請款','待對帳','對帳完成','帳務錯誤'].includes(o.status))o.status='已下單';
+      o.orderDownloadedAt=todayInput();save();toast('已下載腳踏車訂購單，狀態已更新為已下單');render();
+      return;
+    }
+    return toast('此訂單沒有可下載的訂購品項');
   }
   const rows=orderedLines(o.items||[]).filter(l=>hasOrderLineForPrint(l) && !isOrderFormExcludedItem(l.code));
   const changes=workerChangeDetails(o);
@@ -3232,9 +3231,11 @@ function downloadOrderImage(orderId){
   y+=64;ctx.font='20px Noto Sans TC, Arial';['營管主管','營管承辦','海外承辦'].forEach((label,i)=>{const sx=250+i*430;ctx.beginPath();ctx.moveTo(sx-145,y);ctx.lineTo(sx+145,y);ctx.stroke();ctx.fillText(label,sx,y+34);});
   const contentH=Math.min(canvas.height,y+70);
   const output=document.createElement('canvas');output.width=canvas.width;output.height=contentH;const outCtx=output.getContext('2d');outCtx.fillStyle='#fff';outCtx.fillRect(0,0,output.width,output.height);outCtx.drawImage(canvas,0,0,canvas.width,contentH,0,0,canvas.width,contentH);
-  triggerCanvasDownload(output,orderDownloadFileName(o)+'.png');
-  if(withBike) setTimeout(()=>downloadBicycleOrderImage(o),180);
-  if(!o.accountingBatch&&!['已收貨','待請款','待對帳','對帳完成','帳務錯誤'].includes(o.status))o.status='已下單';o.orderDownloadedAt=todayInput();save();toast(withBike?'已下載寢具訂購單與腳踏車訂購單，狀態已更新為已下單':'已下載訂購單，狀態已更新為已下單');render();
+  triggerCanvasDownload(output,orderDownloadFileName(o)+'_寢具訂購單.png');
+  if(withBike) downloadBicycleOrderImage(o);
+  if(!o.accountingBatch&&!['已收貨','待請款','待對帳','對帳完成','帳務錯誤'].includes(o.status))o.status='已下單';
+  o.orderDownloadedAt=todayInput();save();
+  toast(withBike?'已下載寢具訂購單與腳踏車訂購單，兩張各自獨立':'已下載寢具訂購單，狀態已更新為已下單');render();
 }
 function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines=3){
   text=String(text||''); if(!text){return;} let line=''; let lineCount=0;
@@ -3340,7 +3341,7 @@ function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v;
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.13.2 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.13.4 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
