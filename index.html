@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.12.3</title>
+  <title>FOR-e寢具訂購 V4.13.2</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -428,6 +428,9 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.13.2', date:'2026/07/29', title:'訂購單分開、簽收單整筆一張', items:['寢具訂購單與腳踏車訂購單維持各自獨立 A4 頁面','同一筆訂單的所有工人改集中在一張簽收單，不再每位工人各印一張','簽收單依工人分組顯示品項、小計與個別簽名日期欄位','一鍵列印順序維持寢具訂購單、腳踏車訂購單、單張綜合簽收單']},
+  {version:'V4.13.1', date:'2026/07/29', title:'腳踏車訂購單獨立單頁修正', items:['腳踏車訂購單強制獨立 A4 單頁，不與寢具訂購單或簽收單共用頁面','訂購列表與訂單明細新增單獨列印腳踏車訂購單按鈕','一鍵列印仍依序產出寢具訂購單、獨立腳踏車訂購單與簽收單','下載時腳踏車訂購單維持獨立 PNG 檔案']},
+  {version:'V4.13', date:'2026/07/29', title:'腳踏車獨立訂購單與固定廠商資訊', items:['腳踏車不併入寢具訂購單，改為獨立腳踏車訂購單','腳踏車廠商固定帶入信昌宏工業股份有限公司，聯絡人陳先生，電話 04-8929632 分機 814','一鍵列印依序產出寢具訂購單、腳踏車訂購單與工人簽收單','下載訂購單時若有腳踏車，會同時下載寢具訂購單與腳踏車訂購單圖片']},
   {version:'V4.12.3', date:'2026/07/15', title:'LINE 支付對象移除與灃康送貨顯示', items:['LINE 訊息不再顯示支付對象','送貨地點為灃康人力時，地址欄直接顯示灃康人力，不再顯示完整地址','LINE 訊息固定顯示送貨地點：灃康人力，其他送貨地點仍顯示原地點與地址']},
   {version:'V4.12.2', date:'2026/07/13', title:'訂購明細隱藏支付對象', items:['訂購紀錄列表移除支付對象欄位','點選訂購單號開啟的訂單明細移除支付對象欄位','後台支付對象規則、會計對帳與 CSV 維持不變']},
   {version:'V4.12.1', date:'2026/07/13', title:'列印邊界、操作按鈕與支付規則備註', items:['A4 訂購單與簽收單固定上下左右 1 公分邊界，表格文字可換行避免裁切','LINE 按鈕套用官方綠色，請款轉對帳按鈕改為醒目金橘色','工人 × 訂購項目的原訂購數量只顯示數字，無異動時不再重複顯示目前有效','支付對象自動規則新增可輸入與修改的備註欄位']},
@@ -452,6 +455,13 @@ const versionNotes = [
   {version:'V3.8', date:'2026/07/12', title:'送達日期時間與訂購單檔名', items:['新增送達日期與小時','訂購單下載檔名依訂購日期、雇主、工人或人數命名']},
   {version:'V3.7', date:'2026/07/11', title:'廠商訂購價 / 工人訂購價', items:['品項價格拆分為廠商訂購價與工人訂購價']}
 ];
+const BICYCLE_VENDOR = {
+  companyName:'信昌宏工業股份有限公司',
+  taxId:'16196825',
+  contactPerson:'陳先生',
+  phone:'04-8929632 分機 814',
+  address:'彰化縣埤頭鄉大湖村彰水路二段268號'
+};
 const KANG_PLACE = '灃康人力';
 const KANG_ADDRESS = '桃園市桃園區經國一路65號2樓';
 const STAFF_CONTACTS = { '貝貝':'貝貝#369', '阿金':'阿金#186', '明明':'明明#186' };
@@ -1010,6 +1020,46 @@ function orderBicycleAmount(order){ return orderedLines(order.items||[]).reduce(
 function orderBeddingAmount(order){ return orderedLines(order.items||[]).reduce((sum,l)=>sum+(!isBicycleItem(l.code)?lineAmount(l):0),0); }
 function orderAmount(order){ return orderBeddingAmount(order) + orderBicycleAmount(order); }
 function orderSupplierAmount(order){ return orderedLines(order.items||[]).reduce((sum,l)=>sum+(!isOrderFormExcludedItem(l.code)?supplierQty(l)*itemVendorPrice(l.code):0),0); }
+function bicycleSupplierQty(order){ return orderedLines(order?.items||[]).filter(l=>isBicycleItem(l.code)).reduce((sum,l)=>sum+supplierQty(l),0); }
+function hasBicycleOrder(order){ return bicycleSupplierQty(order)>0; }
+function hasBeddingPurchaseOrder(order){ return orderedLines(order?.items||[]).some(l=>hasOrderLineForPrint(l) && !isOrderFormExcludedItem(l.code)); }
+function bicycleOrderWorkerRows(order){
+  const rows=[];
+  if(Array.isArray(order?.workerGroups) && order.workerGroups.length){
+    orderWorkerGroups(order).forEach(g=>{
+      const lines=orderedLines(g.items||[]).filter(l=>isBicycleItem(l.code) && supplierQty(l)>0);
+      const qty=lines.reduce((sum,l)=>sum+supplierQty(l),0);
+      if(qty>0) rows.push({worker:g.name||'-',nationality:g.nationality||'',entryDate:g.entryDate||'',qty,note:lines.map(l=>l.note||'').filter(Boolean).join(' / ')});
+    });
+  }
+  if(!rows.length){
+    const lines=orderedLines(order?.items||[]).filter(l=>isBicycleItem(l.code) && supplierQty(l)>0);
+    const qty=lines.reduce((sum,l)=>sum+supplierQty(l),0);
+    if(qty>0) rows.push({worker:order?.isStockOrder?'訂庫存':workerFullDisplay(order),nationality:order?.isStockOrder?'':nationalityDisplay(order),entryDate:order?.isStockOrder?'':entryDateDisplay(order),qty,note:lines.map(l=>l.note||'').filter(Boolean).join(' / ')});
+  }
+  return rows;
+}
+function bicycleOrderUnitPrice(order){
+  const line=orderedLines(order?.items||[]).find(l=>isBicycleItem(l.code) && supplierQty(l)>0);
+  return line ? itemVendorPrice(line.code) : itemVendorPrice('BIKE');
+}
+function combinedPrintButtonLabel(order){
+  const hasBike=hasBicycleOrder(order), hasBedding=hasBeddingPurchaseOrder(order);
+  if(order?.isStockOrder){
+    if(hasBike && hasBedding) return '列印 A4 訂購單＋腳踏車單';
+    if(hasBike) return '列印 A4 腳踏車訂購單';
+    return '列印 A4 訂購單';
+  }
+  if(hasBike && hasBedding) return '一鍵列印訂購單＋腳踏車單＋單張簽收單';
+  if(hasBike) return '一鍵列印腳踏車單＋單張簽收單';
+  return '一鍵列印訂購單＋單張簽收單';
+}
+function downloadOrderButtonLabel(order){
+  const hasBike=hasBicycleOrder(order), hasBedding=hasBeddingPurchaseOrder(order);
+  if(hasBike && hasBedding) return '下載訂購單＋腳踏車單';
+  if(hasBike) return '下載腳踏車訂購單';
+  return '下載訂購單';
+}
 function orderAmountBreakdownHTML(order){
   const bedding=orderBeddingAmount(order), bicycle=orderBicycleAmount(order), total=bedding+bicycle;
   if(bicycle<=0) return `<b>${money(total)}</b><br><span class="muted">寢具及用品</span>`;
@@ -1107,7 +1157,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.12.3 Supabase 公開共用版</small></div></div>
+        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.13.2 Supabase 公開共用版</small></div></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -1185,8 +1235,9 @@ function renderOrders(root){
               <td class="nowrap"><div class="actions">
                 <button class="small" data-act="view" data-id="${esc(o.id)}">查看</button>
                 <button class="small" data-act="edit" data-id="${esc(o.id)}" ${can('orderWrite')?'':'disabled'}>修改</button>
-                <button class="small" data-act="image" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>下載訂購單</button>
-                <button class="small primary" data-act="printBundle" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>${o.isStockOrder?'列印 A4 訂購單':'一鍵列印訂購單＋簽收單'}</button>
+                <button class="small" data-act="image" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>${downloadOrderButtonLabel(o)}</button>
+                ${hasBicycleOrder(o)?`<button class="small" data-act="printBike" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>單獨列印腳踏車單</button>`:''}
+                <button class="small primary" data-act="printBundle" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>${combinedPrintButtonLabel(o)}</button>
                 <button class="small line-action" data-act="line" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>LINE</button>
                 <button class="small accounting-action" data-act="requestAccounting" data-id="${esc(o.id)}" ${can('requestPayment')?'':'disabled'}>請款/轉對帳</button>
               </div></td>
@@ -1205,6 +1256,7 @@ function renderOrders(root){
     if(btn.dataset.act==='view') openRecordDetailModal(id);
     if(btn.dataset.act==='edit') openOrderModal(id);
     if(btn.dataset.act==='image') downloadOrderImage(id);
+    if(btn.dataset.act==='printBike') printBicyclePurchaseOrder(id);
     if(btn.dataset.act==='printBundle') printOrderAndReceipt(id);
     if(btn.dataset.act==='requestAccounting') requestSingleAccounting(id);
     if(btn.dataset.act==='line') openLineModal(id);
@@ -1962,8 +2014,9 @@ function openRecordDetailModal(orderId){
     footer:`<button id="cancelModalBtn">關閉</button>
       <button id="addBuyFromRecordBtn" ${can('orderWrite')?'':'disabled'}>加買</button>
       <button class="return-btn" id="returnFromRecordBtn" ${(can('orderWrite')&&hasEditableReturnItems(o))?'':'disabled'}>${hasReturn(o)?'修改退貨入庫':'退貨入庫'}</button>
-      <button id="downloadFromRecordBtn" ${can('orderPrint')?'':'disabled'}>下載訂購單</button>
-      <button class="primary" id="printBundleFromRecordBtn" ${can('orderPrint')?'':'disabled'}>${o.isStockOrder?'列印 A4 訂購單':'一鍵列印訂購單＋簽收單'}</button>
+      <button id="downloadFromRecordBtn" ${can('orderPrint')?'':'disabled'}>${downloadOrderButtonLabel(o)}</button>
+      ${hasBicycleOrder(o)?`<button id="printBikeFromRecordBtn" ${can('orderPrint')?'':'disabled'}>單獨列印腳踏車單</button>`:''}
+      <button class="primary" id="printBundleFromRecordBtn" ${can('orderPrint')?'':'disabled'}>${combinedPrintButtonLabel(o)}</button>
       <button id="editFromRecordBtn" ${can('orderWrite')?'':'disabled'}>修改</button>
       <button class="danger" id="deleteFromRecordBtn" ${can('orderWrite')?'':'disabled'}>刪除</button>`,
     onOpen:(modal)=>{
@@ -1971,6 +2024,7 @@ function openRecordDetailModal(orderId){
       $('#addBuyFromRecordBtn',modal)?.addEventListener('click',()=>openAddPurchaseFlow(orderId));
       $('#returnFromRecordBtn',modal)?.addEventListener('click',()=>{closeModal();openReturnToStockModal(orderId);});
       $('#downloadFromRecordBtn',modal)?.addEventListener('click',()=>downloadOrderImage(orderId));
+      $('#printBikeFromRecordBtn',modal)?.addEventListener('click',()=>printBicyclePurchaseOrder(orderId));
       $('#printBundleFromRecordBtn',modal)?.addEventListener('click',()=>printOrderAndReceipt(orderId));
       $('#editFromRecordBtn',modal)?.addEventListener('click',()=>{closeModal();openOrderModal(orderId);});
       $('#deleteFromRecordBtn',modal)?.addEventListener('click',()=>deleteOrder(orderId));
@@ -2460,9 +2514,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.12.3｜LINE 與灃康送貨顯示修正版</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.13.2｜訂購單分開、簽收單整筆一張</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.12.3 LINE 訊息移除支付對象；灃康人力送貨地址與 LINE 送貨地點統一顯示為「灃康人力」。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.13.2 寢具訂購單與腳踏車訂購單各自獨立一張；同筆訂單的所有工人集中在一張綜合簽收單，並保留個別簽名與日期欄位。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -2921,42 +2975,85 @@ function purchaseOrderHTML(o){
     <table class="no-border"><tr><td class="sign">____________________<br>營管主管</td><td class="sign">____________________<br>營管承辦</td><td class="sign">____________________<br>海外承辦</td></tr></table>
   </div></body></html>`;
 }
+function bicyclePurchaseOrderPageHTML(o){
+  const rows=bicycleOrderWorkerRows(o);
+  if(!rows.length) return '';
+  const unitPrice=bicycleOrderUnitPrice(o);
+  const totalQty=rows.reduce((sum,r)=>sum+num(r.qty),0);
+  const rowHTML=rows.map((r,idx)=>`<tr><td>${idx+1}</td><td><b>${esc(r.worker)}</b></td><td>${esc(r.nationality||'')}</td><td>${esc(dateSlash(r.entryDate)||'')}</td><td>腳踏車</td><td>台</td><td>${num(r.qty)}</td><td>${money(unitPrice)}</td><td>${money(num(r.qty)*unitPrice)}</td><td>${esc(r.note||'')}</td></tr>`).join('');
+  const densityClass=rows.length>14?' bike-ultra-compact':(rows.length>8?' bike-compact':'');
+  return `<div class="bike-print-wrap${densityClass}"><h1>${esc(o.companyTitle||'公司別')}腳踏車訂購單</h1>
+    <table class="bike-vendor"><tr><td><span class="label">腳踏車廠商</span><span class="value">${esc(BICYCLE_VENDOR.companyName)}</span></td><td><span class="label">統一編號</span><span class="value">${esc(BICYCLE_VENDOR.taxId)}</span></td></tr><tr><td><span class="label">聯絡人</span><span class="value">${esc(BICYCLE_VENDOR.contactPerson)}</span></td><td><span class="label">電話</span><span class="value">${esc(BICYCLE_VENDOR.phone)}</span></td></tr><tr><td colspan="2"><span class="label">廠商地址</span><span class="value">${esc(BICYCLE_VENDOR.address)}</span></td></tr></table>
+    <table class="secondary"><tr><td><span class="label">原訂購單號</span>${esc(o.orderNo||'')}</td><td><span class="label">公司別</span>${esc(o.companyTitle||'')}</td><td><span class="label">發票開立抬頭</span>${esc(orderInvoiceTitle(o)||'')}</td><td><span class="label">部門</span>${esc(o.dept||'')}</td><td><span class="label">承辦</span>${esc(o.staff||'')}</td></tr></table>
+    <div class="hero"><span class="label">送達時間</span><span class="value">${esc(formatDeliveryDeadline(o)||'未填寫')}</span></div>
+    <table class="info"><tr><td><span class="label">客戶名稱</span><span class="value">${esc(o.employer||'')}</span></td><td><span class="label">訂購工人（全部姓名）</span><span class="value">${esc(workerFullDisplay(o))}</span></td></tr><tr><td><span class="label">收貨聯絡人</span><span class="value">${esc(deliveryContact(o)||'')}</span></td><td><span class="label">送貨地點／地址</span><span class="value">${esc(deliveryDisplay(o)||'')}</span></td></tr></table>
+    <table class="bike-items"><thead><tr><th>項次</th><th>工人姓名</th><th>國籍</th><th>入境日</th><th>品名</th><th>單位</th><th>數量</th><th>單價</th><th>小計</th><th>備註</th></tr></thead><tbody>${rowHTML}<tr class="bike-total-row"><td colspan="6">合計</td><td><b>${totalQty}</b></td><td></td><td><b>${money(totalQty*unitPrice)}</b></td><td></td></tr></tbody></table>
+    <table class="note-box"><tr><td><span class="label">訂單備註</span><span class="value">${esc(o.note||'')}</span></td></tr></table>
+    <table class="no-border"><tr><td class="sign">____________________<br>營管主管</td><td class="sign">____________________<br>營管承辦</td><td class="sign">____________________<br>海外承辦</td></tr></table></div>`;
+}
+function bicyclePurchaseOrderCSS(){ return `
+  .bike-print-wrap{width:190mm;max-width:100%;min-height:277mm;margin:0 auto;text-align:center;font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff}
+  .bike-print-wrap h1{margin:0 0 7px;font-size:23px;letter-spacing:.05em}.bike-print-wrap table{width:100%;border-collapse:collapse;margin-bottom:7px;table-layout:fixed}.bike-print-wrap th,.bike-print-wrap td{border:1px solid #222;padding:5px 5px;font-size:10.5px;vertical-align:middle;text-align:center;line-height:1.3;white-space:normal;word-break:break-word;overflow-wrap:anywhere}.bike-print-wrap th{background:#f1ede8}.bike-print-wrap .secondary td{font-size:10px;font-weight:700}.bike-print-wrap .label{display:block;font-size:9px;color:#555;font-weight:700;margin-bottom:2px}.bike-print-wrap .value{display:block;font-size:12px;font-weight:800;line-height:1.3}.bike-print-wrap .bike-vendor{border:2px solid #111}.bike-print-wrap .bike-vendor .value{font-size:13px}.bike-print-wrap .hero{border:2px solid #111;padding:5px 8px;margin:4px 0 7px}.bike-print-wrap .hero .value{font-size:15px}.bike-print-wrap .info .value{font-size:12px}.bike-print-wrap .bike-items th{font-size:9.5px}.bike-print-wrap .bike-items td{font-size:10px}.bike-print-wrap .bike-total-row td{background:#faf4ed}.bike-print-wrap .note-box .value{min-height:28px}.bike-print-wrap .sign{height:55px;vertical-align:bottom}.bike-print-wrap .no-border td{border:0}.bike-print-wrap.bike-compact th,.bike-print-wrap.bike-compact td{padding:3px 4px;font-size:9px}.bike-print-wrap.bike-compact h1{font-size:20px;margin-bottom:4px}.bike-print-wrap.bike-compact table{margin-bottom:4px}.bike-print-wrap.bike-compact .sign{height:42px}.bike-print-wrap.bike-ultra-compact th,.bike-print-wrap.bike-ultra-compact td{padding:2px 3px;font-size:8px;line-height:1.15}.bike-print-wrap.bike-ultra-compact h1{font-size:18px;margin-bottom:3px}.bike-print-wrap.bike-ultra-compact table{margin-bottom:3px}.bike-print-wrap.bike-ultra-compact .label{font-size:7.5px}.bike-print-wrap.bike-ultra-compact .value{font-size:9px}.bike-print-wrap.bike-ultra-compact .sign{height:34px}`; }
+function bicyclePurchaseOrderHTML(o){
+  const page=bicyclePurchaseOrderPageHTML(o);
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>腳踏車訂購單</title><style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff}body{padding:10px}button{padding:8px 12px;margin-bottom:8px}${bicyclePurchaseOrderCSS()}@media print{button{display:none}html,body{margin:0;padding:0}.bike-print-wrap{width:190mm;max-width:100%;min-height:277mm}}</style></head><body><button onclick="window.print()">列印 A4 腳踏車訂購單</button>${page}</body></html>`;
+}
 function printPurchaseOrder(orderId){
   const o=state.orders.find(x=>x.id===orderId); if(!o) return;
   const w=window.open('','_blank'); w.document.open(); w.document.write(purchaseOrderHTML(o)); w.document.close(); w.focus();
 }
+function printBicyclePurchaseOrder(orderId){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  if(!hasBicycleOrder(o)) return toast('此訂單沒有腳踏車品項');
+  const w=window.open('','_blank');
+  if(!w) return toast('瀏覽器封鎖了列印視窗，請允許彈出式視窗');
+  w.document.open(); w.document.write(bicyclePurchaseOrderHTML(o)); w.document.close();
+  setTimeout(()=>{ try{w.focus();w.print();}catch(e){} },350);
+}
 function receiptPagesHTML(o){
   if(o.isStockOrder) return '';
   const groups = orderWorkerGroups(o).filter(g=>(g.items||[]).some(l=>hasReceiptLine(l)) || g.name);
-  const pages = groups.length ? groups : [{name:o.worker||'-', nationality:o.nationality||'其他', entryDate:o.entryDate||'', items:o.items||[]}];
-  return pages.map(g=>{
+  const receiptGroups = groups.length ? groups : [{name:o.worker||'-', nationality:o.nationality||'其他', entryDate:o.entryDate||'', items:o.items||[]}];
+  let itemRowCount=0;
+  const groupRows=receiptGroups.map(g=>{
     const langKey = g.nationality || o.nationality || '其他';
     const lang = itemTranslations[langKey] || itemTranslations['其他'];
     const receiptLines = orderedLines(g.items||[]).filter(l=>hasReceiptLine(l) && isGeneralItem(l.code));
-    const rows = receiptLines.length ? receiptLines.map((l,idx)=>{
+    const lines = receiptLines.length ? receiptLines : [{code:'',price:0,note:'',__empty:true}];
+    itemRowCount += lines.length;
+    const workerSubtotal=groupAmount(g);
+    return lines.map((l,idx)=>{
+      const first=idx===0;
+      const rowSpan=lines.length;
+      const workerCell=first ? `<td class="worker-cell" rowspan="${rowSpan}"><b>${esc(g.name||'-')}</b><br><span>${esc(langKey||'')}</span><br><span>入境日：${esc(dateSlash(g.entryDate)||'')}</span><br><span class="worker-subtotal">小計：${money(workerSubtotal)}</span></td>` : '';
+      const signCell=first ? `<td class="worker-sign" rowspan="${rowSpan}"><span>簽名</span><div class="signature-space"></div><span>日期</span><div class="date-line"></div></td>` : '';
+      if(l.__empty){
+        return `<tr>${workerCell}<td class="center muted">尚無有訂購數量的品項</td><td class="right">-</td><td class="center">-</td><td>-</td><td>-</td>${signCell}</tr>`;
+      }
       const qty=lineQty(l);
-      return `<tr><td class="center">${idx+1}</td><td>${receiptProductHTML(l.code, langKey, lang)}</td><td class="right">${money(l.price)}</td><td class="center"><b>${qty}</b></td><td>${esc(paymentTargetLabel(resolvedLinePaymentTarget(o,l)))}</td><td>${esc(l.note||'')}</td></tr>`;
-    }).join('') : `<tr><td colspan="6" class="center">尚無有訂購數量的品項</td></tr>`;
-    const beddingTotal=groupBeddingAmount(g);
-    const bicycleTotal=groupBicycleAmount(g);
-    const total=beddingTotal+bicycleTotal;
-    const amountRows = bicycleTotal>0
-      ? `<p class="sub-total">寢具及用品費用：${money(beddingTotal)}</p><p class="bike-total">腳踏車費用：${money(bicycleTotal)}</p><p class="total">總金額 ${esc(lang.total)}：${money(total)}</p>`
-      : `<p class="total">總金額 ${esc(lang.total)}：${money(total)}</p>`;
-    return `<section class="receipt-page">
-      <h1>入境寢具訂購單</h1><h2>${esc(lang.title)}</h2>
-      <table class="info"><tr><td>雇主名稱 ${esc(lang.employer)}：<b>${esc(o.employer||'')}</b></td></tr><tr><td>外國人姓名 ${esc(lang.worker)}：<b>${esc(g.name||'-')}</b></td></tr><tr><td>入境日期 ${esc(lang.entry)}：<b>${esc(dateSlash(g.entryDate)||'')}</b></td></tr><tr><td>支付對象：<b>${esc(paymentTargetLabel(effectivePaymentTarget(o)))}</b></td></tr></table>
-      <table><thead><tr><th>${esc(lang.item)}</th><th>${esc(lang.product)}</th><th>${esc(lang.price)}</th><th>${esc(lang.qty)}</th><th>支付對象</th><th>${esc(lang.note)}</th></tr></thead><tbody>${rows}</tbody></table>
-      <div class="amount-breakdown">${amountRows}</div>
-      <table class="info"><tr><td class="sign">翻譯人員 ${esc(lang.translator)}：____________________</td><td class="sign">訂購人簽名+簽收日期 ${esc(lang.signature)}：____________________</td></tr></table>
-    </section>`;
+      return `<tr>${workerCell}<td>${receiptProductHTML(l.code, langKey, lang)}</td><td class="right">${money(l.price)}</td><td class="center"><b>${qty}</b></td><td>${esc(paymentTargetLabel(resolvedLinePaymentTarget(o,l)))}</td><td>${esc(l.note||'')}</td>${signCell}</tr>`;
+    }).join('');
   }).join('');
+  const beddingTotal=orderBeddingAmount(o);
+  const bicycleTotal=orderBicycleAmount(o);
+  const total=beddingTotal+bicycleTotal;
+  const amountRows = bicycleTotal>0
+    ? `<p class="sub-total">寢具及用品費用：${money(beddingTotal)}</p><p class="bike-total">腳踏車費用：${money(bicycleTotal)}</p><p class="total">總金額：${money(total)}</p>`
+    : `<p class="total">總金額：${money(total)}</p>`;
+  const densityClass=itemRowCount>22?' receipt-ultra-compact':(itemRowCount>13?' receipt-compact':'');
+  return `<section class="receipt-page${densityClass}">
+    <h1>入境寢具簽收單</h1>
+    <table class="info receipt-order-info"><tr><td>雇主名稱：<b>${esc(o.employer||'')}</b></td><td>訂購單號：<b>${esc(o.orderNo||'')}</b></td></tr><tr><td>工人人數：<b>${receiptGroups.length}</b></td><td>訂購日期：<b>${esc(dateSlash(o.orderDate)||'')}</b></td></tr></table>
+    <table class="receipt-worker-table"><thead><tr><th>工人資料</th><th>品項</th><th>單價</th><th>數量</th><th>支付對象</th><th>備註</th><th>工人簽名／日期</th></tr></thead><tbody>${groupRows}</tbody></table>
+    <div class="amount-breakdown">${amountRows}</div>
+    <table class="info receipt-footer-sign"><tr><td class="sign">翻譯人員：____________________</td><td class="sign">承辦人員：____________________</td></tr></table>
+  </section>`;
 }
 function receiptPrintCSS(){ return `
   .receipt-page{width:190mm;max-width:100%;min-height:277mm;margin:0 auto;page-break-after:always;break-after:page;page-break-inside:avoid;padding:2mm;font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff}
-  .receipt-page h1{text-align:center;margin:0 0 6px;font-size:24px;text-decoration:underline}.receipt-page h2{text-align:center;margin:0 0 14px;font-size:17px;font-weight:600}.receipt-page table{width:100%;border-collapse:collapse;margin-bottom:9px}.receipt-page th,.receipt-page td{border:1px solid #222;padding:6px 7px;font-size:12px;vertical-align:middle;line-height:1.35;white-space:normal;word-break:break-word;overflow-wrap:anywhere}.receipt-page th{background:#f3f3f3}.receipt-page .info td{border:0;font-size:13px;padding:5px 3px}.receipt-page .center{text-align:center}.receipt-page .right{text-align:right}.receipt-page .toiletry-list{font-size:10px;line-height:1.45;margin-top:4px;font-weight:400}.receipt-page .amount-breakdown{text-align:right;margin:3px 0 8px}.receipt-page .amount-breakdown p{margin:3px 0}.receipt-page .sub-total{text-align:right;font-size:13px;font-weight:700}.receipt-page .bike-total{text-align:right;font-size:14px;font-weight:900}.receipt-page .total{text-align:right;font-size:16px;font-weight:800;border-top:1px solid #333;padding-top:4px}.receipt-page .sign{height:55px;vertical-align:bottom}`; }
+  .receipt-page h1{text-align:center;margin:0 0 7px;font-size:23px;text-decoration:underline}.receipt-page table{width:100%;border-collapse:collapse;margin-bottom:7px;table-layout:fixed}.receipt-page th,.receipt-page td{border:1px solid #222;padding:5px 6px;font-size:11px;vertical-align:middle;line-height:1.3;white-space:normal;word-break:break-word;overflow-wrap:anywhere}.receipt-page th{background:#f3f3f3}.receipt-page .info td{font-size:12px;padding:4px 5px}.receipt-page .center{text-align:center}.receipt-page .right{text-align:right}.receipt-page .muted{color:#777}.receipt-page .toiletry-list{font-size:9px;line-height:1.35;margin-top:3px;font-weight:400}.receipt-page .receipt-worker-table th:nth-child(1){width:16%}.receipt-page .receipt-worker-table th:nth-child(2){width:25%}.receipt-page .receipt-worker-table th:nth-child(3){width:10%}.receipt-page .receipt-worker-table th:nth-child(4){width:7%}.receipt-page .receipt-worker-table th:nth-child(5){width:12%}.receipt-page .receipt-worker-table th:nth-child(6){width:14%}.receipt-page .receipt-worker-table th:nth-child(7){width:16%}.receipt-page .worker-cell{text-align:center;vertical-align:top}.receipt-page .worker-cell b{font-size:12px}.receipt-page .worker-cell span{display:block;margin-top:2px;font-size:9.5px}.receipt-page .worker-cell .worker-subtotal{font-weight:800;color:#8a5a20;margin-top:5px}.receipt-page .worker-sign{text-align:left;vertical-align:top;font-size:9px}.receipt-page .signature-space{height:32px;border-bottom:1px solid #777;margin:2px 0 5px}.receipt-page .date-line{height:18px;border-bottom:1px solid #777;margin-top:2px}.receipt-page .amount-breakdown{text-align:right;margin:3px 0 7px}.receipt-page .amount-breakdown p{margin:2px 0}.receipt-page .sub-total{font-size:12px;font-weight:700}.receipt-page .bike-total{font-size:13px;font-weight:900}.receipt-page .total{font-size:15px;font-weight:800;border-top:1px solid #333;padding-top:3px}.receipt-page .sign{height:42px;vertical-align:bottom;border:0}.receipt-page .receipt-footer-sign td{border:0}.receipt-page.receipt-compact h1{font-size:20px;margin-bottom:4px}.receipt-page.receipt-compact th,.receipt-page.receipt-compact td{font-size:9px;padding:3px 4px;line-height:1.18}.receipt-page.receipt-compact .info td{font-size:10px;padding:3px}.receipt-page.receipt-compact .toiletry-list{font-size:7.5px;line-height:1.18}.receipt-page.receipt-compact .signature-space{height:22px}.receipt-page.receipt-compact .date-line{height:13px}.receipt-page.receipt-compact .sign{height:31px}.receipt-page.receipt-ultra-compact h1{font-size:17px;margin-bottom:3px}.receipt-page.receipt-ultra-compact th,.receipt-page.receipt-ultra-compact td{font-size:7.5px;padding:2px 3px;line-height:1.1}.receipt-page.receipt-ultra-compact .info td{font-size:8.5px;padding:2px}.receipt-page.receipt-ultra-compact .toiletry-list{font-size:6px;line-height:1.05}.receipt-page.receipt-ultra-compact .worker-cell b{font-size:9px}.receipt-page.receipt-ultra-compact .worker-cell span{font-size:7px}.receipt-page.receipt-ultra-compact .signature-space{height:15px}.receipt-page.receipt-ultra-compact .date-line{height:10px}.receipt-page.receipt-ultra-compact .amount-breakdown{font-size:9px;margin:2px 0}.receipt-page.receipt-ultra-compact .total{font-size:11px}.receipt-page.receipt-ultra-compact .sign{height:24px}`; }
 function receiptDocumentHTML(o){
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境寢具訂購單</title><style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}body{margin:0;background:#fff;padding:10px}button{padding:8px 12px;margin:0 0 8px 10px}${receiptPrintCSS()}@media print{button{display:none}html,body{margin:0;padding:0}.receipt-page{margin:0 auto;width:190mm;max-width:100%;min-height:277mm}}</style></head><body><button onclick="window.print()">列印 A4 簽收單</button>${receiptPagesHTML(o)}</body></html>`;
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境寢具簽收單</title><style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}body{margin:0;background:#fff;padding:10px}button{padding:8px 12px;margin:0 0 8px 10px}${receiptPrintCSS()}@media print{button{display:none}html,body{margin:0;padding:0}.receipt-page{margin:0 auto;width:190mm;max-width:100%;min-height:277mm}}</style></head><body><button onclick="window.print()">列印 A4 單張簽收單</button>${receiptPagesHTML(o)}</body></html>`;
 }
 function printReceipt(orderId){
   const o=state.orders.find(x=>x.id===orderId); if(!o) return;
@@ -2965,12 +3062,28 @@ function printReceipt(orderId){
 }
 function printOrderAndReceipt(orderId){
   const o=state.orders.find(x=>x.id===orderId); if(!o) return;
-  const parsed=new DOMParser().parseFromString(purchaseOrderHTML(o),'text/html');
-  const orderMarkup=parsed.querySelector('.print-only-wrap')?.innerHTML || '';
+  const hasBikeOrder=hasBicycleOrder(o);
+  const includeBeddingOrder=hasBeddingPurchaseOrder(o) || !hasBikeOrder;
+  const parsed=includeBeddingOrder?new DOMParser().parseFromString(purchaseOrderHTML(o),'text/html'):null;
+  const orderMarkup=parsed?.querySelector('.print-only-wrap')?.innerHTML || '';
+  const bikeMarkup=hasBikeOrder?bicyclePurchaseOrderPageHTML(o):'';
   const receiptMarkup=o.isStockOrder?'':receiptPagesHTML(o);
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>訂購單與簽收單</title><style>
-    @page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff;padding:8px}button{padding:9px 14px;margin:0 0 8px}.order-page{width:190mm;max-width:100%;min-height:277mm;margin:0 auto;page-break-after:${o.isStockOrder?'auto':'always'};break-after:${o.isStockOrder?'auto':'page'};page-break-inside:auto;break-inside:auto;text-align:center}.order-page h1{text-align:center;margin:0 0 7px;font-size:22px;letter-spacing:.04em}.order-page table{width:100%;max-width:100%;border-collapse:collapse;margin-bottom:7px;page-break-inside:auto;table-layout:fixed}.order-page tr{page-break-inside:avoid;page-break-after:auto}.order-page th,.order-page td{border:1px solid #222;padding:4px 5px;font-size:11px;vertical-align:middle;text-align:center;line-height:1.28;white-space:normal;word-break:break-word;overflow-wrap:anywhere}.order-page th{background:#f2f2f2}.order-page .secondary td{font-size:10px;color:#222;font-weight:700}.order-page .secondary .label{font-size:9px}.order-page .label{display:block;font-size:9px;color:#555;font-weight:700;margin-bottom:2px}.order-page .value{display:block;font-size:13px;font-weight:800;line-height:1.3;white-space:normal;word-break:break-word}.order-page .value.large,.order-page .value.mid{font-size:12px}.order-page .hero{border:2px solid #111;padding:4px 8px;margin:4px 0 7px}.order-page .hero .label{font-size:9px}.order-page .hero .value{font-size:15px;line-height:1.2}.order-page .items th{font-size:10px}.order-page .items td{font-size:10.5px}.order-page .items td.spec-cell{white-space:normal;word-break:break-word;line-height:1.35}.order-page .sign{text-align:center;height:52px;vertical-align:bottom}.order-page .no-border td{border:0}.order-page .section-title{font-weight:900;text-align:left;font-size:12px;margin:6px 0 3px}.order-page .change-table th,.order-page .change-table td{font-size:10px}.order-page .worker-change-block{page-break-inside:avoid}${receiptPrintCSS()}@media print{button{display:none}html,body{margin:0;padding:0}.order-page,.receipt-page{margin:0 auto;width:190mm;max-width:100%}.order-page,.receipt-page{min-height:277mm}}
-  </style></head><body><button onclick="window.print()">${o.isStockOrder?'列印 A4 訂購單':'一鍵列印訂購單＋簽收單'}</button><section class="order-page">${orderMarkup}</section>${receiptMarkup}</body></html>`;
+  const pages=[];
+  if(includeBeddingOrder) pages.push(`<section class="print-page order-page">${orderMarkup}</section>`);
+  if(bikeMarkup) pages.push(`<section class="print-page bike-page">${bikeMarkup}</section>`);
+  if(receiptMarkup) pages.push(receiptMarkup.replaceAll('class="receipt-page"','class="print-page receipt-page"'));
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>訂購單、獨立腳踏車訂購單與單張簽收單</title><style>
+    @page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff;padding:8px}button{padding:9px 14px;margin:0 0 8px}
+    .print-page{display:block;width:190mm;max-width:190mm;min-height:277mm;margin:0 auto;page-break-inside:avoid!important;break-inside:avoid-page!important;page-break-after:always!important;break-after:page!important;clear:both}
+    .print-page:last-of-type{page-break-after:auto!important;break-after:auto!important}
+    .bike-page{page-break-before:always!important;break-before:page!important;page-break-inside:avoid!important;break-inside:avoid-page!important}
+    .bike-page:first-of-type{page-break-before:auto!important;break-before:auto!important}
+    .bike-page .bike-print-wrap{width:100%;max-width:100%;min-height:277mm;margin:0 auto;page-break-inside:avoid!important;break-inside:avoid-page!important}
+    .order-page{text-align:center}.order-page h1{text-align:center;margin:0 0 7px;font-size:22px;letter-spacing:.04em}.order-page table{width:100%;max-width:100%;border-collapse:collapse;margin-bottom:7px;page-break-inside:auto;table-layout:fixed}.order-page tr{page-break-inside:avoid;page-break-after:auto}.order-page th,.order-page td{border:1px solid #222;padding:4px 5px;font-size:11px;vertical-align:middle;text-align:center;line-height:1.28;white-space:normal;word-break:break-word;overflow-wrap:anywhere}.order-page th{background:#f2f2f2}.order-page .secondary td{font-size:10px;color:#222;font-weight:700}.order-page .secondary .label{font-size:9px}.order-page .label{display:block;font-size:9px;color:#555;font-weight:700;margin-bottom:2px}.order-page .value{display:block;font-size:13px;font-weight:800;line-height:1.3;white-space:normal;word-break:break-word}.order-page .value.large,.order-page .value.mid{font-size:12px}.order-page .hero{border:2px solid #111;padding:4px 8px;margin:4px 0 7px}.order-page .hero .label{font-size:9px}.order-page .hero .value{font-size:15px;line-height:1.2}.order-page .items th{font-size:10px}.order-page .items td{font-size:10.5px}.order-page .items td.spec-cell{white-space:normal;word-break:break-word;line-height:1.35}.order-page .sign{text-align:center;height:52px;vertical-align:bottom}.order-page .no-border td{border:0}.order-page .section-title{font-weight:900;text-align:left;font-size:12px;margin:6px 0 3px}.order-page .change-table th,.order-page .change-table td{font-size:10px}.order-page .worker-change-block{page-break-inside:avoid}
+    ${bicyclePurchaseOrderCSS()}${receiptPrintCSS()}
+    @media screen{.print-page{box-shadow:0 0 0 1px #ddd;margin-bottom:14px;padding:2mm}.bike-page{outline:3px solid #c49767}}
+    @media print{button{display:none}html,body{margin:0;padding:0}.print-page{width:190mm;max-width:190mm;min-height:277mm;margin:0 auto;padding:0;box-shadow:none}.bike-page{page-break-before:always!important;break-before:page!important}.bike-page:first-of-type{page-break-before:auto!important;break-before:auto!important}.receipt-page{width:190mm;max-width:190mm;min-height:277mm;margin:0 auto}}
+  </style></head><body><button onclick="window.print()">${combinedPrintButtonLabel(o)}</button>${pages.join('')}</body></html>`;
   const w=window.open('','_blank');
   if(!w) return toast('瀏覽器封鎖了列印視窗，請允許彈出式視窗');
   w.document.open(); w.document.write(html); w.document.close();
@@ -3037,8 +3150,52 @@ function drawSmallInfo(ctx, x, y, w, h, label, value){
   ctx.fillStyle='#222'; ctx.font='bold 19px Noto Sans TC, Arial';
   drawCenteredWrap(ctx, value||'', x+8, y+44, w-16, 18, 1);
 }
+function triggerCanvasDownload(canvas, fileName){
+  const a=document.createElement('a');
+  a.download=fileName;
+  a.href=canvas.toDataURL('image/png');
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function downloadBicycleOrderImage(o){
+  const rows=bicycleOrderWorkerRows(o); if(!rows.length) return;
+  const width=1400, margin=70, usable=width-margin*2;
+  const rowH=58, height=890+rows.length*rowH;
+  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+  const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);ctx.strokeStyle='#111';ctx.fillStyle='#111';ctx.lineWidth=2;ctx.textAlign='center';
+  ctx.font='bold 38px Noto Sans TC, Microsoft JhengHei, Arial';ctx.fillText(`${o.companyTitle||'公司別'}腳踏車訂購單`,width/2,55);
+  let y=82;
+  const half=usable/2;
+  drawInfoBoxFull(ctx,margin,y,half,82,'腳踏車廠商',BICYCLE_VENDOR.companyName,24);
+  drawInfoBoxFull(ctx,margin+half,y,half,82,'統一編號',BICYCLE_VENDOR.taxId,24); y+=82;
+  drawInfoBoxFull(ctx,margin,y,half,82,'聯絡人',BICYCLE_VENDOR.contactPerson,24);
+  drawInfoBoxFull(ctx,margin+half,y,half,82,'電話',BICYCLE_VENDOR.phone,23); y+=82;
+  drawInfoBoxFull(ctx,margin,y,usable,78,'廠商地址',BICYCLE_VENDOR.address,21); y+=90;
+  const smallW=usable/5;
+  [['原訂購單號',o.orderNo],['公司別',o.companyTitle],['發票開立抬頭',orderInvoiceTitle(o)],['部門',o.dept],['承辦',o.staff]].forEach((pair,i)=>drawSmallInfo(ctx,margin+i*smallW,y,smallW,58,pair[0],pair[1])); y+=70;
+  drawInfoBoxFull(ctx,margin,y,half,82,'客戶名稱',o.employer||'',22);
+  drawInfoBoxFull(ctx,margin+half,y,half,82,'送達時間',formatDeliveryDeadline(o)||'未填寫',21); y+=82;
+  drawInfoBoxFull(ctx,margin,y,half,82,'收貨聯絡人',deliveryContact(o)||'',21);
+  drawInfoBoxFull(ctx,margin+half,y,half,82,'送貨地點／地址',deliveryDisplay(o)||'',20); y+=94;
+  const widths=[60,180,100,130,150,90,90,130,140,190];
+  const headers=['項次','工人姓名','國籍','入境日','品名','單位','數量','單價','小計','備註'];
+  let cx=margin;ctx.font='bold 17px Noto Sans TC, Arial';headers.forEach((h,i)=>{ctx.strokeRect(cx,y,widths[i],42);drawCenteredWrap(ctx,h,cx+4,y+27,widths[i]-8,17,1);cx+=widths[i];});y+=42;
+  const unitPrice=bicycleOrderUnitPrice(o);ctx.font='17px Noto Sans TC, Arial';
+  rows.forEach((r,idx)=>{cx=margin;const vals=[String(idx+1),r.worker,r.nationality,dateSlash(r.entryDate),'腳踏車','台',String(num(r.qty)),money(unitPrice),money(num(r.qty)*unitPrice),r.note||''];vals.forEach((v,i)=>{ctx.strokeRect(cx,y,widths[i],rowH);drawCenteredWrapFull(ctx,v,cx+5,y,widths[i]-10,rowH,18);cx+=widths[i];});y+=rowH;});
+  const totalQty=rows.reduce((sum,r)=>sum+num(r.qty),0);cx=margin;const totalVals=['','','','','合計','',String(totalQty),'',money(totalQty*unitPrice),''];totalVals.forEach((v,i)=>{ctx.strokeRect(cx,y,widths[i],52);ctx.font=i===4||i===6||i===8?'bold 18px Noto Sans TC, Arial':'17px Noto Sans TC, Arial';drawCenteredWrapFull(ctx,v,cx+5,y,widths[i]-10,52,19);cx+=widths[i];});y+=70;
+  drawInfoBoxFull(ctx,margin,y,usable,72,'訂單備註',o.note||'',19);y+=115;
+  ctx.font='20px Noto Sans TC, Arial';['營管主管','營管承辦','海外承辦'].forEach((label,i)=>{const sx=250+i*430;ctx.beginPath();ctx.moveTo(sx-145,y);ctx.lineTo(sx+145,y);ctx.stroke();ctx.fillText(label,sx,y+34);});
+  const contentH=Math.min(canvas.height,y+70);const output=document.createElement('canvas');output.width=canvas.width;output.height=contentH;const out=output.getContext('2d');out.fillStyle='#fff';out.fillRect(0,0,output.width,output.height);out.drawImage(canvas,0,0,canvas.width,contentH,0,0,canvas.width,contentH);
+  triggerCanvasDownload(output,orderDownloadFileName(o)+'_腳踏車訂購單.png');
+}
 function downloadOrderImage(orderId){
   const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  const withBike=hasBicycleOrder(o);
+  const withBedding=hasBeddingPurchaseOrder(o) || !withBike;
+  if(withBike && !withBedding){
+    downloadBicycleOrderImage(o);
+    if(!o.accountingBatch&&!['已收貨','待請款','待對帳','對帳完成','帳務錯誤'].includes(o.status))o.status='已下單';
+    o.orderDownloadedAt=todayInput();save();toast('已下載腳踏車訂購單，狀態已更新為已下單');render();return;
+  }
   const rows=orderedLines(o.items||[]).filter(l=>hasOrderLineForPrint(l) && !isOrderFormExcludedItem(l.code));
   const changes=workerChangeDetails(o);
   const width=1400, margin=70;
@@ -3075,8 +3232,9 @@ function downloadOrderImage(orderId){
   y+=64;ctx.font='20px Noto Sans TC, Arial';['營管主管','營管承辦','海外承辦'].forEach((label,i)=>{const sx=250+i*430;ctx.beginPath();ctx.moveTo(sx-145,y);ctx.lineTo(sx+145,y);ctx.stroke();ctx.fillText(label,sx,y+34);});
   const contentH=Math.min(canvas.height,y+70);
   const output=document.createElement('canvas');output.width=canvas.width;output.height=contentH;const outCtx=output.getContext('2d');outCtx.fillStyle='#fff';outCtx.fillRect(0,0,output.width,output.height);outCtx.drawImage(canvas,0,0,canvas.width,contentH,0,0,canvas.width,contentH);
-  const a=document.createElement('a');a.download=orderDownloadFileName(o)+'.png';a.href=output.toDataURL('image/png');a.click();
-  if(!o.accountingBatch&&!['已收貨','待請款','待對帳','對帳完成','帳務錯誤'].includes(o.status))o.status='已下單';o.orderDownloadedAt=todayInput();save();toast('已下載訂購單，狀態已更新為已下單');render();
+  triggerCanvasDownload(output,orderDownloadFileName(o)+'.png');
+  if(withBike) setTimeout(()=>downloadBicycleOrderImage(o),180);
+  if(!o.accountingBatch&&!['已收貨','待請款','待對帳','對帳完成','帳務錯誤'].includes(o.status))o.status='已下單';o.orderDownloadedAt=todayInput();save();toast(withBike?'已下載寢具訂購單與腳踏車訂購單，狀態已更新為已下單':'已下載訂購單，狀態已更新為已下單');render();
 }
 function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines=3){
   text=String(text||''); if(!text){return;} let line=''; let lineCount=0;
@@ -3182,7 +3340,7 @@ function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v;
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.12.3 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.13.2 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
