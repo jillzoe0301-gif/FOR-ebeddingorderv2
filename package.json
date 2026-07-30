@@ -1,11 +1,11 @@
 {
   "name": "for-e-bedding-order-system",
   "private": true,
-  "version": "4.16.0",
+  "version": "4.16.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/apply-v4152.mjs && node scripts/apply-v416.mjs && vite build",
+    "build": "node scripts/apply-v4152.mjs && node scripts/apply-v416.mjs && node scripts/apply-v4161.mjs && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
