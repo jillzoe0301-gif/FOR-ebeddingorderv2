@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.13.4</title>
+  <title>FOR-e寢具訂購 V4.15</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -428,6 +428,9 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.15', date:'2026/07/30', title:'品項隱藏、四國翻譯與腳踏車送貨資訊', items:['資料設定中的停用品項預設隱藏，可切換顯示；歷史訂單仍完整保留','四國簽收單改以品項名稱對應翻譯，補齊 T 型衣櫥並可在品項設定中修改四國翻譯','腳踏車訂購單縮小廠商資訊、放大送貨資訊','腳踏車訂購單可另行設定送達日期時間、收貨聯絡人與送貨地址，未填時沿用一般訂單送貨資料']},
+  {version:'V4.14', date:'2026/07/29', title:'雙腳踏車品項、代碼可修改與獨立單據正式修正', items:['腳踏車拆分為 BIKE1 信宏腳踏車（籃子前後燈）與 BIKE2 信宏腳踏車（僅車）','資料設定允許手動修改品項代碼，並同步更新訂單、工人明細、庫存調整及支付規則','下載訂購單使用單一按鈕，ZIP 內固定以 1寢具訂購單、2腳踏車訂購單分開產出','一鍵列印依序列印寢具訂購單、腳踏車訂購單、四國語言綜合簽收單；簽收單依實際品項翻譯']},
+  {version:'V4.13.6', date:'2026/07/29', title:'腳踏車獨立訂購單資料辨識直接修正', items:['修正多人訂單的腳踏車數量儲存在 workerGroups 時，系統只讀取 order.items 而判定沒有腳踏車的問題','腳踏車辨識同時讀取工人明細與訂單彙總資料，並相容腳踏車、自行車及 BIKE 代碼','下載訂購單維持單一按鈕；同時有寢具與腳踏車時下載 ZIP，內含兩張獨立 PNG','一鍵列印強制寢具訂購單、腳踏車訂購單、四國語言綜合簽收單各自獨立分頁']},
   {version:'V4.13.4', date:'2026/07/29', title:'訂購單單鍵下載與一鍵列印全部', items:['下載訂購單恢復為單一按鈕；按一次會依訂單內容分別下載獨立寢具訂購單與獨立腳踏車訂購單','列印保留單一一鍵列印按鈕，依序產出寢具訂購單、腳踏車訂購單及四國語言綜合簽收單','沒有腳踏車或沒有寢具品項時自動略過對應空白訂購單','簽收單仍為整筆訂單一張，寢具與腳踏車品項同張並依工人國籍顯示對應語言']},
   {version:'V4.13.3', date:'2026/07/29', title:'訂購單分開下載、四國語言簽收單保留', items:['下載區分為寢具訂購單與腳踏車訂購單兩個獨立檔案','寢具訂購單與腳踏車訂購單各自獨立下載，不再由同一按鈕同時下載','簽收單維持整筆訂單同一張，寢具與腳踏車品項合併顯示','簽收單依每位工人國籍帶入印尼、越南、菲律賓、泰國對應翻譯']},
   {version:'V4.13.2', date:'2026/07/29', title:'訂購單分開、簽收單整筆一張', items:['寢具訂購單與腳踏車訂購單維持各自獨立 A4 頁面','同一筆訂單的所有工人改集中在一張簽收單，不再每位工人各印一張','簽收單依工人分組顯示品項、小計與個別簽名日期欄位','一鍵列印順序維持寢具訂購單、腳踏車訂購單、單張綜合簽收單']},
@@ -473,20 +476,39 @@ const DEFAULT_DELIVERY_CONTACTS = [
   {id:'CONTACT-AJIN',name:'阿金',phone:'#186',deliveryPlace:'灃康人力',address:KANG_ADDRESS,note:'二部預設收貨聯絡人',active:true},
   {id:'CONTACT-MINGMING',name:'明明',phone:'#186',deliveryPlace:'灃康人力',address:KANG_ADDRESS,note:'備用收貨聯絡人',active:true}
 ];
-const ORDER_FORM_EXCLUDED_ITEM_CODES = new Set(['FAN','BIKE']);
-const BICYCLE_ITEM_CODES = new Set(['BIKE']);
+const ORDER_FORM_EXCLUDED_ITEM_CODES = new Set(['FAN','BIKE','BIKE1','BIKE2']);
+const BICYCLE_ITEM_CODES = new Set(['BIKE','BIKE1','BIKE2']);
 function defaultStaffForDepartment(dept){ return DEPARTMENT_DEFAULT_STAFF[dept] || state?.settings?.staff?.[0] || ''; }
 function itemIdentity(itemOrCode){
   const item = typeof itemOrCode==='string' ? getItem(itemOrCode) : (itemOrCode||{});
-  return {code:String(item.code||''), name:String(item.name||'')};
+  return {code:String(item.code||''), name:String(item.name||''), systemKey:String(item.systemKey||'')};
+}
+function itemSystemKey(itemOrCode){
+  const item=itemIdentity(itemOrCode);
+  return item.systemKey || item.code;
 }
 function isBicycleItem(itemOrCode){
   const item=itemIdentity(itemOrCode);
-  return BICYCLE_ITEM_CODES.has(item.code) || item.name.trim()==='腳踏車';
+  const code=item.code.trim().toUpperCase();
+  const key=item.systemKey.trim().toUpperCase();
+  const name=item.name.replace(/\s+/g,'');
+  return BICYCLE_ITEM_CODES.has(code) || BICYCLE_ITEM_CODES.has(key) || code.startsWith('BIKE') || key.startsWith('BIKE') || name.includes('腳踏車') || name.includes('自行車');
+}
+function bicycleVariantKey(itemOrCode){
+  const item=itemIdentity(itemOrCode);
+  const code=item.code.trim().toUpperCase();
+  const key=item.systemKey.trim().toUpperCase();
+  const name=item.name.replace(/\s+/g,'');
+  if(code==='BIKE2' || key==='BIKE2' || name.includes('僅車')) return 'BIKE2';
+  return 'BIKE1';
 }
 function isElectricFanItem(itemOrCode){
   const item=itemIdentity(itemOrCode);
-  return item.code==='FAN' || item.name.trim()==='電風扇';
+  return item.code==='FAN' || item.systemKey==='FAN' || item.name.trim()==='電風扇';
+}
+function itemTranslationKey(itemOrCode){
+  if(isBicycleItem(itemOrCode)) return bicycleVariantKey(itemOrCode);
+  return itemSystemKey(itemOrCode);
 }
 function isOrderFormExcludedItem(itemOrCode){ return isBicycleItem(itemOrCode) || isElectricFanItem(itemOrCode); }
 const LEGACY_SPECIAL_ITEM_CODES = new Set(['SINGLE_BED','ROUND_BUNK','ANGLE_BUNK','WOOD_BED']);
@@ -557,40 +579,81 @@ function contactDatalistHTML(){
 }
 
 const defaultItems = [
-  {code:'MATTRESS', name:'塑膠床墊', spec:'3 x 6 尺', unit:'床', price:400, vendorPrice:400, openingStock:0, active:true, orderType:'general'},
-  {code:'QUILT', name:'棉被含被套', spec:'4.5 x 6.5 尺', unit:'件', price:600, vendorPrice:600, openingStock:0, active:true, orderType:'general'},
-  {code:'PILLOW', name:'枕頭', spec:'1.2 x 2.2 尺', unit:'個', price:90, vendorPrice:90, openingStock:0, active:true, orderType:'general'},
-  {code:'CLOSET', name:'T 型衣櫥', spec:'高160 寬75 深50', unit:'組', price:720, vendorPrice:720, openingStock:0, active:true, orderType:'general'},
-  {code:'TOILETRIES', name:'盥洗用具', spec:'口杯/牙刷/牙膏/毛巾/香皂/衣架/臉盆/洗衣粉/衛生紙', unit:'組', price:400, vendorPrice:400, openingStock:0, active:true, orderType:'general'},
-  {code:'SINGLE_BED', name:'單人床', spec:'單人床', unit:'張', price:1785, vendorPrice:1785, openingStock:0, active:true, orderType:'special'},
-  {code:'ROUND_BUNK', name:'圓管架雙層床', spec:'圓管架雙層床', unit:'組', price:3570, vendorPrice:3570, openingStock:0, active:true, orderType:'special'},
-  {code:'ANGLE_BUNK', name:'角鋼架雙層床', spec:'角鋼架雙層床', unit:'組', price:3570, vendorPrice:3570, openingStock:0, active:true, orderType:'special'},
-  {code:'WOOD_BED', name:'木頭床', spec:'木頭床', unit:'張', price:1785, vendorPrice:1785, openingStock:0, active:true, orderType:'special'},
-  {code:'FAN', name:'電風扇', spec:'依實際需求', unit:'台', price:0, vendorPrice:0, openingStock:0, active:true, orderType:'general'},
-  {code:'BIKE', name:'腳踏車', spec:'依實際需求', unit:'台', price:3200, vendorPrice:3200, openingStock:0, active:true, orderType:'general'}
+  {systemKey:'MATTRESS', code:'MATTRESS', name:'塑膠床墊', spec:'3 x 6 尺', unit:'床', price:400, vendorPrice:400, openingStock:0, active:true, orderType:'general'},
+  {systemKey:'QUILT', code:'QUILT', name:'棉被含被套', spec:'4.5 x 6.5 尺', unit:'件', price:600, vendorPrice:600, openingStock:0, active:true, orderType:'general'},
+  {systemKey:'PILLOW', code:'PILLOW', name:'枕頭', spec:'1.2 x 2.2 尺', unit:'個', price:90, vendorPrice:90, openingStock:0, active:true, orderType:'general'},
+  {systemKey:'CLOSET', code:'CLOSET', name:'T 型衣櫥', spec:'高160 寬75 深50', unit:'組', price:720, vendorPrice:720, openingStock:0, active:true, orderType:'general'},
+  {systemKey:'TOILETRIES', code:'TOILETRIES', name:'盥洗用具', spec:'口杯/牙刷/牙膏/毛巾/香皂/衣架/臉盆/洗衣粉/衛生紙', unit:'組', price:400, vendorPrice:400, openingStock:0, active:true, orderType:'general'},
+  {systemKey:'SINGLE_BED', code:'SINGLE_BED', name:'單人床', spec:'單人床', unit:'張', price:1785, vendorPrice:1785, openingStock:0, active:true, orderType:'special'},
+  {systemKey:'ROUND_BUNK', code:'ROUND_BUNK', name:'圓管架雙層床', spec:'圓管架雙層床', unit:'組', price:3570, vendorPrice:3570, openingStock:0, active:true, orderType:'special'},
+  {systemKey:'ANGLE_BUNK', code:'ANGLE_BUNK', name:'角鋼架雙層床', spec:'角鋼架雙層床', unit:'組', price:3570, vendorPrice:3570, openingStock:0, active:true, orderType:'special'},
+  {systemKey:'WOOD_BED', code:'WOOD_BED', name:'木頭床', spec:'木頭床', unit:'張', price:1785, vendorPrice:1785, openingStock:0, active:true, orderType:'special'},
+  {systemKey:'FAN', code:'FAN', name:'電風扇', spec:'依實際需求', unit:'台', price:0, vendorPrice:0, openingStock:0, active:true, orderType:'general'},
+  {systemKey:'BIKE1', code:'BIKE1', name:'信宏腳踏車（籃子前後燈）', spec:'含籃子、前燈、後燈', unit:'台', price:3200, vendorPrice:3200, openingStock:0, active:true, orderType:'general'},
+  {systemKey:'BIKE2', code:'BIKE2', name:'信宏腳踏車（僅車）', spec:'僅車', unit:'台', price:0, vendorPrice:0, openingStock:0, active:true, orderType:'general'}
 ];
 
 const itemTranslations = {
   '印尼': {
     title:'Formulir pemesanan perlengkapan tidur kedatangan', employer:'majikan', worker:'tki', entry:'tgl', item:'Item', product:'Produk', price:'harga', qty:'Jumlah', note:'Catatan', total:'jumlah bulat', translator:'penterjemah', signature:'Tanggal Tanda Tangan Pengorder',
-    names:{MATTRESS:'Alas kasur plastik', QUILT:'Selimut dan sarungnya', PILLOW:'Bantal', CLOSET:'Lemari baju model T', TOILETRIES:'Perlengkapan mandi', SINGLE_BED:'Tempat tidur tunggal', ROUND_BUNK:'Ranjang susun rangka pipa bulat', ANGLE_BUNK:'Ranjang susun rangka besi siku', WOOD_BED:'Tempat tidur kayu', FAN:'Kipas angin', BIKE:'Bersepeda'}
+    names:{MATTRESS:'Alas kasur plastik', QUILT:'Selimut dan sarungnya', PILLOW:'Bantal', CLOSET:'Lemari baju model T', TOILETRIES:'Perlengkapan mandi', SINGLE_BED:'Tempat tidur tunggal', ROUND_BUNK:'Ranjang susun rangka pipa bulat', ANGLE_BUNK:'Ranjang susun rangka besi siku', WOOD_BED:'Tempat tidur kayu', FAN:'Kipas angin', BIKE:'Sepeda', BIKE1:'Sepeda dengan keranjang, lampu depan dan belakang', BIKE2:'Sepeda saja'}
   },
   '泰國': {
     title:'แบบฟอร์มสั่งซื้อเครื่องนอนสำหรับแรงงานเข้าใหม่', employer:'ชื่อนายจ้าง', worker:'ชื่อพนักงาน', entry:'วันที่', item:'รายการ', product:'ชื่อสินค้า', price:'ราคา', qty:'จำนวน', note:'หมายเหตุ', total:'รวมเงินทั้งหมด', translator:'ลงชื่อล่าม', signature:'ลายเซ็นผู้สั่งซื้อ วันที่',
-    names:{MATTRESS:'ที่นอนพลาสติก', QUILT:'ผ้าห่มพร้อมปลอกผ้าห่ม', PILLOW:'หมอน', CLOSET:'ตู้เสื้อผ้ารูปตัวT', TOILETRIES:'อุปกรณ์อาบน้ำ', SINGLE_BED:'เตียงเดี่ยว', ROUND_BUNK:'เตียงสองชั้นโครงท่อกลม', ANGLE_BUNK:'เตียงสองชั้นโครงเหล็กฉาก', WOOD_BED:'เตียงไม้', FAN:'พัดลม', BIKE:'จักรยาน'}
+    names:{MATTRESS:'ที่นอนพลาสติก', QUILT:'ผ้าห่มพร้อมปลอกผ้าห่ม', PILLOW:'หมอน', CLOSET:'ตู้เสื้อผ้ารูปตัวT', TOILETRIES:'อุปกรณ์อาบน้ำ', SINGLE_BED:'เตียงเดี่ยว', ROUND_BUNK:'เตียงสองชั้นโครงท่อกลม', ANGLE_BUNK:'เตียงสองชั้นโครงเหล็กฉาก', WOOD_BED:'เตียงไม้', FAN:'พัดลม', BIKE:'จักรยาน', BIKE1:'จักรยานพร้อมตะกร้า ไฟหน้าและไฟท้าย', BIKE2:'จักรยานอย่างเดียว'}
   },
   '菲律賓': {
     title:'Arrival bedding order form', employer:'Employer', worker:'Worker Name', entry:'Date', item:'Item', product:'Product', price:'Price', qty:'Qty.', note:'Remarks', total:'Total', translator:'Translator', signature:'Signature and date of order',
-    names:{MATTRESS:'Plastic mattress', QUILT:'Quilt with cover', PILLOW:'Pillow', CLOSET:'T type closet', TOILETRIES:'Toiletries', SINGLE_BED:'Single bed', ROUND_BUNK:'Round-tube bunk bed', ANGLE_BUNK:'Angle-steel bunk bed', WOOD_BED:'Wooden bed', FAN:'Electric fan', BIKE:'Bicycle'}
+    names:{MATTRESS:'Plastic mattress', QUILT:'Quilt with cover', PILLOW:'Pillow', CLOSET:'T type closet', TOILETRIES:'Toiletries', SINGLE_BED:'Single bed', ROUND_BUNK:'Round-tube bunk bed', ANGLE_BUNK:'Angle-steel bunk bed', WOOD_BED:'Wooden bed', FAN:'Electric fan', BIKE:'Bicycle', BIKE1:'Bicycle with basket, front and rear lights', BIKE2:'Bicycle only'}
   },
   '越南': {
     title:'Phiếu đặt đồ dùng chăn ga gối đệm khi nhập cảnh', employer:'Tên chủ sử dụng', worker:'Họ tên lao động', entry:'Thời gian', item:'Hạng mục', product:'Tên sản phẩm', price:'Số tiền', qty:'Số lượng', note:'Ghi chú', total:'Tổng số tiền', translator:'Phiên dịch viên', signature:'Ký tên và ghi ngày tháng',
-    names:{MATTRESS:'Đệm', QUILT:'Chăn', PILLOW:'Gối', CLOSET:'Tủ vải đựng quần áo', TOILETRIES:'Đồ dùng vệ sinh cá nhân', SINGLE_BED:'Giường đơn', ROUND_BUNK:'Giường tầng khung ống tròn', ANGLE_BUNK:'Giường tầng khung sắt V', WOOD_BED:'Giường gỗ', FAN:'Quạt điện', BIKE:'Xe đạp'}
+    names:{MATTRESS:'Đệm', QUILT:'Chăn', PILLOW:'Gối', CLOSET:'Tủ vải đựng quần áo', TOILETRIES:'Đồ dùng vệ sinh cá nhân', SINGLE_BED:'Giường đơn', ROUND_BUNK:'Giường tầng khung ống tròn', ANGLE_BUNK:'Giường tầng khung sắt V', WOOD_BED:'Giường gỗ', FAN:'Quạt điện', BIKE:'Xe đạp', BIKE1:'Xe đạp có giỏ, đèn trước và đèn sau', BIKE2:'Chỉ xe đạp'}
   },
   '其他': {
-    title:'Arrival bedding order form', employer:'Employer', worker:'Worker Name', entry:'Date', item:'Item', product:'Product', price:'Price', qty:'Qty.', note:'Remarks', total:'Total', translator:'Translator', signature:'Signature and date', names:{SINGLE_BED:'Single bed', ROUND_BUNK:'Round-tube bunk bed', ANGLE_BUNK:'Angle-steel bunk bed', WOOD_BED:'Wooden bed', FAN:'Electric fan'}
+    title:'Arrival bedding order form', employer:'Employer', worker:'Worker Name', entry:'Date', item:'Item', product:'Product', price:'Price', qty:'Qty.', note:'Remarks', total:'Total', translator:'Translator', signature:'Signature and date', names:{SINGLE_BED:'Single bed', ROUND_BUNK:'Round-tube bunk bed', ANGLE_BUNK:'Angle-steel bunk bed', WOOD_BED:'Wooden bed', FAN:'Electric fan', BIKE:'Bicycle', BIKE1:'Bicycle with basket, front and rear lights', BIKE2:'Bicycle only'}
   }
 };
+
+
+const ITEM_NAME_TRANSLATIONS = {
+  '塑膠床墊':{'印尼':'Alas kasur plastik','泰國':'ที่นอนพลาสติก','菲律賓':'Plastic mattress','越南':'Đệm nhựa'},
+  '棉被含被套':{'印尼':'Selimut dan sarungnya','泰國':'ผ้าห่มพร้อมปลอกผ้าห่ม','菲律賓':'Quilt with cover','越南':'Chăn kèm vỏ chăn'},
+  '枕頭':{'印尼':'Bantal','泰國':'หมอน','菲律賓':'Pillow','越南':'Gối'},
+  'T型衣櫥':{'印尼':'Lemari pakaian berbentuk T','泰國':'ตู้เสื้อผ้ารูปตัว T','菲律賓':'T-shaped wardrobe','越南':'Tủ quần áo chữ T'},
+  '盥洗用具':{'印尼':'Perlengkapan mandi','泰國':'อุปกรณ์อาบน้ำ','菲律賓':'Toiletries','越南':'Đồ dùng vệ sinh cá nhân'},
+  '單人床':{'印尼':'Tempat tidur tunggal','泰國':'เตียงเดี่ยว','菲律賓':'Single bed','越南':'Giường đơn'},
+  '圓管架雙層床':{'印尼':'Ranjang susun rangka pipa bulat','泰國':'เตียงสองชั้นโครงท่อกลม','菲律賓':'Round-tube bunk bed','越南':'Giường tầng khung ống tròn'},
+  '角鋼架雙層床':{'印尼':'Ranjang susun rangka besi siku','泰國':'เตียงสองชั้นโครงเหล็กฉาก','菲律賓':'Angle-steel bunk bed','越南':'Giường tầng khung sắt V'},
+  '木頭床':{'印尼':'Tempat tidur kayu','泰國':'เตียงไม้','菲律賓':'Wooden bed','越南':'Giường gỗ'},
+  '電風扇':{'印尼':'Kipas angin','泰國':'พัดลมไฟฟ้า','菲律賓':'Electric fan','越南':'Quạt điện'},
+  '信宏腳踏車（籃子前後燈）':{'印尼':'Sepeda dengan keranjang, lampu depan dan belakang','泰國':'จักรยานพร้อมตะกร้า ไฟหน้าและไฟท้าย','菲律賓':'Bicycle with basket, front and rear lights','越南':'Xe đạp có giỏ, đèn trước và đèn sau'},
+  '信宏腳踏車（僅車）':{'印尼':'Sepeda saja','泰國':'จักรยานอย่างเดียว','菲律賓':'Bicycle only','越南':'Chỉ xe đạp'}
+};
+function normalizedItemNameForTranslation(name){
+  return String(name||'').replace(/[\s　]/g,'').replace(/\(/g,'（').replace(/\)/g,'）');
+}
+function translationDefaultsByItemName(name){
+  const key=normalizedItemNameForTranslation(name);
+  const found=Object.entries(ITEM_NAME_TRANSLATIONS).find(([source])=>normalizedItemNameForTranslation(source)===key)?.[1] || {};
+  return {'印尼':found['印尼']||'','泰國':found['泰國']||'','菲律賓':found['菲律賓']||'','越南':found['越南']||''};
+}
+function normalizeItemTranslations(item){
+  const defaults=translationDefaultsByItemName(item?.name||'');
+  const raw=(item?.translations && typeof item.translations==='object')?item.translations:{};
+  return {
+    '印尼':String(raw['印尼']||raw.id||defaults['印尼']||'').trim(),
+    '泰國':String(raw['泰國']||raw.th||defaults['泰國']||'').trim(),
+    '菲律賓':String(raw['菲律賓']||raw.en||raw.fil||defaults['菲律賓']||'').trim(),
+    '越南':String(raw['越南']||raw.vi||defaults['越南']||'').trim()
+  };
+}
+function translatedItemName(item,langKey){
+  const direct=normalizeItemTranslations(item)[langKey];
+  if(direct) return direct;
+  const key=itemTranslationKey(item);
+  return itemTranslations[langKey]?.names?.[key] || itemTranslations[langKey]?.names?.[item?.code] || item?.name || '';
+}
 
 const DEFAULT_INVOICE_TITLE_MAP = {
   '灃康人力':'灃康人力',
@@ -624,7 +687,7 @@ function parseCompanyInvoiceSettings(text){
 
 const defaultState = () => ({
   currentPage:'orders',
-  filters:{orders:'', records:'', accounting:'', status:'全部', statsMode:'month', statsYear:String(new Date().getFullYear()), statsMonth:todayInput().slice(0,7), statsStart:'', statsEnd:'', exportMode:'month', exportYear:String(new Date().getFullYear()), exportMonth:todayInput().slice(0,7), exportDay:todayInput(), exportStart:'', exportEnd:''},
+  filters:{orders:'', records:'', accounting:'', status:'全部', statsMode:'month', statsYear:String(new Date().getFullYear()), statsMonth:todayInput().slice(0,7), statsStart:'', statsEnd:'', exportMode:'month', exportYear:String(new Date().getFullYear()), exportMonth:todayInput().slice(0,7), exportDay:todayInput(), exportStart:'', exportEnd:'', showInactiveItems:false},
   settings:{
     departments:['一部','二部'],
     staff:['貝貝','阿金','明明'],
@@ -646,14 +709,64 @@ const defaultState = () => ({
   deletedOrders:[],
   auditLogs:[]
 });
-function mergeDefaultItems(items){
-  const map = new Map((items||[]).map(i=>[i.code,i]));
-  ['BED_SINGLE','BED_DOUBLE'].forEach(code=>{ if(map.has(code)) map.get(code).active = false; });
-  defaultItems.forEach(def=>{
-    if(map.has(def.code)) map.set(def.code, Object.assign({}, def, map.get(def.code), {active: map.get(def.code).active!==false}));
-    else map.set(def.code, Object.assign({}, def));
+function mergeLineCodes(lines, oldCode, newCode){
+  if(!Array.isArray(lines) || !oldCode || !newCode || oldCode===newCode) return;
+  const oldLines=lines.filter(l=>String(l?.code||'')===oldCode);
+  if(!oldLines.length) return;
+  let target=lines.find(l=>String(l?.code||'')===newCode);
+  if(!target){
+    target=oldLines[0]; target.code=newCode;
+    oldLines.shift();
+  }
+  const numericFields=['orderQty','addQty','returnQty','useStockQty','stockInQty','replenishQty','returnToStockQty','receivedQty'];
+  oldLines.forEach(line=>{
+    numericFields.forEach(k=>{ target[k]=Number(target[k]||0)+Number(line[k]||0); });
+    if(!Number(target.price||0) && Number(line.price||0)) target.price=Number(line.price);
+    if(line.note) target.note=[target.note,line.note].filter(Boolean).join(' / ');
+    if(line.returnNote) target.returnNote=[target.returnNote,line.returnNote].filter(Boolean).join(' / ');
+    const idx=lines.indexOf(line); if(idx>=0) lines.splice(idx,1);
   });
-  return Array.from(map.values()).filter(i=>!['BED_SINGLE','BED_DOUBLE'].includes(i.code)).map(i=>Object.assign({}, i, {vendorPrice: num(i.vendorPrice ?? i.price), price: num(i.price), orderType:normalizeItemOrderType(i.orderType,i.code)}));
+}
+function migrateOrderItemCode(order, oldCode, newCode){
+  if(!order) return;
+  mergeLineCodes(order.items,oldCode,newCode);
+  (order.workerGroups||[]).forEach(g=>mergeLineCodes(g.items,oldCode,newCode));
+}
+function migrateLegacyBicycleData(s){
+  s.settings=s.settings||{};
+  s.settings.items=Array.isArray(s.settings.items)?s.settings.items:[];
+  const old=s.settings.items.find(i=>String(i?.code||'').toUpperCase()==='BIKE');
+  const bike1=s.settings.items.find(i=>String(i?.code||'').toUpperCase()==='BIKE1');
+  if(old){
+    if(!bike1){ old.code='BIKE1'; old.systemKey='BIKE1'; old.name='信宏腳踏車（籃子前後燈）'; old.spec=old.spec&&old.spec!=='依實際需求'?old.spec:'含籃子、前燈、後燈'; }
+    else{
+      if(!Number(bike1.price||0) && Number(old.price||0)) bike1.price=Number(old.price);
+      if(!Number(bike1.vendorPrice||0) && Number(old.vendorPrice||0)) bike1.vendorPrice=Number(old.vendorPrice);
+      s.settings.items=s.settings.items.filter(i=>i!==old);
+    }
+  }
+  const normalizedBike1=s.settings.items.find(i=>String(i?.code||'').toUpperCase()==='BIKE1');
+  if(normalizedBike1){ normalizedBike1.systemKey='BIKE1'; normalizedBike1.name='信宏腳踏車（籃子前後燈）'; if(!normalizedBike1.spec||normalizedBike1.spec==='依實際需求') normalizedBike1.spec='含籃子、前燈、後燈'; }
+  const normalizedBike2=s.settings.items.find(i=>String(i?.code||'').toUpperCase()==='BIKE2');
+  if(normalizedBike2){ normalizedBike2.systemKey='BIKE2'; normalizedBike2.name='信宏腳踏車（僅車）'; if(!normalizedBike2.spec||normalizedBike2.spec==='依實際需求') normalizedBike2.spec='僅車'; }
+  (s.orders||[]).forEach(o=>migrateOrderItemCode(o,'BIKE','BIKE1'));
+  (s.deletedOrders||[]).forEach(d=>migrateOrderItemCode(d?.order,'BIKE','BIKE1'));
+  (s.stockAdjustments||[]).forEach(a=>{ if(String(a?.code||'').toUpperCase()==='BIKE') a.code='BIKE1'; });
+  (s.settings.paymentRules||[]).forEach(r=>{ r.itemKeywords=(r.itemKeywords||[]).map(k=>String(k).toUpperCase()==='BIKE'?'BIKE1':k); });
+}
+function defaultSystemKeyForCode(code){ return defaultItems.find(d=>d.code===code)?.systemKey || ''; }
+function mergeDefaultItems(items){
+  const list=(items||[]).map(i=>Object.assign({},i));
+  list.forEach(item=>{ if(!item.systemKey) item.systemKey=defaultSystemKeyForCode(item.code); });
+  ['BED_SINGLE','BED_DOUBLE'].forEach(code=>{ const item=list.find(i=>i.code===code); if(item) item.active=false; });
+  defaultItems.forEach(def=>{
+    const idx=list.findIndex(i=>(i.systemKey&&i.systemKey===def.systemKey) || (!i.systemKey&&i.code===def.code));
+    if(idx>=0){
+      const current=list[idx];
+      list[idx]=Object.assign({},def,current,{systemKey:def.systemKey,code:current.code||def.code,active:current.active!==false});
+    }else list.push(Object.assign({},def));
+  });
+  return list.filter(i=>!['BED_SINGLE','BED_DOUBLE'].includes(i.code)).map(i=>Object.assign({},i,{vendorPrice:num(i.vendorPrice??i.price),price:num(i.price),orderType:normalizeItemOrderType(i.orderType,i.code),translations:normalizeItemTranslations(i)}));
 }
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -833,7 +946,15 @@ function orderWorkerGroups(o){
 }
 function mergeGroupItems(items){
   const old = new Map((items||[]).map(l=>[l.code,l]));
-  return state.settings.items.filter(i=>i.active!==false && isGeneralItem(i)).map(i=>normalizeItemLine(old.get(i.code) || {code:i.code, price:i.price}));
+  const ordered=state.settings.items.filter(i=>i.active!==false && isGeneralItem(i)).map(i=>normalizeItemLine(old.get(i.code) || {code:i.code, price:i.price}));
+  const known=new Set(ordered.map(l=>l.code));
+  (items||[]).forEach(raw=>{
+    const item=getItem(raw?.code);
+    const line=normalizeItemLine(raw);
+    const hasHistory=positiveLineQty(line) || num(line.returnQty)>0 || num(line.returnToStockQty)>0 || !!line.note || !!line.returnNote;
+    if(!known.has(line.code) && isGeneralItem(item) && hasHistory){ ordered.push(line); known.add(line.code); }
+  });
+  return ordered;
 }
 function aggregateWorkerItems(groups, oldItems=[]){
   const oldMap = new Map((oldItems||[]).map(l=>[l.code,l]));
@@ -868,6 +989,7 @@ function normalizeState(s){
   const d = defaultState();
   s = Object.assign(d, s || {});
   s.settings = Object.assign(d.settings, s.settings || {});
+  migrateLegacyBicycleData(s);
   s.settings.items = mergeDefaultItems(Array.isArray(s.settings.items) && s.settings.items.length ? s.settings.items : defaultItems);
   if(!Array.isArray(s.settings.staff) || !s.settings.staff.length || s.settings.staff.includes('海外承辦')) s.settings.staff = ['貝貝','阿金','明明'];
   if(!Array.isArray(s.settings.companyTitles)) s.settings.companyTitles=[];
@@ -916,6 +1038,10 @@ function normalizeState(s){
     if(!o.invoiceTitle) o.invoiceTitle = invoiceTitleFromSettings(o.companyTitle, s.settings);
     if(typeof o.deliveryDate === 'undefined') o.deliveryDate = '';
     if(typeof o.deliveryHour === 'undefined') o.deliveryHour = '16';
+    if(typeof o.bicycleDeliveryDate === 'undefined') o.bicycleDeliveryDate = '';
+    if(typeof o.bicycleDeliveryHour === 'undefined') o.bicycleDeliveryHour = '';
+    if(typeof o.bicycleContact === 'undefined') o.bicycleContact = '';
+    if(typeof o.bicycleDeliveryAddress === 'undefined') o.bicycleDeliveryAddress = '';
   });
   s.stockAdjustments = Array.isArray(s.stockAdjustments) ? s.stockAdjustments : [];
   s.deletedOrders = Array.isArray(s.deletedOrders) ? s.deletedOrders : [];
@@ -933,6 +1059,7 @@ function normalizeState(s){
   if(!s.filters.exportDay) s.filters.exportDay = todayInput();
   if(!s.filters.exportStart) s.filters.exportStart = '';
   if(!s.filters.exportEnd) s.filters.exportEnd = '';
+  if(typeof s.filters.showInactiveItems==='undefined') s.filters.showInactiveItems=false;
   delete s.role;
   if(!pages.find(p=>p.id===s.currentPage)) s.currentPage = 'orders';
   return s;
@@ -1018,33 +1145,39 @@ function supplierQty(line){
   return Math.max(0, num(line?.orderQty) + num(line?.addQty) + num(line?.replenishQty) - num(line?.returnQty));
 }
 function lineAmount(line){ return lineQty(line) * num(line.price); }
-function orderBicycleAmount(order){ return orderedLines(order.items||[]).reduce((sum,l)=>sum+(isBicycleItem(l.code)?lineAmount(l):0),0); }
+function effectiveBicycleLines(order, qtyFn=supplierQty){
+  if(Array.isArray(order?.workerGroups) && order.workerGroups.length){
+    const lines=order.workerGroups.flatMap(group=>orderedLines(group.items||[]).filter(l=>isBicycleItem(l.code)&&qtyFn(l)>0));
+    if(lines.length) return lines;
+  }
+  return orderedLines(order?.items||[]).filter(l=>isBicycleItem(l.code)&&qtyFn(l)>0);
+}
+function orderBicycleAmount(order){ return effectiveBicycleLines(order,lineQty).reduce((sum,l)=>sum+lineAmount(l),0); }
 function orderBeddingAmount(order){ return orderedLines(order.items||[]).reduce((sum,l)=>sum+(!isBicycleItem(l.code)?lineAmount(l):0),0); }
 function orderAmount(order){ return orderBeddingAmount(order) + orderBicycleAmount(order); }
 function orderSupplierAmount(order){ return orderedLines(order.items||[]).reduce((sum,l)=>sum+(!isOrderFormExcludedItem(l.code)?supplierQty(l)*itemVendorPrice(l.code):0),0); }
-function bicycleSupplierQty(order){ return orderedLines(order?.items||[]).filter(l=>isBicycleItem(l.code)).reduce((sum,l)=>sum+supplierQty(l),0); }
+function bicycleSupplierQty(order){ return effectiveBicycleLines(order,supplierQty).reduce((sum,l)=>sum+supplierQty(l),0); }
 function hasBicycleOrder(order){ return bicycleSupplierQty(order)>0; }
 function hasBeddingPurchaseOrder(order){ return orderedLines(order?.items||[]).some(l=>hasOrderLineForPrint(l) && !isOrderFormExcludedItem(l.code)); }
 function bicycleOrderWorkerRows(order){
   const rows=[];
   if(Array.isArray(order?.workerGroups) && order.workerGroups.length){
-    orderWorkerGroups(order).forEach(g=>{
-      const lines=orderedLines(g.items||[]).filter(l=>isBicycleItem(l.code) && supplierQty(l)>0);
-      const qty=lines.reduce((sum,l)=>sum+supplierQty(l),0);
-      if(qty>0) rows.push({worker:g.name||'-',nationality:g.nationality||'',entryDate:g.entryDate||'',qty,note:lines.map(l=>l.note||'').filter(Boolean).join(' / ')});
+    order.workerGroups.forEach(group=>{
+      orderedLines(group.items||[]).filter(l=>isBicycleItem(l.code)&&supplierQty(l)>0).forEach(line=>{
+        const item=getItem(line.code);
+        rows.push({worker:group.name||'-',nationality:group.nationality||'',entryDate:group.entryDate||'',code:line.code,itemName:item.name||line.code,spec:item.spec||'',unit:item.unit||'台',qty:supplierQty(line),unitPrice:itemVendorPrice(line.code),note:line.note||''});
+      });
     });
   }
   if(!rows.length){
-    const lines=orderedLines(order?.items||[]).filter(l=>isBicycleItem(l.code) && supplierQty(l)>0);
-    const qty=lines.reduce((sum,l)=>sum+supplierQty(l),0);
-    if(qty>0) rows.push({worker:order?.isStockOrder?'訂庫存':workerFullDisplay(order),nationality:order?.isStockOrder?'':nationalityDisplay(order),entryDate:order?.isStockOrder?'':entryDateDisplay(order),qty,note:lines.map(l=>l.note||'').filter(Boolean).join(' / ')});
+    orderedLines(order?.items||[]).filter(l=>isBicycleItem(l.code)&&supplierQty(l)>0).forEach(line=>{
+      const item=getItem(line.code);
+      rows.push({worker:order?.isStockOrder?'訂庫存':workerFullDisplay(order),nationality:order?.isStockOrder?'':nationalityDisplay(order),entryDate:order?.isStockOrder?'':entryDateDisplay(order),code:line.code,itemName:item.name||line.code,spec:item.spec||'',unit:item.unit||'台',qty:supplierQty(line),unitPrice:itemVendorPrice(line.code),note:line.note||''});
+    });
   }
   return rows;
 }
-function bicycleOrderUnitPrice(order){
-  const line=orderedLines(order?.items||[]).find(l=>isBicycleItem(l.code) && supplierQty(l)>0);
-  return line ? itemVendorPrice(line.code) : itemVendorPrice('BIKE');
-}
+function bicycleOrderUnitPrice(order){ return bicycleOrderWorkerRows(order)[0]?.unitPrice || itemVendorPrice('BIKE1'); }
 function combinedPrintButtonLabel(order){
   if(order?.isStockOrder) return '列印訂購單';
   return '一鍵列印全部';
@@ -1149,7 +1282,7 @@ function render(){
   $('#app').innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.13.4 Supabase 公開共用版</small></div></div>
+        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.15 Supabase 公開共用版</small></div></div>
         <nav class="nav">
           ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
         </nav>
@@ -1330,7 +1463,7 @@ function createBlankOrder(){
     id:uid('ORD'), orderNo:makeOrderNo(companyTitle, dept, orderDate), batchNo:'', isStockOrder:false,
     dept, employer:'', worker:'', workerEnglish:'', nationality:'越南', entryDate:'', workerGroups,
     provideDate:orderDate, companyTitle, invoiceTitle:invoiceTitleFromSettings(companyTitle,state.settings), deliveryPlace:KANG_PLACE, deliveryAddress:KANG_ADDRESS, staff, contact:staffContact(staff),
-    deliveryDate:'', deliveryHour:'16',
+    deliveryDate:'', deliveryHour:'16', bicycleDeliveryDate:'', bicycleDeliveryHour:'', bicycleContact:'', bicycleDeliveryAddress:'',
     orderDate, receivedDate:'', signDate:'', billingDate:'', accountingDate:'', accountingBatch:'', status:'已下單', accountingStatus:'未轉入', paymentTarget:'工人', note:'', errorNotice:null, overseasStaff:staff,
     items:createEmptyItemLines()
   };
@@ -1448,6 +1581,20 @@ function deliveryHourLabel(hour){
 function formatDeliveryDeadline(o){
   const d = o?.deliveryDate || '';
   const h = deliveryHourLabel(o?.deliveryHour);
+  if(!d) return '';
+  return h ? `請於 ${d} ${h}前送達` : `請於 ${d}前送達`;
+}
+function bicycleDeliveryContact(o){ return String(o?.bicycleContact||'').trim() || deliveryContact(o); }
+function bicycleDeliveryAddress(o){ return String(o?.bicycleDeliveryAddress||'').trim() || deliveryDisplay(o); }
+function optionalHourOptionsHTML(value){
+  const opts=[];
+  for(let h=8; h<=20; h++){ const v=String(h); opts.push(`<option value="${v}" ${String(value||'')===v?'selected':''}>${deliveryHourLabel(h)}前</option>`); }
+  return opts.join('');
+}
+function formatBicycleDeliveryDeadline(o){
+  const d=String(o?.bicycleDeliveryDate||'').trim() || o?.deliveryDate || '';
+  const hour=String(o?.bicycleDeliveryHour||'').trim() || o?.deliveryHour || '';
+  const h=deliveryHourLabel(hour);
   if(!d) return '';
   return h ? `請於 ${d} ${h}前送達` : `請於 ${d}前送達`;
 }
@@ -1686,6 +1833,16 @@ function orderFormHTML(o){
         <div><label>收貨聯絡人</label><input id="f_contact" list="deliveryContactList" value="${esc(deliveryContact(o)||'')}" placeholder="輸入或選擇資料設定中的聯絡人"><datalist id="deliveryContactList">${contactDatalistHTML()}</datalist><div class="mini-note" style="margin-top:5px">可至「資料設定 → 收貨聯絡人」新增常用窗口。</div></div>
         <div class="form-row-wide"><label>送貨地址</label><input id="f_deliveryAddress" value="${esc(deliveryAddress(o)||'')}" placeholder="灃康人力自動帶地址，工廠/宿舍請手動輸入"></div>
       </div>
+      <div class="bike-delivery-panel" style="margin-top:14px;border:1px solid rgba(196,151,103,.55);border-radius:14px;padding:12px;background:rgba(196,151,103,.08)">
+        <h4 style="margin:0 0 9px;color:#ffd49b">腳踏車訂購單專用送貨資訊（選填）</h4>
+        <div class="mini-note" style="margin-bottom:9px">可另外填寫腳踏車送貨資料；留白時自動沿用上方一般送貨資料。</div>
+        <div class="grid">
+          <div><label>腳踏車送達日期</label><input type="date" id="f_bicycleDeliveryDate" value="${esc(o.bicycleDeliveryDate||'')}"></div>
+          <div><label>腳踏車送達時間</label><select id="f_bicycleDeliveryHour"><option value="" ${!o.bicycleDeliveryHour?'selected':''}>沿用一般送達時間</option>${optionalHourOptionsHTML(o.bicycleDeliveryHour||'')}</select></div>
+          <div><label>腳踏車收貨聯絡人</label><input id="f_bicycleContact" value="${esc(o.bicycleContact||'')}" placeholder="留白則沿用一般收貨聯絡人"></div>
+          <div class="form-row-wide"><label>腳踏車送貨地址</label><input id="f_bicycleDeliveryAddress" value="${esc(o.bicycleDeliveryAddress||'')}" placeholder="留白則沿用一般送貨地點／地址"></div>
+        </div>
+      </div>
     </div>
 
     <div class="form-section">
@@ -1777,8 +1934,8 @@ function saveOrderFromModal(id, isExisting, modal){
   const beforeOrder = isExisting ? snapshotOrder(order) : null;
   const oldItems = order.items || [];
   order.isStockOrder = !!$('#f_isStockOrder', modal)?.checked;
-  const fields = ['dept','staff','employer','orderDate','companyTitle','paymentTarget','deliveryDate','deliveryHour','deliveryPlace','contact','deliveryAddress','receivedDate','status','note'];
-  const map = {dept:'f_dept',staff:'f_staff',employer:'f_employer',orderDate:'f_orderDate',companyTitle:'f_companyTitle',paymentTarget:'f_paymentTarget',deliveryDate:'f_deliveryDate',deliveryHour:'f_deliveryHour',deliveryPlace:'f_deliveryPlace',contact:'f_contact',deliveryAddress:'f_deliveryAddress',receivedDate:'f_receivedDate',status:'f_status',note:'f_note'};
+  const fields = ['dept','staff','employer','orderDate','companyTitle','paymentTarget','deliveryDate','deliveryHour','deliveryPlace','contact','deliveryAddress','bicycleDeliveryDate','bicycleDeliveryHour','bicycleContact','bicycleDeliveryAddress','receivedDate','status','note'];
+  const map = {dept:'f_dept',staff:'f_staff',employer:'f_employer',orderDate:'f_orderDate',companyTitle:'f_companyTitle',paymentTarget:'f_paymentTarget',deliveryDate:'f_deliveryDate',deliveryHour:'f_deliveryHour',deliveryPlace:'f_deliveryPlace',contact:'f_contact',deliveryAddress:'f_deliveryAddress',bicycleDeliveryDate:'f_bicycleDeliveryDate',bicycleDeliveryHour:'f_bicycleDeliveryHour',bicycleContact:'f_bicycleContact',bicycleDeliveryAddress:'f_bicycleDeliveryAddress',receivedDate:'f_receivedDate',status:'f_status',note:'f_note'};
   fields.forEach(k=>{ order[k] = modal.querySelector('#'+map[k])?.value || ''; });
   order.invoiceTitle = invoiceTitleFromSettings(order.companyTitle,state.settings);
   order.provideDate = order.orderDate;
@@ -2190,12 +2347,19 @@ function addStockAdjustment(code){
   audit('庫存調整','庫存品項',code,itemLabel(code),`數量 ${qty}｜${note||''}`);
   save(); toast('庫存已調整'); render();
 }
+function migrateItemCodeReferences(oldCode,newCode){
+  if(!oldCode || !newCode || oldCode===newCode) return;
+  state.orders.forEach(o=>migrateOrderItemCode(o,oldCode,newCode));
+  (state.deletedOrders||[]).forEach(d=>migrateOrderItemCode(d?.order,oldCode,newCode));
+  (state.stockAdjustments||[]).forEach(a=>{ if(a.code===oldCode) a.code=newCode; });
+  (state.settings.paymentRules||[]).forEach(r=>{ r.itemKeywords=(r.itemKeywords||[]).map(k=>String(k)===oldCode?newCode:k); });
+}
 function openItemModal(code){
   if(!can('stockWrite')) return toast('目前無法修改庫存');
   const item = code ? JSON.parse(JSON.stringify(getItem(code))) : {code:'ITEM_'+Date.now().toString(36).toUpperCase(), name:'', spec:'', unit:'', price:0, vendorPrice:0, openingStock:0, active:true, orderType:'general'};
   showModal(code?'修改品項 / 庫存':'新增品項', `
     <div class="grid two">
-      <div><label>品項代碼</label><input id="i_code" value="${esc(item.code)}" ${code?'readonly':''}></div>
+      <div><label>品項代碼</label><input id="i_code" value="${esc(item.code)}"><div class="mini-note" style="margin-top:5px">可手動修改；儲存後會同步更新既有訂單、工人明細、庫存與支付規則。</div></div>
       <div><label>品名</label><input id="i_name" value="${esc(item.name||'')}"></div>
       <div><label>規格</label><input id="i_spec" value="${esc(item.spec||'')}"></div>
       <div><label>單位</label><input id="i_unit" value="${esc(item.unit||'')}"></div>
@@ -2204,21 +2368,41 @@ function openItemModal(code){
       <div><label>訂購項目類型</label><select id="i_orderType"><option value="general" ${itemOrderType(item)==='general'?'selected':''}>一般訂購項目</option><option value="special" ${itemOrderType(item)==='special'?'selected':''}>特殊訂購項目</option></select><div class="mini-note" style="margin-top:5px">特殊項目不綁定工人，且不提供拿庫存、加買、退貨。</div></div>
       <div><label>期初庫存</label><input type="number" id="i_openingStock" value="${num(item.openingStock)}"></div>
       <div><label>啟用</label><select id="i_active"><option value="true" ${item.active!==false?'selected':''}>啟用</option><option value="false" ${item.active===false?'selected':''}>停用</option></select></div>
+    </div>
+    <div class="form-section" style="margin-top:14px"><h3>四國簽收單翻譯</h3><div class="mini-note" style="margin-bottom:9px">系統會依品項名稱自動帶入預設翻譯，也可在此直接修改。</div>
+      <div class="grid two">
+        <div><label>印尼文</label><input id="i_tr_id" value="${esc(normalizeItemTranslations(item)['印尼'])}" placeholder="印尼文品名"></div>
+        <div><label>泰文</label><input id="i_tr_th" value="${esc(normalizeItemTranslations(item)['泰國'])}" placeholder="泰文品名"></div>
+        <div><label>菲律賓／英文</label><input id="i_tr_en" value="${esc(normalizeItemTranslations(item)['菲律賓'])}" placeholder="英文品名"></div>
+        <div><label>越南文</label><input id="i_tr_vi" value="${esc(normalizeItemTranslations(item)['越南'])}" placeholder="越南文品名"></div>
+      </div>
     </div>`,{
     width:'720px',
     footer:`<button id="cancelModalBtn">取消</button><button class="primary" id="saveItemBtn">儲存</button>`,
     onOpen:(modal)=>{
       const updateItemTypeFields=()=>{ const special=$('#i_orderType',modal)?.value==='special'; const opening=$('#i_openingStock',modal); if(opening){ opening.disabled=special; if(special) opening.value='0'; } };
+      const applyNameTranslations=()=>{
+        const defaults=translationDefaultsByItemName($('#i_name',modal)?.value||'');
+        [['i_tr_id','印尼'],['i_tr_th','泰國'],['i_tr_en','菲律賓'],['i_tr_vi','越南']].forEach(([id,key])=>{ const input=$('#'+id,modal); if(input && !input.value.trim() && defaults[key]) input.value=defaults[key]; });
+      };
       $('#i_orderType',modal)?.addEventListener('change',updateItemTypeFields);
+      $('#i_name',modal)?.addEventListener('blur',applyNameTranslations);
       updateItemTypeFields();
       modal.querySelector('#cancelModalBtn').addEventListener('click',closeModal);
       modal.querySelector('#saveItemBtn').addEventListener('click',()=>{
-        const next={code:$('#i_code',modal).value.trim(), name:$('#i_name',modal).value.trim(), spec:$('#i_spec',modal).value.trim(), unit:$('#i_unit',modal).value.trim(), vendorPrice:num($('#i_vendorPrice',modal).value), price:num($('#i_price',modal).value), openingStock:$('#i_orderType',modal).value==='special'?0:num($('#i_openingStock',modal).value), active:$('#i_active',modal).value==='true', orderType:normalizeItemOrderType($('#i_orderType',modal).value,$('#i_code',modal).value.trim())};
+        const oldCode=code||'';
+        const original=oldCode?state.settings.items.find(i=>i.code===oldCode):null;
+        const newCode=$('#i_code',modal).value.trim().toUpperCase();
+        const next={systemKey:original?.systemKey||'', code:newCode, name:$('#i_name',modal).value.trim(), spec:$('#i_spec',modal).value.trim(), unit:$('#i_unit',modal).value.trim(), vendorPrice:num($('#i_vendorPrice',modal).value), price:num($('#i_price',modal).value), openingStock:$('#i_orderType',modal).value==='special'?0:num($('#i_openingStock',modal).value), active:$('#i_active',modal).value==='true', orderType:normalizeItemOrderType($('#i_orderType',modal).value,newCode), translations:{'印尼':$('#i_tr_id',modal).value.trim(),'泰國':$('#i_tr_th',modal).value.trim(),'菲律賓':$('#i_tr_en',modal).value.trim(),'越南':$('#i_tr_vi',modal).value.trim()}};
         if(!next.code || !next.name) return toast('請輸入品項代碼與品名');
-        const idx=state.settings.items.findIndex(i=>i.code===next.code);
+        if(state.settings.items.some(i=>i.code===next.code && i.code!==oldCode)) return toast('品項代碼已存在，請使用其他代碼');
+        const idx=oldCode?state.settings.items.findIndex(i=>i.code===oldCode):-1;
         const beforeItem = idx>=0 ? JSON.parse(JSON.stringify(state.settings.items[idx])) : null;
-        if(idx>=0) state.settings.items[idx]=Object.assign({},state.settings.items[idx],next); else state.settings.items.push(next);
-        audit(idx>=0?'修改品項':'新增品項','品項',next.code,next.name,`類型 ${itemOrderTypeLabel(next)}｜廠商訂購價 ${money(next.vendorPrice)}｜工人訂購價 ${money(next.price)}`,beforeItem);
+        if(idx>=0){
+          if(oldCode!==next.code) migrateItemCodeReferences(oldCode,next.code);
+          state.settings.items[idx]=Object.assign({},state.settings.items[idx],next);
+        }else state.settings.items.push(next);
+        audit(idx>=0?'修改品項':'新增品項','品項',next.code,next.name,`${oldCode&&oldCode!==next.code?`代碼 ${oldCode}→${next.code}｜`:''}類型 ${itemOrderTypeLabel(next)}｜廠商訂購價 ${money(next.vendorPrice)}｜工人訂購價 ${money(next.price)}`,beforeItem);
         save(); closeModal(); toast('品項已儲存'); render();
       });
     }
@@ -2502,9 +2686,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.13.4｜單鍵下載與一鍵列印全部</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.15｜品項隱藏、四國翻譯與腳踏車送貨資訊</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.13.4 下載訂購單恢復為單一按鈕，會依訂單內容分別產出獨立寢具單與獨立腳踏車單；一鍵列印會直接依序列印寢具單、腳踏車單及四國語言綜合簽收單。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.15 停用品項預設隱藏且不影響歷史訂單；四國簽收單改依品項名稱翻譯，腳踏車訂購單可另行設定送達時間、收貨人與送貨地址。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -2552,7 +2736,10 @@ function exportAuditCSV(){
   downloadBlob('FOR-e寢具訂購_控管異動紀錄_'+todayInput()+'.csv', toCSV(rows), 'text/csv;charset=utf-8');
 }
 
+function settingsItemsForDisplay(){ return state.settings.items.filter(i=>state.filters.showInactiveItems || i.active!==false); }
 function renderSettings(root){
+  const visibleSettingItems=settingsItemsForDisplay();
+  const inactiveItemCount=state.settings.items.filter(i=>i.active===false).length;
   const contacts=(state.settings.contacts||[]);
   const contactRows=contacts.length ? contacts.map(c=>`<tr>
     <td><div class="contact-main">${esc(c.name)}</div><div class="contact-sub">${esc(contactDisplay(c))}</div></td>
@@ -2617,8 +2804,9 @@ function renderSettings(root){
       </section>
 
       <section class="card plain settings-section" id="settings-items">
-        <div class="settings-section-head"><div class="settings-heading"><div class="settings-step">6</div><div><h2>品項、價格與顯示順序</h2><p>使用上移／下移調整順序；順序會同步套用於訂購、訂購單、明細、庫存、統計與 CSV。</p></div></div><button id="settingsAddItemBtn">＋新增品項</button></div>
-        <div class="table-wrap"><table><thead><tr><th class="center">順序</th><th>代碼</th><th>品名</th><th>訂購類型</th><th>規格</th><th>單位</th><th class="right">廠商訂購價</th><th class="right">工人訂購價</th><th class="right">期初庫存</th><th>狀態</th><th>操作</th></tr></thead><tbody>${state.settings.items.map((i,idx)=>`<tr><td><div class="actions" style="justify-content:center"><button class="small" data-item-move="up" data-item-code="${esc(i.code)}" ${idx===0?'disabled':''} title="上移">↑</button><button class="small" data-item-move="down" data-item-code="${esc(i.code)}" ${idx===state.settings.items.length-1?'disabled':''} title="下移">↓</button></div></td><td>${esc(i.code)}</td><td><b>${esc(i.name)}</b></td><td><span class="pill ${itemOrderType(i)==='special'?'warn':'ok'}">${esc(itemOrderTypeLabel(i))}</span></td><td>${esc(i.spec)}</td><td>${esc(i.unit)}</td><td class="right">${money(i.vendorPrice ?? i.price)}</td><td class="right">${money(i.price)}</td><td class="right">${isSpecialItem(i)?'<span class="muted">不適用</span>':num(i.openingStock)}</td><td>${i.active!==false?'啟用':'停用'}</td><td><button class="small" data-settings-edit-item="${esc(i.code)}">修改</button></td></tr>`).join('')}</tbody></table></div>
+        <div class="settings-section-head"><div class="settings-heading"><div class="settings-step">6</div><div><h2>品項、價格與顯示順序</h2><p>停用品項預設隱藏，但既有訂單與歷史資料仍會完整保留；使用上移／下移調整啟用品項順序。</p></div></div><div class="actions"><button id="toggleInactiveItemsBtn">${state.filters.showInactiveItems?'隱藏停用項目':`顯示停用項目 (${inactiveItemCount})`}</button><button id="settingsAddItemBtn">＋新增品項</button></div></div>
+        <div class="mini-note" style="margin-bottom:9px">停用只會從新訂購、庫存與此清單預設畫面隱藏，不會刪除或改動之前已下單的資料。</div>
+        <div class="table-wrap"><table><thead><tr><th class="center">順序</th><th>代碼</th><th>品名</th><th>訂購類型</th><th>規格</th><th>單位</th><th class="right">廠商訂購價</th><th class="right">工人訂購價</th><th class="right">期初庫存</th><th>狀態</th><th>操作</th></tr></thead><tbody>${visibleSettingItems.map((i,idx)=>`<tr><td><div class="actions" style="justify-content:center"><button class="small" data-item-move="up" data-item-code="${esc(i.code)}" ${idx===0?'disabled':''} title="上移">↑</button><button class="small" data-item-move="down" data-item-code="${esc(i.code)}" ${idx===visibleSettingItems.length-1?'disabled':''} title="下移">↓</button></div></td><td>${esc(i.code)}</td><td><b>${esc(i.name)}</b></td><td><span class="pill ${itemOrderType(i)==='special'?'warn':'ok'}">${esc(itemOrderTypeLabel(i))}</span></td><td>${esc(i.spec)}</td><td>${esc(i.unit)}</td><td class="right">${money(i.vendorPrice ?? i.price)}</td><td class="right">${money(i.price)}</td><td class="right">${isSpecialItem(i)?'<span class="muted">不適用</span>':num(i.openingStock)}</td><td>${i.active!==false?'啟用':'停用'}</td><td><button class="small" data-settings-edit-item="${esc(i.code)}">修改</button></td></tr>`).join('') || `<tr><td colspan="11" class="center muted">目前沒有啟用品項；可按「顯示停用項目」重新啟用。</td></tr>`}</tbody></table></div>
       </section>
 
       <section class="card settings-section" id="settings-backup">
@@ -2638,6 +2826,7 @@ function renderSettings(root){
   $('#importJsonFile')?.addEventListener('change',importJSON);
   $('#clearAllBtn')?.addEventListener('click',clearAllData);
   $('#loadDemoBtn')?.addEventListener('click',loadDemoData);
+  $('#toggleInactiveItemsBtn')?.addEventListener('click',()=>{ state.filters.showInactiveItems=!state.filters.showInactiveItems; save(); renderSettings(root); });
   $('#settingsAddItemBtn')?.addEventListener('click',()=>openItemModal());
   $all('[data-settings-edit-item]').forEach(btn=>btn.addEventListener('click',()=>openItemModal(btn.dataset.settingsEditItem)));
   $all('[data-item-move]').forEach(btn=>btn.addEventListener('click',()=>moveSettingItem(btn.dataset.itemCode,btn.dataset.itemMove)));
@@ -2717,13 +2906,18 @@ function deletePaymentRule(id){
 }
 
 function moveSettingItem(code,direction){
+  const visible=settingsItemsForDisplay();
+  const visibleIdx=visible.findIndex(i=>i.code===code);
+  if(visibleIdx<0) return;
+  const targetVisibleIdx=direction==='up'?visibleIdx-1:visibleIdx+1;
+  if(targetVisibleIdx<0 || targetVisibleIdx>=visible.length) return;
+  const targetCode=visible[targetVisibleIdx].code;
   const idx=state.settings.items.findIndex(i=>i.code===code);
-  if(idx<0) return;
-  const target=direction==='up'?idx-1:idx+1;
-  if(target<0 || target>=state.settings.items.length) return;
-  const [item]=state.settings.items.splice(idx,1);
-  state.settings.items.splice(target,0,item);
-  audit('調整品項順序','品項',code,item.name,`${direction==='up'?'上移':'下移'}至第 ${target+1} 順位`);
+  const target=state.settings.items.findIndex(i=>i.code===targetCode);
+  if(idx<0 || target<0) return;
+  [state.settings.items[idx],state.settings.items[target]]=[state.settings.items[target],state.settings.items[idx]];
+  const item=state.settings.items[target];
+  audit('調整品項順序','品項',code,item.name,`${direction==='up'?'上移':'下移'}至顯示第 ${targetVisibleIdx+1} 順位`);
   save(); toast('品項順序已更新'); renderSettings($('#content'));
 }
 function linesFrom(id){ return ($('#'+id)?.value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean); }
@@ -2937,8 +3131,9 @@ const toiletriesDetails = {
 };
 function receiptProductHTML(code, langKey, lang){
   const it=getItem(code);
-  const tname=lang.names?.[code] || it.name;
-  const details = code==='TOILETRIES' ? `<div class="toiletry-list">${(toiletriesDetails[langKey]||toiletriesDetails['其他']).map(([zh,tr])=>`*${esc(zh)} ${esc(tr)}`).join('<br>')}</div>` : '';
+  const translationKey=itemTranslationKey(it);
+  const tname=translatedItemName(it,langKey);
+  const details = translationKey==='TOILETRIES' ? `<div class="toiletry-list">${(toiletriesDetails[langKey]||toiletriesDetails['其他']).map(([zh,tr])=>`*${esc(zh)} ${esc(tr)}`).join('<br>')}</div>` : '';
   return `<b>${esc(it.name)}</b><br><span>${esc(tname)}</span>${details}`;
 }
 function purchaseOrderHTML(o){
@@ -2966,22 +3161,22 @@ function purchaseOrderHTML(o){
 function bicyclePurchaseOrderPageHTML(o){
   const rows=bicycleOrderWorkerRows(o);
   if(!rows.length) return '';
-  const unitPrice=bicycleOrderUnitPrice(o);
   const totalQty=rows.reduce((sum,r)=>sum+num(r.qty),0);
-  const rowHTML=rows.map((r,idx)=>`<tr><td>${idx+1}</td><td><b>${esc(r.worker)}</b></td><td>${esc(r.nationality||'')}</td><td>${esc(dateSlash(r.entryDate)||'')}</td><td>腳踏車</td><td>台</td><td>${num(r.qty)}</td><td>${money(unitPrice)}</td><td>${money(num(r.qty)*unitPrice)}</td><td>${esc(r.note||'')}</td></tr>`).join('');
+  const totalAmount=rows.reduce((sum,r)=>sum+num(r.qty)*num(r.unitPrice),0);
+  const rowHTML=rows.map((r,idx)=>`<tr><td>${idx+1}</td><td><b>${esc(r.worker)}</b></td><td>${esc(r.nationality||'')}</td><td>${esc(dateSlash(r.entryDate)||'')}</td><td><b>${esc(r.itemName||'')}</b><br><span class="bike-spec">${esc(r.spec||'')}</span></td><td>${esc(r.unit||'台')}</td><td>${num(r.qty)}</td><td>${money(r.unitPrice)}</td><td>${money(num(r.qty)*num(r.unitPrice))}</td><td>${esc(r.note||'')}</td></tr>`).join('');
   const densityClass=rows.length>14?' bike-ultra-compact':(rows.length>8?' bike-compact':'');
   return `<div class="bike-print-wrap${densityClass}"><h1>${esc(o.companyTitle||'公司別')}腳踏車訂購單</h1>
-    <table class="bike-vendor"><tr><td><span class="label">腳踏車廠商</span><span class="value">${esc(BICYCLE_VENDOR.companyName)}</span></td><td><span class="label">統一編號</span><span class="value">${esc(BICYCLE_VENDOR.taxId)}</span></td></tr><tr><td><span class="label">聯絡人</span><span class="value">${esc(BICYCLE_VENDOR.contactPerson)}</span></td><td><span class="label">電話</span><span class="value">${esc(BICYCLE_VENDOR.phone)}</span></td></tr><tr><td colspan="2"><span class="label">廠商地址</span><span class="value">${esc(BICYCLE_VENDOR.address)}</span></td></tr></table>
+    <table class="bike-vendor"><tr><td><span class="label">廠商</span><span class="value">${esc(BICYCLE_VENDOR.companyName)}</span></td><td><span class="label">統編</span><span class="value">${esc(BICYCLE_VENDOR.taxId)}</span></td><td><span class="label">聯絡人／電話</span><span class="value">${esc(BICYCLE_VENDOR.contactPerson)}　${esc(BICYCLE_VENDOR.phone)}</span></td></tr><tr><td colspan="3"><span class="label">廠商地址</span><span class="value">${esc(BICYCLE_VENDOR.address)}</span></td></tr></table>
     <table class="secondary"><tr><td><span class="label">原訂購單號</span>${esc(o.orderNo||'')}</td><td><span class="label">公司別</span>${esc(o.companyTitle||'')}</td><td><span class="label">發票開立抬頭</span>${esc(orderInvoiceTitle(o)||'')}</td><td><span class="label">部門</span>${esc(o.dept||'')}</td><td><span class="label">承辦</span>${esc(o.staff||'')}</td></tr></table>
-    <div class="hero"><span class="label">送達時間</span><span class="value">${esc(formatDeliveryDeadline(o)||'未填寫')}</span></div>
-    <table class="info"><tr><td><span class="label">客戶名稱</span><span class="value">${esc(o.employer||'')}</span></td><td><span class="label">訂購工人（全部姓名）</span><span class="value">${esc(workerFullDisplay(o))}</span></td></tr><tr><td><span class="label">收貨聯絡人</span><span class="value">${esc(deliveryContact(o)||'')}</span></td><td><span class="label">送貨地點／地址</span><span class="value">${esc(deliveryDisplay(o)||'')}</span></td></tr></table>
-    <table class="bike-items"><thead><tr><th>項次</th><th>工人姓名</th><th>國籍</th><th>入境日</th><th>品名</th><th>單位</th><th>數量</th><th>單價</th><th>小計</th><th>備註</th></tr></thead><tbody>${rowHTML}<tr class="bike-total-row"><td colspan="6">合計</td><td><b>${totalQty}</b></td><td></td><td><b>${money(totalQty*unitPrice)}</b></td><td></td></tr></tbody></table>
+    <table class="bike-delivery-hero"><tr><td colspan="2"><span class="label">送達時間</span><span class="value">${esc(formatBicycleDeliveryDeadline(o)||'未填寫')}</span></td></tr><tr><td><span class="label">收貨聯絡人</span><span class="value">${esc(bicycleDeliveryContact(o)||'')}</span></td><td><span class="label">送貨地址</span><span class="value">${esc(bicycleDeliveryAddress(o)||'')}</span></td></tr></table>
+    <table class="info"><tr><td><span class="label">客戶名稱</span><span class="value">${esc(o.employer||'')}</span></td><td><span class="label">訂購工人（全部姓名）</span><span class="value">${esc(workerFullDisplay(o))}</span></td></tr></table>
+    <table class="bike-items"><thead><tr><th>項次</th><th>工人姓名</th><th>國籍</th><th>入境日</th><th>品名／規格</th><th>單位</th><th>數量</th><th>單價</th><th>小計</th><th>備註</th></tr></thead><tbody>${rowHTML}<tr class="bike-total-row"><td colspan="6">合計</td><td><b>${totalQty}</b></td><td></td><td><b>${money(totalAmount)}</b></td><td></td></tr></tbody></table>
     <table class="note-box"><tr><td><span class="label">訂單備註</span><span class="value">${esc(o.note||'')}</span></td></tr></table>
     <table class="no-border"><tr><td class="sign">____________________<br>營管主管</td><td class="sign">____________________<br>營管承辦</td><td class="sign">____________________<br>海外承辦</td></tr></table></div>`;
 }
 function bicyclePurchaseOrderCSS(){ return `
   .bike-print-wrap{width:190mm;max-width:100%;min-height:277mm;margin:0 auto;text-align:center;font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff}
-  .bike-print-wrap h1{margin:0 0 7px;font-size:23px;letter-spacing:.05em}.bike-print-wrap table{width:100%;border-collapse:collapse;margin-bottom:7px;table-layout:fixed}.bike-print-wrap th,.bike-print-wrap td{border:1px solid #222;padding:5px 5px;font-size:10.5px;vertical-align:middle;text-align:center;line-height:1.3;white-space:normal;word-break:break-word;overflow-wrap:anywhere}.bike-print-wrap th{background:#f1ede8}.bike-print-wrap .secondary td{font-size:10px;font-weight:700}.bike-print-wrap .label{display:block;font-size:9px;color:#555;font-weight:700;margin-bottom:2px}.bike-print-wrap .value{display:block;font-size:12px;font-weight:800;line-height:1.3}.bike-print-wrap .bike-vendor{border:2px solid #111}.bike-print-wrap .bike-vendor .value{font-size:13px}.bike-print-wrap .hero{border:2px solid #111;padding:5px 8px;margin:4px 0 7px}.bike-print-wrap .hero .value{font-size:15px}.bike-print-wrap .info .value{font-size:12px}.bike-print-wrap .bike-items th{font-size:9.5px}.bike-print-wrap .bike-items td{font-size:10px}.bike-print-wrap .bike-total-row td{background:#faf4ed}.bike-print-wrap .note-box .value{min-height:28px}.bike-print-wrap .sign{height:55px;vertical-align:bottom}.bike-print-wrap .no-border td{border:0}.bike-print-wrap.bike-compact th,.bike-print-wrap.bike-compact td{padding:3px 4px;font-size:9px}.bike-print-wrap.bike-compact h1{font-size:20px;margin-bottom:4px}.bike-print-wrap.bike-compact table{margin-bottom:4px}.bike-print-wrap.bike-compact .sign{height:42px}.bike-print-wrap.bike-ultra-compact th,.bike-print-wrap.bike-ultra-compact td{padding:2px 3px;font-size:8px;line-height:1.15}.bike-print-wrap.bike-ultra-compact h1{font-size:18px;margin-bottom:3px}.bike-print-wrap.bike-ultra-compact table{margin-bottom:3px}.bike-print-wrap.bike-ultra-compact .label{font-size:7.5px}.bike-print-wrap.bike-ultra-compact .value{font-size:9px}.bike-print-wrap.bike-ultra-compact .sign{height:34px}`; }
+  .bike-print-wrap h1{margin:0 0 7px;font-size:23px;letter-spacing:.05em}.bike-print-wrap table{width:100%;border-collapse:collapse;margin-bottom:7px;table-layout:fixed}.bike-print-wrap th,.bike-print-wrap td{border:1px solid #222;padding:5px 5px;font-size:10.5px;vertical-align:middle;text-align:center;line-height:1.3;white-space:normal;word-break:break-word;overflow-wrap:anywhere}.bike-print-wrap th{background:#f1ede8}.bike-print-wrap .secondary td{font-size:10px;font-weight:700}.bike-print-wrap .label{display:block;font-size:9px;color:#555;font-weight:700;margin-bottom:2px}.bike-print-wrap .value{display:block;font-size:12px;font-weight:800;line-height:1.3}.bike-print-wrap .bike-vendor{border:1px solid #444}.bike-print-wrap .bike-vendor td{padding:2px 4px;font-size:8px}.bike-print-wrap .bike-vendor .label{font-size:7px;margin-bottom:0}.bike-print-wrap .bike-vendor .value{font-size:8.5px;font-weight:700}.bike-print-wrap .bike-delivery-hero{border:3px solid #111;margin:5px 0 8px}.bike-print-wrap .bike-delivery-hero td{padding:8px 9px}.bike-print-wrap .bike-delivery-hero .label{font-size:11px}.bike-print-wrap .bike-delivery-hero .value{font-size:18px;line-height:1.35}.bike-print-wrap .info .value{font-size:12px}.bike-print-wrap .bike-items th{font-size:9.5px}.bike-print-wrap .bike-items td{font-size:10px}.bike-print-wrap .bike-spec{display:block;font-size:8.5px;color:#555;margin-top:2px}.bike-print-wrap .bike-total-row td{background:#faf4ed}.bike-print-wrap .note-box .value{min-height:28px}.bike-print-wrap .sign{height:55px;vertical-align:bottom}.bike-print-wrap .no-border td{border:0}.bike-print-wrap.bike-compact th,.bike-print-wrap.bike-compact td{padding:3px 4px;font-size:9px}.bike-print-wrap.bike-compact h1{font-size:20px;margin-bottom:4px}.bike-print-wrap.bike-compact table{margin-bottom:4px}.bike-print-wrap.bike-compact .sign{height:42px}.bike-print-wrap.bike-ultra-compact th,.bike-print-wrap.bike-ultra-compact td{padding:2px 3px;font-size:8px;line-height:1.15}.bike-print-wrap.bike-ultra-compact h1{font-size:18px;margin-bottom:3px}.bike-print-wrap.bike-ultra-compact table{margin-bottom:3px}.bike-print-wrap.bike-ultra-compact .label{font-size:7.5px}.bike-print-wrap.bike-ultra-compact .value{font-size:9px}.bike-print-wrap.bike-compact .bike-delivery-hero .label{font-size:9px}.bike-print-wrap.bike-compact .bike-delivery-hero .value{font-size:15px}.bike-print-wrap.bike-ultra-compact .bike-delivery-hero .label{font-size:8px}.bike-print-wrap.bike-ultra-compact .bike-delivery-hero .value{font-size:13px}.bike-print-wrap.bike-ultra-compact .sign{height:34px}`; }
 function bicyclePurchaseOrderHTML(o){
   const page=bicyclePurchaseOrderPageHTML(o);
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>腳踏車訂購單</title><style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff}body{padding:10px}button{padding:8px 12px;margin-bottom:8px}${bicyclePurchaseOrderCSS()}@media print{button{display:none}html,body{margin:0;padding:0}.bike-print-wrap{width:190mm;max-width:100%;min-height:277mm}}</style></head><body><button onclick="window.print()">列印 A4 腳踏車訂購單</button>${page}</body></html>`;
@@ -3057,20 +3252,20 @@ function printOrderAndReceipt(orderId){
   const bikeMarkup=hasBikeOrder?bicyclePurchaseOrderPageHTML(o):'';
   const receiptMarkup=o.isStockOrder?'':receiptPagesHTML(o);
   const pages=[];
-  if(includeBeddingOrder) pages.push(`<section class="print-page order-page">${orderMarkup}</section>`);
-  if(bikeMarkup) pages.push(`<section class="print-page bike-page">${bikeMarkup}</section>`);
+  if(includeBeddingOrder) pages.push(`<section class="print-page order-page"><div class="page-sequence">1｜寢具訂購單</div>${orderMarkup}</section>`);
+  if(bikeMarkup) pages.push(`<section class="print-page bike-page"><div class="page-sequence">2｜腳踏車訂購單</div>${bikeMarkup}</section>`);
   if(receiptMarkup) pages.push(receiptMarkup.replaceAll('class="receipt-page"','class="print-page receipt-page"'));
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>訂購單、獨立腳踏車訂購單與單張簽收單</title><style>
     @page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff;padding:8px}button{padding:9px 14px;margin:0 0 8px}
-    .print-page{display:block;width:190mm;max-width:190mm;min-height:277mm;margin:0 auto;page-break-inside:avoid!important;break-inside:avoid-page!important;page-break-after:always!important;break-after:page!important;clear:both}
+    .page-sequence{text-align:right;font-size:9px;color:#666;margin:0 0 2mm}.print-page{display:block;width:190mm;max-width:190mm;min-height:277mm;margin:0 auto;page-break-inside:avoid!important;break-inside:avoid-page!important;page-break-after:always!important;break-after:page!important;clear:both}
     .print-page:last-of-type{page-break-after:auto!important;break-after:auto!important}
-    .bike-page{page-break-before:always!important;break-before:page!important;page-break-inside:avoid!important;break-inside:avoid-page!important}
-    .bike-page:first-of-type{page-break-before:auto!important;break-before:auto!important}
+    .print-page + .print-page{page-break-before:always!important;break-before:page!important}
+    .bike-page{page-break-before:always!important;break-before:page!important;page-break-after:always!important;break-after:page!important;page-break-inside:avoid!important;break-inside:avoid-page!important}
     .bike-page .bike-print-wrap{width:100%;max-width:100%;min-height:277mm;margin:0 auto;page-break-inside:avoid!important;break-inside:avoid-page!important}
     .order-page{text-align:center}.order-page h1{text-align:center;margin:0 0 7px;font-size:22px;letter-spacing:.04em}.order-page table{width:100%;max-width:100%;border-collapse:collapse;margin-bottom:7px;page-break-inside:auto;table-layout:fixed}.order-page tr{page-break-inside:avoid;page-break-after:auto}.order-page th,.order-page td{border:1px solid #222;padding:4px 5px;font-size:11px;vertical-align:middle;text-align:center;line-height:1.28;white-space:normal;word-break:break-word;overflow-wrap:anywhere}.order-page th{background:#f2f2f2}.order-page .secondary td{font-size:10px;color:#222;font-weight:700}.order-page .secondary .label{font-size:9px}.order-page .label{display:block;font-size:9px;color:#555;font-weight:700;margin-bottom:2px}.order-page .value{display:block;font-size:13px;font-weight:800;line-height:1.3;white-space:normal;word-break:break-word}.order-page .value.large,.order-page .value.mid{font-size:12px}.order-page .hero{border:2px solid #111;padding:4px 8px;margin:4px 0 7px}.order-page .hero .label{font-size:9px}.order-page .hero .value{font-size:15px;line-height:1.2}.order-page .items th{font-size:10px}.order-page .items td{font-size:10.5px}.order-page .items td.spec-cell{white-space:normal;word-break:break-word;line-height:1.35}.order-page .sign{text-align:center;height:52px;vertical-align:bottom}.order-page .no-border td{border:0}.order-page .section-title{font-weight:900;text-align:left;font-size:12px;margin:6px 0 3px}.order-page .change-table th,.order-page .change-table td{font-size:10px}.order-page .worker-change-block{page-break-inside:avoid}
     ${bicyclePurchaseOrderCSS()}${receiptPrintCSS()}
     @media screen{.print-page{box-shadow:0 0 0 1px #ddd;margin-bottom:14px;padding:2mm}.bike-page{outline:3px solid #c49767}}
-    @media print{button{display:none}html,body{margin:0;padding:0}.print-page{width:190mm;max-width:190mm;min-height:277mm;margin:0 auto;padding:0;box-shadow:none}.bike-page{page-break-before:always!important;break-before:page!important}.bike-page:first-of-type{page-break-before:auto!important;break-before:auto!important}.receipt-page{width:190mm;max-width:190mm;min-height:277mm;margin:0 auto}}
+    @media print{button{display:none}html,body{margin:0;padding:0}.print-page{width:190mm;max-width:190mm;min-height:277mm;margin:0 auto;padding:0;box-shadow:none}.print-page + .print-page{page-break-before:always!important;break-before:page!important}.bike-page{page-break-before:always!important;break-before:page!important;page-break-after:always!important;break-after:page!important}.receipt-page{width:190mm;max-width:190mm;min-height:277mm;margin:0 auto}}
   </style></head><body><button onclick="window.print()">${combinedPrintButtonLabel(o)}</button>${pages.join('')}</body></html>`;
   const w=window.open('','_blank');
   if(!w) return toast('瀏覽器封鎖了列印視窗，請允許彈出式視窗');
@@ -3153,23 +3348,22 @@ function downloadBicycleOrderImage(o){
   ctx.font='bold 38px Noto Sans TC, Microsoft JhengHei, Arial';ctx.fillText(`${o.companyTitle||'公司別'}腳踏車訂購單`,width/2,55);
   let y=82;
   const half=usable/2;
-  drawInfoBoxFull(ctx,margin,y,half,82,'腳踏車廠商',BICYCLE_VENDOR.companyName,24);
-  drawInfoBoxFull(ctx,margin+half,y,half,82,'統一編號',BICYCLE_VENDOR.taxId,24); y+=82;
-  drawInfoBoxFull(ctx,margin,y,half,82,'聯絡人',BICYCLE_VENDOR.contactPerson,24);
-  drawInfoBoxFull(ctx,margin+half,y,half,82,'電話',BICYCLE_VENDOR.phone,23); y+=82;
-  drawInfoBoxFull(ctx,margin,y,usable,78,'廠商地址',BICYCLE_VENDOR.address,21); y+=90;
+  drawInfoBoxFull(ctx,margin,y,usable*0.42,50,'腳踏車廠商',BICYCLE_VENDOR.companyName,15);
+  drawInfoBoxFull(ctx,margin+usable*0.42,y,usable*0.18,50,'統一編號',BICYCLE_VENDOR.taxId,15);
+  drawInfoBoxFull(ctx,margin+usable*0.60,y,usable*0.40,50,'聯絡人／電話',`${BICYCLE_VENDOR.contactPerson}　${BICYCLE_VENDOR.phone}`,14); y+=50;
+  drawInfoBoxFull(ctx,margin,y,usable,44,'廠商地址',BICYCLE_VENDOR.address,14); y+=56;
   const smallW=usable/5;
   [['原訂購單號',o.orderNo],['公司別',o.companyTitle],['發票開立抬頭',orderInvoiceTitle(o)],['部門',o.dept],['承辦',o.staff]].forEach((pair,i)=>drawSmallInfo(ctx,margin+i*smallW,y,smallW,58,pair[0],pair[1])); y+=70;
-  drawInfoBoxFull(ctx,margin,y,half,82,'客戶名稱',o.employer||'',22);
-  drawInfoBoxFull(ctx,margin+half,y,half,82,'送達時間',formatDeliveryDeadline(o)||'未填寫',21); y+=82;
-  drawInfoBoxFull(ctx,margin,y,half,82,'收貨聯絡人',deliveryContact(o)||'',21);
-  drawInfoBoxFull(ctx,margin+half,y,half,82,'送貨地點／地址',deliveryDisplay(o)||'',20); y+=94;
+  drawInfoBoxFull(ctx,margin,y,usable,90,'送達時間',formatBicycleDeliveryDeadline(o)||'未填寫',27); y+=90;
+  drawInfoBoxFull(ctx,margin,y,usable*0.36,92,'收貨聯絡人',bicycleDeliveryContact(o)||'',24);
+  drawInfoBoxFull(ctx,margin+usable*0.36,y,usable*0.64,92,'送貨地址',bicycleDeliveryAddress(o)||'',23); y+=104;
+  drawInfoBoxFull(ctx,margin,y,usable,62,'客戶名稱／訂購工人',`${o.employer||''}｜${workerFullDisplay(o)}`,18); y+=74;
   const widths=[60,180,100,130,150,90,90,130,140,190];
   const headers=['項次','工人姓名','國籍','入境日','品名','單位','數量','單價','小計','備註'];
   let cx=margin;ctx.font='bold 17px Noto Sans TC, Arial';headers.forEach((h,i)=>{ctx.strokeRect(cx,y,widths[i],42);drawCenteredWrap(ctx,h,cx+4,y+27,widths[i]-8,17,1);cx+=widths[i];});y+=42;
-  const unitPrice=bicycleOrderUnitPrice(o);ctx.font='17px Noto Sans TC, Arial';
-  rows.forEach((r,idx)=>{cx=margin;const vals=[String(idx+1),r.worker,r.nationality,dateSlash(r.entryDate),'腳踏車','台',String(num(r.qty)),money(unitPrice),money(num(r.qty)*unitPrice),r.note||''];vals.forEach((v,i)=>{ctx.strokeRect(cx,y,widths[i],rowH);drawCenteredWrapFull(ctx,v,cx+5,y,widths[i]-10,rowH,18);cx+=widths[i];});y+=rowH;});
-  const totalQty=rows.reduce((sum,r)=>sum+num(r.qty),0);cx=margin;const totalVals=['','','','','合計','',String(totalQty),'',money(totalQty*unitPrice),''];totalVals.forEach((v,i)=>{ctx.strokeRect(cx,y,widths[i],52);ctx.font=i===4||i===6||i===8?'bold 18px Noto Sans TC, Arial':'17px Noto Sans TC, Arial';drawCenteredWrapFull(ctx,v,cx+5,y,widths[i]-10,52,19);cx+=widths[i];});y+=70;
+  ctx.font='17px Noto Sans TC, Arial';
+  rows.forEach((r,idx)=>{cx=margin;const vals=[String(idx+1),r.worker,r.nationality,dateSlash(r.entryDate),[r.itemName,r.spec].filter(Boolean).join('／'),r.unit||'台',String(num(r.qty)),money(r.unitPrice),money(num(r.qty)*num(r.unitPrice)),r.note||''];vals.forEach((v,i)=>{ctx.strokeRect(cx,y,widths[i],rowH);drawCenteredWrapFull(ctx,v,cx+5,y,widths[i]-10,rowH,18);cx+=widths[i];});y+=rowH;});
+  const totalQty=rows.reduce((sum,r)=>sum+num(r.qty),0);const totalAmount=rows.reduce((sum,r)=>sum+num(r.qty)*num(r.unitPrice),0);cx=margin;const totalVals=['','','','','合計','',String(totalQty),'',money(totalAmount),''];totalVals.forEach((v,i)=>{ctx.strokeRect(cx,y,widths[i],52);ctx.font=i===4||i===6||i===8?'bold 18px Noto Sans TC, Arial':'17px Noto Sans TC, Arial';drawCenteredWrapFull(ctx,v,cx+5,y,widths[i]-10,52,19);cx+=widths[i];});y+=70;
   drawInfoBoxFull(ctx,margin,y,usable,72,'訂單備註',o.note||'',19);y+=115;
   ctx.font='20px Noto Sans TC, Arial';['營管主管','營管承辦','海外承辦'].forEach((label,i)=>{const sx=250+i*430;ctx.beginPath();ctx.moveTo(sx-145,y);ctx.lineTo(sx+145,y);ctx.stroke();ctx.fillText(label,sx,y+34);});
   const contentH=Math.min(canvas.height,y+70);const output=document.createElement('canvas');output.width=canvas.width;output.height=contentH;const out=output.getContext('2d');out.fillStyle='#fff';out.fillRect(0,0,output.width,output.height);out.drawImage(canvas,0,0,canvas.width,contentH,0,0,canvas.width,contentH);
@@ -3338,10 +3532,37 @@ function downloadBlob(filename, text, type){ const blob=new Blob([text],{type});
 function stripHTML(v){ const div=document.createElement('div'); div.innerHTML=v; return div.textContent||div.innerText||''; }
 
 
+function orderCanvasBlob(canvas){ return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('圖片轉換失敗')),'image/png')); }
+function crc32Table(){ const table=new Uint32Array(256); for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);table[n]=c>>>0;}return table; }
+const ORDER_ZIP_CRC_TABLE=crc32Table();
+function orderZipCrc32(bytes){let crc=0xffffffff;for(const b of bytes)crc=ORDER_ZIP_CRC_TABLE[(crc^b)&0xff]^(crc>>>8);return (crc^0xffffffff)>>>0;}
+function orderZipConcat(parts){const out=new Uint8Array(parts.reduce((sum,p)=>sum+p.length,0));let offset=0;parts.forEach(p=>{out.set(p,offset);offset+=p.length;});return out;}
+async function createOrderZip(entries){
+  const encoder=new TextEncoder(),locals=[],centrals=[];let offset=0;const now=new Date();const year=Math.max(1980,now.getFullYear());const time=((now.getHours()&31)<<11)|((now.getMinutes()&63)<<5)|(Math.floor(now.getSeconds()/2)&31);const day=((year-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate();
+  for(const entry of entries){const name=encoder.encode(entry.name);const data=new Uint8Array(await entry.blob.arrayBuffer());const crc=orderZipCrc32(data);const local=new Uint8Array(30+name.length),lv=new DataView(local.buffer);lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);lv.setUint16(6,0x0800,true);lv.setUint16(8,0,true);lv.setUint16(10,time,true);lv.setUint16(12,day,true);lv.setUint32(14,crc,true);lv.setUint32(18,data.length,true);lv.setUint32(22,data.length,true);lv.setUint16(26,name.length,true);local.set(name,30);locals.push(local,data);const central=new Uint8Array(46+name.length),cv=new DataView(central.buffer);cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0x0800,true);cv.setUint16(10,0,true);cv.setUint16(12,time,true);cv.setUint16(14,day,true);cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,name.length,true);cv.setUint32(42,offset,true);central.set(name,46);centrals.push(central);offset+=local.length+data.length;}
+  const centralBytes=orderZipConcat(centrals),end=new Uint8Array(22),ev=new DataView(end.buffer);ev.setUint32(0,0x06054b50,true);ev.setUint16(8,entries.length,true);ev.setUint16(10,entries.length,true);ev.setUint32(12,centralBytes.length,true);ev.setUint32(16,offset,true);return new Blob([...locals,centralBytes,end],{type:'application/zip'});
+}
+function downloadGeneratedBlob(name,blob){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
+const downloadOrderImageBase=downloadOrderImage;
+downloadOrderImage=async function(orderId){
+  const order=state.orders.find(o=>o.id===orderId);if(!order)return;
+  const captured=[],originalTrigger=triggerCanvasDownload;
+  triggerCanvasDownload=(canvas,fileName)=>captured.push({canvas,fileName});
+  try{downloadOrderImageBase(orderId);}finally{triggerCanvasDownload=originalTrigger;}
+  if(!captured.length)return toast('沒有可下載的訂購單');
+  const base=orderDownloadFileName(order);
+  const entries=[];
+  for(const item of captured){const isBike=String(item.fileName).includes('腳踏車');entries.push({name:`${base}_${isBike?'2腳踏車訂購單':'1寢具訂購單'}.png`,blob:await orderCanvasBlob(item.canvas)});}
+  entries.sort((a,b)=>a.name.localeCompare(b.name,'zh-Hant'));
+  if(entries.length===1) downloadGeneratedBlob(entries[0].name,entries[0].blob);
+  else downloadGeneratedBlob(`${base}_訂購單.zip`,await createOrderZip(entries));
+  toast(entries.length>1?'已下載 ZIP：1寢具訂購單、2腳踏車訂購單':'已下載訂購單');
+};
+
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.13.4 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.15 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
@@ -3360,6 +3581,7 @@ async function bootstrap(){
 window.addEventListener('beforeunload', ()=>{ if(sharedJSON()!==lastSharedJSON) localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); });
 bootstrap();
 })();
+
 </script>
 </body>
 </html>
