@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.5</title>
+  <title>FOR-e寢具訂購 V4.18.6</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -208,7 +208,7 @@
     .entry-date-col{width:7.2em!important}
     .nationality-col{width:5.5em!important}
     .record-table .items-cell{width:27%}
-    .accounting-detail-table .order-person-cell{width:19%!important;padding-right:12px!important;white-space:nowrap!important}
+    .accounting-detail-table .order-person-cell{width:17.5%!important;padding-right:12px!important;white-space:nowrap!important}
     .accounting-detail-table .order-person-cell *{white-space:nowrap!important;overflow-wrap:normal!important;word-break:keep-all!important}
     .accounting-detail-table .payment-target-col{width:6.5%!important;padding-left:10px!important}
     .accounting-detail-table .order-date-col{width:6.5%!important}
@@ -486,6 +486,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.18.6', date:'2026/08/08', title:'會計訂購資訊欄與腳踏車顯示微調', items:['會計對帳的訂購單／雇主／工人欄位稍微縮窄','保留欄內文字不換行及其他會計欄位既有寬度','腳踏車品項與金額改為無外框純文字顯示']},
   {version:'V4.18.5', date:'2026/08/08', title:'滿版表格與退貨顯示簡化', items:['所有分頁表格改為滿版顯示','會計訂購單／雇主／工人加寬且不換行，四個品項欄統一寬度','會計指定欄位文字放大 2pt','拿庫存只顯示綠色品項文字；全數退貨改為品項刪除線加退貨數量','退貨工人、品項與數量取消外框']},
   {version:'V4.18.4', date:'2026/08/08', title:'會計欄寬、品項文字與支付對象簡化', items:['會計對帳加寬訂購單／雇主／工人欄位，並與支付對象保留間距','對帳金額改用醒目金黃色顯示','所有主要分頁的訂購項目取消外框，拿庫存以綠色、退貨以紅色區分','支付對象僅顯示工人、仲介、雇主']},
   {version:'V4.18.3', date:'2026/08/08', title:'三頁欄位與會計批次顯示調整', items:['寢具訂購縮小勾選欄，新增部門／海外並放大雇主與工人姓名','訂購紀錄的入境日與國籍分欄，部門／承辦依文字縮窄，品項欄加寬','三個主要清單的欄位內容統一靠左對齊','會計對帳狀況、對帳人及請款日改為每批次只顯示一次','會計對帳金額移至購買品項前，購買品項改為無外框純文字，海外承辦改為部門／承辦']},
@@ -1274,7 +1275,7 @@ function downloadOrderButtonLabel(order){
 function orderAmountBreakdownHTML(order){
   const bedding=orderBeddingAmount(order), bicycle=orderBicycleAmount(order), total=bedding+bicycle;
   if(bicycle<=0) return `<b>${money(total)}</b><br><span class="muted">寢具及用品</span>`;
-  return `<b>${money(total)}</b><br><span class="muted">寢具及用品 ${money(bedding)}</span><br><span class="pill warn">腳踏車 ${money(bicycle)}</span>`;
+  return `<b>${money(total)}</b><br><span class="muted">寢具及用品 ${money(bedding)}</span><br><span class="muted">腳踏車 ${money(bicycle)}</span>`;
 }
 function returnBaseQty(line){
   if(isSpecialItem(line?.code)) return 0;
@@ -1434,7 +1435,7 @@ function render(){
     <div class="app">
       <header class="app-header">
         <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.5 Supabase 公開共用版</small></div></div>
+          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.6 Supabase 公開共用版</small></div></div>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
@@ -2989,9 +2990,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.5｜滿版表格與退貨顯示簡化</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.6｜會計訂購資訊欄與腳踏車顯示微調</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.5 表格統一滿版顯示；會計主要欄位加寬與放大，拿庫存及退貨改為更精簡的純文字格式。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.6 將會計對帳的訂購單／雇主／工人欄位稍微縮窄，並取消腳踏車品項與金額的外框。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -3864,7 +3865,7 @@ downloadOrderImage=async function(orderId){
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.18.5 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.18.6 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
