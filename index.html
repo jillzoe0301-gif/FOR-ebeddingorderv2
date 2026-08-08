@@ -230,7 +230,9 @@
     .return-plain{display:block;color:#f09a88;font-weight:850;line-height:1.5;margin:1px 0}
     .accounting-amount{display:inline-block;color:#ffe08f;font-size:14px;font-weight:950;line-height:1.35}
     .prominent-amount,.prominent-amount b{color:#ffe08f!important;font-size:15px!important;font-weight:950!important;line-height:1.4}
-    .prominent-amount .muted{color:#e9c88f!important;font-size:12px!important;font-weight:800!important}
+    .prominent-amount .amount-category{font-size:12px!important;font-weight:850!important;line-height:1.45}
+    .prominent-amount .amount-category.bedding{color:#9fd1eb!important}
+    .prominent-amount .amount-category.bicycle{color:#a8d19a!important}
     .batch-account-meta{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;color:#ead9c5;font-size:13px}
     .batch-account-meta b{color:#ffd49b}
 
@@ -274,7 +276,8 @@
     .bulk-worker-panel .bulk-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:10px}
     .bulk-worker-panel .bulk-actions button{flex:0 0 auto}
     .bulk-worker-panel .name-field{grid-column:span 2}
-    .current-status-cell{min-width:94px}
+    .current-status-cell,.record-table .status-cell{width:1%!important;min-width:0!important;max-width:none!important;white-space:nowrap!important;padding-left:7px!important;padding-right:7px!important}
+    .current-status-cell .pill,.record-table .status-cell .pill{white-space:nowrap!important;margin-left:0;margin-right:0}
 
     .settings-shell{display:flex;flex-direction:column;gap:18px}
     .settings-intro{display:flex;justify-content:space-between;gap:20px;align-items:center;border:1px solid rgba(196,151,103,.48);background:linear-gradient(135deg,rgba(196,151,103,.16),rgba(74,58,43,.45));border-radius:20px;padding:20px 22px;box-shadow:var(--shadow)}
@@ -489,6 +492,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.18.8', date:'2026/08/08', title:'目前狀況欄寬與訂購金額分類色彩', items:['寢具訂購與訂購紀錄的目前狀況欄位改為依狀態文字貼合寬度','訂購金額總額維持醒目金黃色','金額下方的寢具及用品改為藍色、腳踏車改為綠色，方便快速區分']},
   {version:'V4.18.7', date:'2026/08/08', title:'清單欄位排序、內容貼合欄寬與金額強化', items:['寢具訂購與訂購紀錄將部門／承辦移至第一個資料欄、目前狀況移至第二個資料欄','會計訂購單／雇主／工人及購買品項依文字內容貼合寬度，並多保留一個中文字空間','主要清單與會計對帳金額改為醒目金黃色粗體顯示']},
   {version:'V4.18.6', date:'2026/08/08', title:'會計訂購資訊欄與腳踏車顯示微調', items:['會計對帳的訂購單／雇主／工人欄位稍微縮窄','保留欄內文字不換行及其他會計欄位既有寬度','腳踏車品項與金額改為無外框純文字顯示']},
   {version:'V4.18.5', date:'2026/08/08', title:'滿版表格與退貨顯示簡化', items:['所有分頁表格改為滿版顯示','會計訂購單／雇主／工人加寬且不換行，四個品項欄統一寬度','會計指定欄位文字放大 2pt','拿庫存只顯示綠色品項文字；全數退貨改為品項刪除線加退貨數量','退貨工人、品項與數量取消外框']},
@@ -1278,8 +1282,8 @@ function downloadOrderButtonLabel(order){
 }
 function orderAmountBreakdownHTML(order){
   const bedding=orderBeddingAmount(order), bicycle=orderBicycleAmount(order), total=bedding+bicycle;
-  if(bicycle<=0) return `<b>${money(total)}</b><br><span class="muted">寢具及用品</span>`;
-  return `<b>${money(total)}</b><br><span class="muted">寢具及用品 ${money(bedding)}</span><br><span class="muted">腳踏車 ${money(bicycle)}</span>`;
+  if(bicycle<=0) return `<b>${money(total)}</b><br><span class="amount-category bedding">寢具及用品</span>`;
+  return `<b>${money(total)}</b><br><span class="amount-category bedding">寢具及用品 ${money(bedding)}</span><br><span class="amount-category bicycle">腳踏車 ${money(bicycle)}</span>`;
 }
 function returnBaseQty(line){
   if(isSpecialItem(line?.code)) return 0;
