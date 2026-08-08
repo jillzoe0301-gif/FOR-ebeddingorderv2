@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.1</title>
+  <title>FOR-e寢具訂購 V4.18.2</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -175,21 +175,29 @@
     .form-row-wide{grid-column:1/-1}
     .delivery-long{min-width:260px;white-space:normal;line-height:1.5}
     .record-table td{vertical-align:middle}
-    .adaptive-table{width:max-content;min-width:100%;table-layout:auto}
-    .adaptive-table th,.adaptive-table td{width:auto}
-    .adaptive-table .fit-col{white-space:nowrap;width:1%}
-    .adaptive-table .order-person-cell{min-width:210px;max-width:310px;white-space:normal}
+    .adaptive-table{width:100%;min-width:0;table-layout:fixed}
+    .adaptive-table th,.adaptive-table td{width:auto;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+    .adaptive-table .fit-col{white-space:normal;width:auto}
+    .adaptive-table .order-person-cell{min-width:0;max-width:none;white-space:normal}
     .adaptive-table .order-person-cell .order-no-line{margin-bottom:4px}
     .adaptive-table .order-person-cell .employer-line{font-weight:850;line-height:1.35}
     .adaptive-table .order-person-cell .worker-line{margin-top:3px;color:var(--muted);font-size:12px;line-height:1.45;white-space:normal;overflow-wrap:anywhere}
-    .adaptive-table .items-cell{min-width:190px;max-width:360px;white-space:normal}
-    .adaptive-table .status-cell{min-width:110px;max-width:210px;white-space:normal}
+    .adaptive-table .items-cell{min-width:0;max-width:none;white-space:normal}
+    .adaptive-table .status-cell{min-width:0;max-width:none;white-space:normal}
     .compact-items{max-width:none;white-space:normal;overflow:visible;text-overflow:clip;display:block;line-height:1.55}
     .kind-badge{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:12px;background:#4a3c25;color:#f0d5ac;margin-top:3px}
     .order-row-summary{line-height:1.65;color:#d8c7b3;white-space:nowrap}
     .accounting-detail-table{min-width:100%}
     .accounting-detail-table td{vertical-align:middle}
-    .summary-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;background:#42382f;color:#eadbca;font-size:12px;padding:3px 8px;margin:2px 3px 2px 0;white-space:nowrap}
+    .summary-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;background:#42382f;color:#eadbca;font-size:12px;padding:3px 8px;margin:2px 3px 2px 0;white-space:normal;overflow-wrap:anywhere}
+    .orders-list-table th,.orders-list-table td,.record-table th,.record-table td{padding:8px 7px;font-size:13px}
+    .orders-list-table .actions,.accounting-detail-table .actions{gap:4px}
+    .orders-list-table .actions button,.accounting-detail-table .actions button{padding:5px 7px;font-size:11px}
+    .accounting-detail-table th,.accounting-detail-table td{padding:6px 5px;font-size:11px;line-height:1.35}
+    .accounting-detail-table .order-person-cell{width:12%}
+    .accounting-detail-table .items-cell{width:10%}
+    .accounting-detail-table .actions{flex-direction:column;align-items:stretch}
+    .accounting-detail-table .actions button{width:100%}
     .summary-chip.warn{background:#4a3c25;color:#e2bd72;border-color:#b38e4e}
     .summary-chip.bad{background:#4a302b;color:#d98a78;border-color:#a96155}
     .summary-chip.ok{background:#31402f;color:#a8c69f;border-color:#87a979}
@@ -222,9 +230,9 @@
     .accounting-overview .big-stat span{display:block;color:#d8c7b4;font-size:13px;margin-bottom:4px}
     .accounting-overview .big-stat b{font-size:28px;line-height:1.1;color:#ffd49b}
 
-    .order-no-ribbon{display:inline-flex;align-items:center;gap:10px;border:1px solid #b98655;background:linear-gradient(180deg,#60442e,#453225);border-radius:14px;padding:9px 12px;margin-bottom:10px;box-shadow:0 8px 18px rgba(0,0,0,.18)}
+    .order-no-ribbon{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#3d342c;border-radius:9px;padding:5px 8px;margin-bottom:8px;box-shadow:none}
     .order-no-ribbon span{font-size:12px;color:#e3c6a4;font-weight:700}
-    .order-no-ribbon b{font-size:18px;color:#ffd49b;letter-spacing:.03em}
+    .order-no-ribbon b{font-size:13px;color:#eadbca;letter-spacing:0}
     .stats-filter-bar{display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
     .stats-filter-bar>div{min-width:150px}
     .stats-filter-bar .range-fields{display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap}
@@ -442,6 +450,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.18.2', date:'2026/08/08', title:'訂購單資訊層級與列表免橫向拖曳', items:['訂購單編號改為次要資訊，不再搶過客戶與工人資料','訂購單客戶名稱與工人名稱統一使用相同字級','主要清單表格改為頁面寬度內自動分配，內容可換行顯示','購買品項允許自然換行，避免撐寬整張表格','會計對帳的海外承辦移至倒數第二欄、操作按鈕之前']},
   {version:'V4.18.1', date:'2026/08/08', title:'列表資訊欄合併與內容自適應欄寬', items:['寢具訂購、訂購紀錄、會計對帳將訂購單號、雇主與工人合併在同一欄','列表改為依內容自動決定欄寬，減少不必要的大面積空白','日期、金額、狀態與操作欄盡量維持精簡寬度，品項欄保留可讀空間','窄螢幕維持表格區域橫向滑動，不影響上方文字導覽與搜尋']},
   {version:'V4.18', date:'2026/08/08', title:'左側功能改為上方文字切換', items:['取消左側功能欄，所有功能改至頁面上方以純文字分頁切換','目前功能以底線與淡色背景標示，不使用 ICON','桌機橫向排列，窄螢幕可左右滑動切換，不擠成多列','保留原有各頁功能、搜尋、資料與列印邏輯']},
   {version:'V4.17.1', date:'2026/08/06', title:'最上排搜尋欄輸入與中文選字修正', items:['修正寢具訂購最上排搜尋欄輸入後立即重建整個畫面，造成游標與焦點消失的問題','中文注音組字期間不執行搜尋，完成選字後立即以最終文字搜尋','英文、數字、貼上、清除與 Enter 均可正常搜尋，搜尋後會保留游標位置','訂購紀錄與會計對帳最上排搜尋欄同步套用相同修正']},
@@ -1382,7 +1391,7 @@ function render(){
     <div class="app">
       <header class="app-header">
         <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.1 Supabase 公開共用版</small></div></div>
+          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.2 Supabase 公開共用版</small></div></div>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
@@ -2699,7 +2708,7 @@ function accountingBatchHTML(batch, orders){
     </summary>
     <div class="batch-body">
       <div class="scroll-x"><table class="accounting-detail-table adaptive-table"><thead><tr>
-        <th>訂購單 / 雇主 / 工人</th><th class="fit-col">支付對象</th><th class="fit-col">訂購日</th><th class="fit-col">請款日</th><th class="fit-col">海外承辦</th><th>購買品項</th><th>拿庫存</th><th>退貨入庫</th><th>加買</th><th class="right fit-col">原金額</th><th class="right fit-col">調整</th><th class="right fit-col">對帳金額</th><th>狀態</th><th class="fit-col">對帳人</th><th>備註 / 錯誤</th><th class="fit-col">操作</th>
+        <th>訂購單 / 雇主 / 工人</th><th>支付對象</th><th>訂購日</th><th>請款日</th><th>購買品項</th><th>拿庫存</th><th>退貨入庫</th><th>加買</th><th class="right">原金額</th><th class="right">調整</th><th class="right">對帳金額</th><th>狀態</th><th>對帳人</th><th>備註 / 錯誤</th><th>海外承辦</th><th>操作</th>
       </tr></thead><tbody>
         ${orders.map(o=>accountingOrderRow(o)).join('')}
       </tbody></table></div>
@@ -2713,7 +2722,6 @@ function accountingOrderRow(o){
     <td class="fit-col">${esc(paymentTargetLabel(effectivePaymentTarget(o)))}</td>
     <td class="fit-col">${esc(dateSlash(o.orderDate)||'-')}</td>
     <td class="fit-col">${esc(dateSlash(o.billingDate)||'-')}</td>
-    <td class="fit-col">${esc(o.overseasStaff || o.staff || '-')}</td>
     <td class="items-cell">${lineSummaryByKey(o,'orderQty')}</td>
     <td>${lineSummaryByKey(o,'useStockQty','warn')}</td>
     <td>${lineSummaryByKey(o,'returnQty','bad')}</td>
@@ -2724,6 +2732,7 @@ function accountingOrderRow(o){
     <td class="status-cell">${esc(o.accountingStatus||'待對帳')}</td>
     <td class="fit-col">${o.accountingBy?esc(o.accountingBy):'<span class="muted">-</span>'}</td>
     <td>${o.accountingNote?esc(o.accountingNote):'<span class="muted">無</span>'}${err}</td>
+    <td>${esc(o.overseasStaff || o.staff || '-')}</td>
     <td class="fit-col"><div class="actions">
       <button class="small" data-account-edit="${esc(o.id)}" ${can('accounting')?'':'disabled'}>修改</button>
       <button class="small" data-account-adjust="${esc(o.id)}" ${can('accounting')?'':'disabled'}>調整</button>
@@ -3389,7 +3398,7 @@ function purchaseOrderHTML(o){
   const changeHTML=workerChangeHTML(o);
   const deadline=formatDeliveryDeadline(o)||'未填寫';
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境外國人寢具訂購單</title><style>
-    @page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{width:auto;min-height:0;margin:0;padding:0}body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff;text-align:center}button{padding:8px 12px;margin-bottom:8px}h1{text-align:center;margin:0 0 7px;font-size:22px;letter-spacing:.04em}table{width:100%;max-width:100%;border-collapse:collapse;margin-bottom:7px;page-break-inside:auto;table-layout:fixed}tr{page-break-inside:avoid;page-break-after:auto}th,td{border:1px solid #222;padding:4px 5px;font-size:11px;vertical-align:middle;text-align:center;line-height:1.28;white-space:normal;word-break:break-word;overflow-wrap:anywhere}th{background:#f2f2f2}.secondary td{font-size:10px;color:#222;font-weight:700}.secondary .label{font-size:9px}.label{display:block;font-size:9px;color:#555;font-weight:700;margin-bottom:2px}.value{display:block;font-size:13px;font-weight:800;line-height:1.3;white-space:normal;word-break:break-word}.value.large{font-size:12px}.value.mid{font-size:12px}.hero{border:2px solid #111;padding:4px 8px;margin:4px 0 7px}.hero .label{font-size:9px}.hero .value{font-size:15px;line-height:1.2}.info td{min-height:46px}.address td{min-height:42px}.note-box td{min-height:38px}.items th{font-size:10px}.items td{font-size:10.5px}.items td.spec-cell{white-space:normal;word-break:break-word;line-height:1.35}.sign{text-align:center;height:52px;vertical-align:bottom}.no-border td{border:0}.section-title{font-weight:900;text-align:left;font-size:12px;margin:6px 0 3px}.change-table th,.change-table td{font-size:10px}.worker-change-block{page-break-inside:avoid}.payment-note{font-size:10px;text-align:left;border:1px solid #222;padding:5px 7px;margin-bottom:7px}.print-only-wrap{width:190mm;max-width:100%;margin:0 auto}@media screen{body{padding:10px}.print-only-wrap{box-shadow:0 0 0 1px #ddd;padding:5mm;background:#fff}}@media print{button{display:none}html,body{margin:0;padding:0}.print-only-wrap{width:190mm;max-width:100%;margin:0 auto;box-shadow:none;padding:0}}
+    @page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{width:auto;min-height:0;margin:0;padding:0}body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff;text-align:center}button{padding:8px 12px;margin-bottom:8px}h1{text-align:center;margin:0 0 7px;font-size:22px;letter-spacing:.04em}table{width:100%;max-width:100%;border-collapse:collapse;margin-bottom:7px;page-break-inside:auto;table-layout:fixed}tr{page-break-inside:avoid;page-break-after:auto}th,td{border:1px solid #222;padding:4px 5px;font-size:11px;vertical-align:middle;text-align:center;line-height:1.28;white-space:normal;word-break:break-word;overflow-wrap:anywhere}th{background:#f2f2f2}.secondary td{font-size:9px;color:#444;font-weight:600}.secondary .label{font-size:8px}.secondary td:first-child{font-size:8px;color:#666}.label{display:block;font-size:9px;color:#555;font-weight:700;margin-bottom:2px}.value{display:block;font-size:13px;font-weight:800;line-height:1.3;white-space:normal;word-break:break-word}.value.large{font-size:13px}.value.mid{font-size:12px}.hero{border:2px solid #111;padding:4px 8px;margin:4px 0 7px}.hero .label{font-size:9px}.hero .value{font-size:15px;line-height:1.2}.info td{min-height:46px}.address td{min-height:42px}.note-box td{min-height:38px}.items th{font-size:10px}.items td{font-size:10.5px}.items td.spec-cell{white-space:normal;word-break:break-word;line-height:1.35}.sign{text-align:center;height:52px;vertical-align:bottom}.no-border td{border:0}.section-title{font-weight:900;text-align:left;font-size:12px;margin:6px 0 3px}.change-table th,.change-table td{font-size:10px}.worker-change-block{page-break-inside:avoid}.payment-note{font-size:10px;text-align:left;border:1px solid #222;padding:5px 7px;margin-bottom:7px}.print-only-wrap{width:190mm;max-width:100%;margin:0 auto}@media screen{body{padding:10px}.print-only-wrap{box-shadow:0 0 0 1px #ddd;padding:5mm;background:#fff}}@media print{button{display:none}html,body{margin:0;padding:0}.print-only-wrap{width:190mm;max-width:100%;margin:0 auto;box-shadow:none;padding:0}}
   </style></head><body><button onclick="window.print()">列印 A4 訂購單</button><div class="print-only-wrap"><h1>${esc(o.companyTitle||'公司別')}入境外國人寢具訂購單</h1>
     <table class="secondary"><tr><td><span class="label">訂購單號</span>${esc(o.orderNo||'')}</td><td><span class="label">公司別</span>${esc(o.companyTitle||'')}</td><td><span class="label">發票開立抬頭</span>${esc(orderInvoiceTitle(o)||'')}</td><td><span class="label">部門</span>${esc(o.dept||'')}</td><td><span class="label">承辦</span>${esc(o.staff||'')}</td><td><span class="label">支付對象</span>${esc(paymentTargetLabel(effectivePaymentTarget(o)))}</td></tr></table>
     <div class="hero"><span class="label">送達時間</span><span class="value large">${esc(deadline)}</span></div>
