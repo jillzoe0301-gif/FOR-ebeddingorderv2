@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.3</title>
+  <title>FOR-e寢具訂購 V4.18.4</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -209,10 +209,15 @@
     .entry-date-col{width:7.2em!important}
     .nationality-col{width:5.5em!important}
     .record-table .items-cell{width:27%}
-    .accounting-detail-table .order-person-cell{width:13em!important}
+    .accounting-detail-table .order-person-cell{width:17em!important;padding-right:14px!important}
+    .accounting-detail-table .payment-target-col{width:7.5em!important;padding-left:14px!important}
     .accounting-detail-table .items-cell{width:22%!important}
-    .accounting-detail-table .money-col{width:7.5em!important}
+    .accounting-detail-table .money-col{width:8em!important}
     .plain-item-line{display:block;line-height:1.5;margin:1px 0;white-space:normal;overflow-wrap:anywhere}
+    .plain-item-line.stock{color:#a8d19a;font-weight:850}
+    .plain-item-line.return{color:#f09a88;font-weight:850}
+    .plain-item-line.add{color:#f0c67d;font-weight:850}
+    .accounting-amount{display:inline-block;color:#ffe08f;font-size:14px;font-weight:950;line-height:1.35}
     .batch-account-meta{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;color:#ead9c5;font-size:13px}
     .batch-account-meta b{color:#ffd49b}
 
@@ -360,8 +365,8 @@ const pages = [
   {id:'settings', label:'資料設定'}
 ];
 const countryOptions = ['印尼','泰國','菲律賓','越南','其他'];
-const paymentTargets = ['工人','雇主','仲介','分項支付'];
-const PAYMENT_TARGET_LABELS = {工人:'工人支付',雇主:'雇主支付',仲介:'仲介公司支付',分項支付:'分項支付'};
+const paymentTargets = ['工人','仲介','雇主'];
+const PAYMENT_TARGET_LABELS = {工人:'工人',雇主:'雇主',仲介:'仲介',分項支付:'工人'};
 const DEFAULT_PAYMENT_RULES = [
   ...['中精','台灣積層','台灣工機','毅群','頂昌','大菱','巨磊','創為'].map((employer,idx)=>({id:`PAY-AGENCY-${idx+1}`,employer,target:'仲介',mode:'all',itemKeywords:[],fallbackTarget:'工人',active:true})),
   {id:'PAY-QINZHONG',employer:'勤眾',target:'仲介',mode:'exclude',itemKeywords:['腳踏車'],fallbackTarget:'工人',active:true},
@@ -371,8 +376,9 @@ const DEFAULT_PAYMENT_RULES = [
 ];
 const PAYMENT_RULE_EMPLOYERS = [...new Set(DEFAULT_PAYMENT_RULES.map(r=>r.employer))];
 function paymentTargetLabel(value){ return PAYMENT_TARGET_LABELS[value] || String(value||''); }
-function paymentTargetOptionsHTML(selected, includeSplit=true){
-  return paymentTargets.filter(v=>includeSplit || v!=='分項支付').map(v=>`<option value="${esc(v)}" ${String(v)===String(selected)?'selected':''}>${esc(paymentTargetLabel(v))}</option>`).join('');
+function paymentTargetOptionsHTML(selected){
+  const safeSelected=paymentTargets.includes(String(selected))?String(selected):'工人';
+  return paymentTargets.map(v=>`<option value="${esc(v)}" ${v===safeSelected?'selected':''}>${esc(paymentTargetLabel(v))}</option>`).join('');
 }
 function normalizeEmployerForRule(value){ return String(value||'').replace(/[\s　()（）股份有限公司企業社工業社]+/g,'').toLowerCase(); }
 function employerMatchesRule(employer, keyword){
@@ -437,6 +443,12 @@ function paymentBreakdownEntries(order){
   });
   return Array.from(groups.entries()).map(([target,items])=>({target,items}));
 }
+function paymentTargetDisplay(order){
+  const targets=[...new Set(paymentBreakdownEntries(order).map(entry=>paymentTargetLabel(entry.target)).filter(Boolean))];
+  if(targets.length) return targets.join('／');
+  const fallback=paymentTargetLabel(effectivePaymentTarget(order));
+  return ['工人','仲介','雇主'].includes(fallback)?fallback:'工人';
+}
 function paymentBreakdownText(order){
   const entries=paymentBreakdownEntries(order);
   if(entries.length) return entries.map(x=>`${paymentTargetLabel(x.target)}：${x.items.join('、')}`).join('；');
@@ -451,19 +463,20 @@ function paymentRuleSummary(rule){
 }
 function paymentRuleHint(employer){
   const rule=matchedEmployerPaymentRule(employer);
-  return rule ? `已套用支付規則：${rule.mode==='all'?paymentTargetLabel(rule.target):'分項支付'}` : '未套用自動規則，可手動選擇支付對象';
+  return rule ? `已套用支付規則：${rule.mode==='all'?paymentTargetLabel(rule.target):'依品項自動判斷'}` : '未套用自動規則，可手動選擇支付對象';
 }
 function applyEmployerPaymentRule(modal){
   const employer=$('#f_employer',modal)?.value || '';
   const rule=matchedEmployerPaymentRule(employer);
   const select=$('#f_paymentTarget',modal);
   const hint=$('#paymentRulePreview',modal);
-  if(rule && select) select.value=rule.mode==='all'?rule.target:'分項支付';
+  if(rule && select) select.value=paymentTargets.includes(rule.target)?rule.target:'工人';
   if(hint) hint.textContent=paymentRuleHint(employer);
 }
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.18.4', date:'2026/08/08', title:'會計欄寬、品項文字與支付對象簡化', items:['會計對帳加寬訂購單／雇主／工人欄位，並與支付對象保留間距','對帳金額改用醒目金黃色顯示','所有主要分頁的訂購項目取消外框，拿庫存以綠色、退貨以紅色區分','支付對象僅顯示工人、仲介、雇主']},
   {version:'V4.18.3', date:'2026/08/08', title:'三頁欄位與會計批次顯示調整', items:['寢具訂購縮小勾選欄，新增部門／海外並放大雇主與工人姓名','訂購紀錄的入境日與國籍分欄，部門／承辦依文字縮窄，品項欄加寬','三個主要清單的欄位內容統一靠左對齊','會計對帳狀況、對帳人及請款日改為每批次只顯示一次','會計對帳金額移至購買品項前，購買品項改為無外框純文字，海外承辦改為部門／承辦']},
   {version:'V4.18.2', date:'2026/08/08', title:'訂購單資訊層級與列表免橫向拖曳', items:['訂購單編號改為次要資訊，不再搶過客戶與工人資料','訂購單客戶名稱與工人名稱統一使用相同字級','主要清單表格改為頁面寬度內自動分配，內容可換行顯示','購買品項允許自然換行，避免撐寬整張表格','會計對帳的海外承辦移至倒數第二欄、操作按鈕之前']},
   {version:'V4.18.1', date:'2026/08/08', title:'列表資訊欄合併與內容自適應欄寬', items:['寢具訂購、訂購紀錄、會計對帳將訂購單號、雇主與工人合併在同一欄','列表改為依內容自動決定欄寬，減少不必要的大面積空白','日期、金額、狀態與操作欄盡量維持精簡寬度，品項欄保留可讀空間','窄螢幕維持表格區域橫向滑動，不影響上方文字導覽與搜尋']},
@@ -1287,14 +1300,14 @@ function purchaseItemsHTML(order){
       const returned=isGeneralItem(l.code)?num(l.returnQty):0;
       const fullReturned=returned>0 && lineQty(l)<=0;
       const label = fullReturned ? `已全數退貨 ${itemLabel(l.code)} ${returned}` : (isAddBuyOrder ? `加購 ${itemLabel(l.code)} ${orderQty}` : `${itemLabel(l.code)} ${orderQty}`);
-      rows.push(`<span class="summary-chip ${fullReturned?'bad':(isAddBuyOrder?'warn':'')}">${esc(label)}</span>`);
+      rows.push(`<span class="plain-item-line ${fullReturned?'return':(isAddBuyOrder?'add':'')}">${esc(label)}</span>`);
     }
     if(isGeneralItem(l.code) && num(l.useStockQty)>0){
       const label = isAddBuyOrder ? `加購拿庫存 ${itemLabel(l.code)} ${num(l.useStockQty)}` : `拿庫存 ${itemLabel(l.code)} ${num(l.useStockQty)}`;
-      rows.push(`<span class="summary-chip ${isAddBuyOrder?'add-stock':'stock'}">${esc(label)}</span>`);
+      rows.push(`<span class="plain-item-line stock">${esc(label)}</span>`);
     }
     if(isGeneralItem(l.code) && num(l.addQty)>0){
-      rows.push(`<span class="summary-chip warn">${esc('加購 '+itemLabel(l.code)+' '+num(l.addQty))}</span>`);
+      rows.push(`<span class="plain-item-line add">${esc('加購 '+itemLabel(l.code)+' '+num(l.addQty))}</span>`);
     }
   });
   return rows.length ? rows.join('') : '<span class="muted">-</span>';
@@ -1406,7 +1419,7 @@ function render(){
     <div class="app">
       <header class="app-header">
         <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.3 Supabase 公開共用版</small></div></div>
+          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.4 Supabase 公開共用版</small></div></div>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
@@ -2708,8 +2721,10 @@ function printAccountingBatchDetail(batch){
   if(!orders.length) return toast('此批次沒有可列印的訂單');
   openPrintWindow(accountingBatchPrintHTML(batch,orders));
 }
-function lineSummaryByKey(o, key, cls='', plain=false){
-  const rows=orderedLines(o.items||[]).filter(l=>(key==='orderQty' || isGeneralItem(l.code)) && (key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]))>0).map(l=>{ const qty=key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]); return plain?`<span class="plain-item-line">${esc(itemLabel(l.code))} ${qty}</span>`:`<span class="summary-chip ${cls}">${esc(itemLabel(l.code))} ${qty}</span>`; });
+function lineSummaryByKey(o, key, cls=''){
+  const labelPrefix=key==='useStockQty'?'拿庫存 ':key==='returnQty'?'退貨 ':key==='addQty'?'加買 ':'';
+  const textClass=key==='useStockQty'?'stock':key==='returnQty'?'return':key==='addQty'?'add':cls;
+  const rows=orderedLines(o.items||[]).filter(l=>(key==='orderQty' || isGeneralItem(l.code)) && (key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]))>0).map(l=>{ const qty=key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]); return `<span class="plain-item-line ${textClass}">${esc(labelPrefix+itemLabel(l.code)+' '+qty)}</span>`; });
   return rows.length ? rows.join('') : '<span class="muted">-</span>';
 }
 function accountingBatchHTML(batch, orders){
@@ -2726,7 +2741,7 @@ function accountingBatchHTML(batch, orders){
     </summary>
     <div class="batch-body">
       <div class="scroll-x"><table class="accounting-detail-table adaptive-table"><thead><tr>
-        <th>訂購單 / 雇主 / 工人</th><th>支付對象</th><th>訂購日</th><th class="money-col">對帳金額</th><th class="items-cell">購買品項</th><th>拿庫存</th><th>退貨入庫</th><th>加買</th><th>原金額</th><th>調整</th><th>備註 / 錯誤</th><th class="dept-staff-col">部門 / 承辦</th><th>操作</th>
+        <th>訂購單 / 雇主 / 工人</th><th class="payment-target-col">支付對象</th><th>訂購日</th><th class="money-col">對帳金額</th><th class="items-cell">購買品項</th><th>拿庫存</th><th>退貨入庫</th><th>加買</th><th>原金額</th><th>調整</th><th>備註 / 錯誤</th><th class="dept-staff-col">部門 / 承辦</th><th>操作</th>
       </tr></thead><tbody>
         ${orders.map(o=>accountingOrderRow(o)).join('')}
       </tbody></table></div>
@@ -2737,10 +2752,10 @@ function accountingOrderRow(o){
   const err=o.errorNotice?`<div><span class="summary-chip bad">${esc(o.errorNotice.type)}｜${esc(o.errorNotice.note||'')}</span></div>`:'';
   return `<tr>
     <td class="order-person-cell"><div class="order-no-line"><button class="link-btn" data-account-view="${esc(o.id)}">${esc(o.orderNo)}</button></div><div class="employer-line person-name">${esc(o.employer||'-')}</div><div class="worker-line person-name">${o.isStockOrder?'庫存訂購':(isSpecialOnlyOrder(o)?'特殊訂購項目':`工人：${esc(orderWorkers(o).join('、')||'-')}`)}</div></td>
-    <td class="fit-col">${esc(paymentTargetLabel(effectivePaymentTarget(o)))}</td>
+    <td class="fit-col payment-target-col">${esc(paymentTargetDisplay(o))}</td>
     <td class="fit-col">${esc(dateSlash(o.orderDate)||'-')}</td>
-    <td class="money-col"><b>${money(accountingAmount(o))}</b></td>
-    <td class="items-cell">${lineSummaryByKey(o,'orderQty','',true)}</td>
+    <td class="money-col"><span class="accounting-amount">${money(accountingAmount(o))}</span></td>
+    <td class="items-cell">${lineSummaryByKey(o,'orderQty')}</td>
     <td>${lineSummaryByKey(o,'useStockQty','warn')}</td>
     <td>${lineSummaryByKey(o,'returnQty','bad')}</td>
     <td>${lineSummaryByKey(o,'addQty','ok')}</td>
@@ -2953,9 +2968,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.16.1｜批次明細橫向品項與支付對象簡化</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.4｜會計欄寬、品項文字與支付對象簡化</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.16.1 批次明細新增訂購日與支付對象，訂購項目改為橫向欄位；會計對帳支付對象只顯示簡潔結果。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.4 會計欄位更易閱讀，對帳金額更醒目；品項統一取消外框，並以文字顏色區分拿庫存與退貨。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -3828,7 +3843,7 @@ downloadOrderImage=async function(orderId){
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.16.1 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.18.4 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
