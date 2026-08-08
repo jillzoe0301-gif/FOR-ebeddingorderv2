@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.7</title>
+  <title>FOR-e寢具訂購 V4.18.10</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -492,6 +492,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.18.10', date:'2026/08/08', title:'每位工人獨立簽收單與下載後開啟', items:['一鍵列印改為每位工人各自一張簽收單','訂購單 PNG 下載完成後自動開啟預覽']},
   {version:'V4.18.9', date:'2026/08/08', title:'目前狀況欄位精準縮寬', items:['寢具訂購與訂購紀錄的目前狀況表頭及內容同步固定為文字寬度','移除表格剩餘空間對目前狀況欄位的拉伸']},
   {version:'V4.18.8', date:'2026/08/08', title:'目前狀況欄寬與訂購金額分類色彩', items:['寢具訂購與訂購紀錄的目前狀況欄位改為依狀態文字貼合寬度','訂購金額總額維持醒目金黃色','金額下方的寢具及用品改為藍色、腳踏車改為綠色，方便快速區分']},
   {version:'V4.18.7', date:'2026/08/08', title:'清單欄位排序、內容貼合欄寬與金額強化', items:['寢具訂購與訂購紀錄將部門／承辦移至第一個資料欄、目前狀況移至第二個資料欄','會計訂購單／雇主／工人及購買品項依文字內容貼合寬度，並多保留一個中文字空間','主要清單與會計對帳金額改為醒目金黃色粗體顯示']},
@@ -1444,7 +1445,7 @@ function render(){
     <div class="app">
       <header class="app-header">
         <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.7 Supabase 公開共用版</small></div></div>
+          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.10 Supabase 公開共用版</small></div></div>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
@@ -2999,9 +3000,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.7｜清單欄位排序、內容貼合欄寬與金額強化</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.10｜每位工人獨立簽收單與下載後開啟</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.7 調整寢具訂購與訂購紀錄欄位順序，會計資訊欄依內容貼合寬度，並強化主要金額顯示。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.10 一鍵列印改為每位工人各自一張簽收單；下載訂購單後會自動開啟圖片預覽。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -3511,15 +3512,13 @@ function receiptPagesHTML(o){
   if(o.isStockOrder) return '';
   const groups = orderWorkerGroups(o).filter(g=>(g.items||[]).some(l=>hasReceiptLine(l)) || g.name);
   const receiptGroups = groups.length ? groups : [{name:o.worker||'-', nationality:o.nationality||'其他', entryDate:o.entryDate||'', items:o.items||[]}];
-  let itemRowCount=0;
-  const groupRows=receiptGroups.map(g=>{
+  return receiptGroups.map(g=>{
     const langKey = g.nationality || o.nationality || '其他';
     const lang = itemTranslations[langKey] || itemTranslations['其他'];
     const receiptLines = orderedLines(g.items||[]).filter(l=>hasReceiptLine(l) && isGeneralItem(l.code));
     const lines = receiptLines.length ? receiptLines : [{code:'',price:0,note:'',__empty:true}];
-    itemRowCount += lines.length;
     const workerSubtotal=groupAmount(g);
-    return lines.map((l,idx)=>{
+    const groupRows=lines.map((l,idx)=>{
       const first=idx===0;
       const rowSpan=lines.length;
       const workerCell=first ? `<td class="worker-cell" rowspan="${rowSpan}"><b>${esc(g.name||'-')}</b><br><span>${esc(langKey||'')}</span><br><span>入境日：${esc(dateSlash(g.entryDate)||'')}</span><br><span class="worker-subtotal">小計：${money(workerSubtotal)}</span></td>` : '';
@@ -3530,27 +3529,27 @@ function receiptPagesHTML(o){
       const qty=lineQty(l);
       return `<tr>${workerCell}<td>${receiptProductHTML(l.code, langKey, lang)}</td><td class="right">${money(l.price)}</td><td class="center"><b>${qty}</b></td><td>${esc(paymentTargetLabel(resolvedLinePaymentTarget(o,l)))}</td><td>${esc(l.note||'')}</td>${signCell}</tr>`;
     }).join('');
-  }).join('');
-  const beddingTotal=orderBeddingAmount(o);
-  const bicycleTotal=orderBicycleAmount(o);
+  const beddingTotal=groupBeddingAmount(g);
+  const bicycleTotal=groupBicycleAmount(g);
   const total=beddingTotal+bicycleTotal;
   const amountRows = bicycleTotal>0
     ? `<p class="sub-total">寢具及用品費用：${money(beddingTotal)}</p><p class="bike-total">腳踏車費用：${money(bicycleTotal)}</p><p class="total">總金額：${money(total)}</p>`
     : `<p class="total">總金額：${money(total)}</p>`;
-  const densityClass=itemRowCount>22?' receipt-ultra-compact':(itemRowCount>13?' receipt-compact':'');
+  const densityClass=lines.length>22?' receipt-ultra-compact':(lines.length>13?' receipt-compact':'');
   return `<section class="receipt-page${densityClass}">
     <h1>入境寢具簽收單</h1>
-    <table class="info receipt-order-info"><tr><td>雇主名稱：<b>${esc(o.employer||'')}</b></td><td>訂購單號：<b>${esc(o.orderNo||'')}</b></td></tr><tr><td>工人人數：<b>${receiptGroups.length}</b></td><td>訂購日期：<b>${esc(dateSlash(o.orderDate)||'')}</b></td></tr></table>
+    <table class="info receipt-order-info"><tr><td>雇主名稱：<b>${esc(o.employer||'')}</b></td><td>訂購單號：<b>${esc(o.orderNo||'')}</b></td></tr><tr><td>工人姓名：<b>${esc(g.name||'-')}</b></td><td>訂購日期：<b>${esc(dateSlash(o.orderDate)||'')}</b></td></tr></table>
     <table class="receipt-worker-table"><thead><tr><th>工人資料</th><th>品項</th><th>單價</th><th>數量</th><th>支付對象</th><th>備註</th><th>工人簽名／日期</th></tr></thead><tbody>${groupRows}</tbody></table>
     <div class="amount-breakdown">${amountRows}</div>
     <table class="info receipt-footer-sign"><tr><td class="sign">翻譯人員：____________________</td><td class="sign">承辦人員：____________________</td></tr></table>
   </section>`;
+  }).join('');
 }
 function receiptPrintCSS(){ return `
   .receipt-page{width:190mm;max-width:100%;min-height:277mm;margin:0 auto;page-break-after:always;break-after:page;page-break-inside:avoid;padding:2mm;font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff}
   .receipt-page h1{text-align:center;margin:0 0 7px;font-size:23px;text-decoration:underline}.receipt-page table{width:100%;border-collapse:collapse;margin-bottom:7px;table-layout:fixed}.receipt-page th,.receipt-page td{border:1px solid #222;padding:5px 6px;font-size:11px;vertical-align:middle;line-height:1.3;white-space:normal;word-break:break-word;overflow-wrap:anywhere}.receipt-page th{background:#f3f3f3}.receipt-page .info td{font-size:12px;padding:4px 5px}.receipt-page .center{text-align:center}.receipt-page .right{text-align:right}.receipt-page .muted{color:#777}.receipt-page .toiletry-list{font-size:9px;line-height:1.35;margin-top:3px;font-weight:400}.receipt-page .receipt-worker-table th:nth-child(1){width:16%}.receipt-page .receipt-worker-table th:nth-child(2){width:25%}.receipt-page .receipt-worker-table th:nth-child(3){width:10%}.receipt-page .receipt-worker-table th:nth-child(4){width:7%}.receipt-page .receipt-worker-table th:nth-child(5){width:12%}.receipt-page .receipt-worker-table th:nth-child(6){width:14%}.receipt-page .receipt-worker-table th:nth-child(7){width:16%}.receipt-page .worker-cell{text-align:center;vertical-align:top}.receipt-page .worker-cell b{font-size:12px}.receipt-page .worker-cell span{display:block;margin-top:2px;font-size:9.5px}.receipt-page .worker-cell .worker-subtotal{font-weight:800;color:#8a5a20;margin-top:5px}.receipt-page .worker-sign{text-align:left;vertical-align:top;font-size:9px}.receipt-page .signature-space{height:32px;border-bottom:1px solid #777;margin:2px 0 5px}.receipt-page .date-line{height:18px;border-bottom:1px solid #777;margin-top:2px}.receipt-page .amount-breakdown{text-align:right;margin:3px 0 7px}.receipt-page .amount-breakdown p{margin:2px 0}.receipt-page .sub-total{font-size:12px;font-weight:700}.receipt-page .bike-total{font-size:13px;font-weight:900}.receipt-page .total{font-size:15px;font-weight:800;border-top:1px solid #333;padding-top:3px}.receipt-page .sign{height:42px;vertical-align:bottom;border:0}.receipt-page .receipt-footer-sign td{border:0}.receipt-page.receipt-compact h1{font-size:20px;margin-bottom:4px}.receipt-page.receipt-compact th,.receipt-page.receipt-compact td{font-size:9px;padding:3px 4px;line-height:1.18}.receipt-page.receipt-compact .info td{font-size:10px;padding:3px}.receipt-page.receipt-compact .toiletry-list{font-size:7.5px;line-height:1.18}.receipt-page.receipt-compact .signature-space{height:22px}.receipt-page.receipt-compact .date-line{height:13px}.receipt-page.receipt-compact .sign{height:31px}.receipt-page.receipt-ultra-compact h1{font-size:17px;margin-bottom:3px}.receipt-page.receipt-ultra-compact th,.receipt-page.receipt-ultra-compact td{font-size:7.5px;padding:2px 3px;line-height:1.1}.receipt-page.receipt-ultra-compact .info td{font-size:8.5px;padding:2px}.receipt-page.receipt-ultra-compact .toiletry-list{font-size:6px;line-height:1.05}.receipt-page.receipt-ultra-compact .worker-cell b{font-size:9px}.receipt-page.receipt-ultra-compact .worker-cell span{font-size:7px}.receipt-page.receipt-ultra-compact .signature-space{height:15px}.receipt-page.receipt-ultra-compact .date-line{height:10px}.receipt-page.receipt-ultra-compact .amount-breakdown{font-size:9px;margin:2px 0}.receipt-page.receipt-ultra-compact .total{font-size:11px}.receipt-page.receipt-ultra-compact .sign{height:24px}`; }
 function receiptDocumentHTML(o){
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境寢具簽收單</title><style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}body{margin:0;background:#fff;padding:10px}button{padding:8px 12px;margin:0 0 8px 10px}${receiptPrintCSS()}@media print{button{display:none}html,body{margin:0;padding:0}.receipt-page{margin:0 auto;width:190mm;max-width:100%;min-height:277mm}}</style></head><body><button onclick="window.print()">列印 A4 單張簽收單</button>${receiptPagesHTML(o)}</body></html>`;
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>入境寢具簽收單</title><style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}body{margin:0;background:#fff;padding:10px}button{padding:8px 12px;margin:0 0 8px 10px}${receiptPrintCSS()}@media print{button{display:none}html,body{margin:0;padding:0}.receipt-page{margin:0 auto;width:190mm;max-width:100%;min-height:277mm}}</style></head><body><button onclick="window.print()">列印每位工人獨立簽收單</button>${receiptPagesHTML(o)}</body></html>`;
 }
 function printReceipt(orderId){
   const o=state.orders.find(x=>x.id===orderId); if(!o) return;
@@ -3568,8 +3567,8 @@ function printOrderAndReceipt(orderId){
   const pages=[];
   if(includeBeddingOrder) pages.push(`<section class="print-page order-page"><div class="page-sequence">1｜寢具訂購單</div>${orderMarkup}</section>`);
   if(bikeMarkup) pages.push(`<section class="print-page bike-page"><div class="page-sequence">2｜腳踏車訂購單</div>${bikeMarkup}</section>`);
-  if(receiptMarkup) pages.push(receiptMarkup.replaceAll('class="receipt-page"','class="print-page receipt-page"'));
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>訂購單、獨立腳踏車訂購單與單張簽收單</title><style>
+  if(receiptMarkup) pages.push(receiptMarkup.replaceAll('class="receipt-page','class="print-page receipt-page'));
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>訂購單、獨立腳踏車訂購單與工人獨立簽收單</title><style>
     @page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#111;background:#fff;padding:8px}button{padding:9px 14px;margin:0 0 8px}
     .page-sequence{text-align:right;font-size:9px;color:#666;margin:0 0 2mm}.print-page{display:block;width:190mm;max-width:190mm;margin:0 auto;page-break-inside:avoid!important;break-inside:avoid-page!important;page-break-after:always!important;break-after:page!important;clear:both}
     .print-page:last-child{page-break-after:auto!important;break-after:auto!important}
@@ -3649,8 +3648,11 @@ function drawSmallInfo(ctx, x, y, w, h, label, value){
 function triggerCanvasDownload(canvas, fileName){
   const a=document.createElement('a');
   a.download=fileName;
-  a.href=canvas.toDataURL('image/png');
+  const imageUrl=canvas.toDataURL('image/png');
+  a.href=imageUrl;
   document.body.appendChild(a); a.click(); a.remove();
+  const preview=window.open(imageUrl,'_blank');
+  if(!preview) toast('訂購單已下載；瀏覽器阻擋自動開啟，請允許彈出式視窗');
 }
 function downloadBicycleOrderImage(o){
   const rows=bicycleOrderItemRows(o); if(!rows.length) return;
@@ -3874,7 +3876,7 @@ downloadOrderImage=async function(orderId){
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.18.7 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.18.10 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }

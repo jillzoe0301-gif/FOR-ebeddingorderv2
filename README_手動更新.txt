@@ -1,10 +1,10 @@
-FOR-e 寢具訂購系統 V4.18.9
+FOR-e 寢具訂購系統 V4.18.10
 GitHub 手動覆蓋更新包
 
 本版內容：
-1. 寢具訂購與訂購紀錄的「目前狀況」表頭及內容同步固定為文字寬度。
-2. 修正固定版面下欄位仍被剩餘空間拉寬的問題。
-3. 保留 V4.18.8 既有金額分類色彩、欄位順序、品項及退貨顯示邏輯。
+1. 一鍵列印改為每位工人各自一張簽收單。
+2. 每張簽收單只顯示該工人的資料、品項、金額與簽名欄。
+3. 下載寢具或腳踏車訂購單後，自動開啟 PNG 圖片預覽。
 4. 保留既有資料與 Supabase 共用邏輯。
 
 手動更新方式：
@@ -13,23 +13,23 @@ B. 把下列檔案覆蓋到 GitHub 專案根目錄：
    - index.html
    - package.json
    - package-lock.json
-   - CHANGELOG_V4.18.9.md
+   - CHANGELOG_V4.18.10.md
 C. Commit changes。
 D. GitHub main 更新後，由 Vercel 自動部署即可。
 
 如果使用 Codespaces，可執行：
 
 cd /workspaces/FOR-ebeddingorderv2
-unzip -o 'FOR-e_Bedding_Order_V4.18.9_GitHub_Manual_Update.zip'
+unzip -o 'FOR-e_Bedding_Order_V4.18.10_GitHub_Manual_Update.zip'
 npm ci
 npm run build
 git add -A
-git commit -m "Update V4.18.9 current status column width"
+git commit -m "Update V4.18.10 worker receipts and download preview"
 git pull --rebase origin main
 git push origin main
 
 正確版本：
-package.json = 4.18.9
+package.json = 4.18.10
 build = vite build
 
 注意：
