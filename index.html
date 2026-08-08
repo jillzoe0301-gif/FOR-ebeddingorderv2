@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.10</title>
+  <title>FOR-e寢具訂購 V4.18.11</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -492,6 +492,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.18.11', date:'2026/08/08', title:'訂購單預覽與姓名去重修正', items:['下載訂購單時先建立預覽頁，避免 PNG 產生後才開啟而被瀏覽器阻擋','同一工人姓名在訂購單上只顯示一次，品項與數量仍完整保留']},
   {version:'V4.18.10', date:'2026/08/08', title:'每位工人獨立簽收單與下載後開啟', items:['一鍵列印改為每位工人各自一張簽收單','訂購單 PNG 下載完成後自動開啟預覽']},
   {version:'V4.18.9', date:'2026/08/08', title:'目前狀況欄位精準縮寬', items:['寢具訂購與訂購紀錄的目前狀況表頭及內容同步固定為文字寬度','移除表格剩餘空間對目前狀況欄位的拉伸']},
   {version:'V4.18.8', date:'2026/08/08', title:'目前狀況欄寬與訂購金額分類色彩', items:['寢具訂購與訂購紀錄的目前狀況欄位改為依狀態文字貼合寬度','訂購金額總額維持醒目金黃色','金額下方的寢具及用品改為藍色、腳踏車改為綠色，方便快速區分']},
@@ -1445,7 +1446,7 @@ function render(){
     <div class="app">
       <header class="app-header">
         <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.10 Supabase 公開共用版</small></div></div>
+          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.11 Supabase 公開共用版</small></div></div>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
@@ -1779,7 +1780,7 @@ function workerDisplay(o){
 }
 function workerFullDisplay(o){
   if(o?.isStockOrder) return '訂庫存';
-  const names=orderWorkers(o);
+  const names=[...new Set(orderWorkers(o).map(name=>String(name).trim()).filter(Boolean))];
   return names.length ? names.join('、') : (o?.worker || 'FOR 雇主');
 }
 function entryDateDisplay(o){
@@ -3000,9 +3001,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.10｜每位工人獨立簽收單與下載後開啟</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.11｜訂購單預覽與姓名去重修正</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.10 一鍵列印改為每位工人各自一張簽收單；下載訂購單後會自動開啟圖片預覽。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.11 修正下載訂購單後 PNG 預覽未開啟，並讓同一工人姓名在訂購單上只顯示一次。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -3864,19 +3865,38 @@ downloadOrderImage=async function(orderId){
   triggerCanvasDownload=(canvas,fileName)=>captured.push({canvas,fileName});
   try{downloadOrderImageBase(orderId);}finally{triggerCanvasDownload=originalTrigger;}
   if(!captured.length)return toast('沒有可下載的訂購單');
+  const preview=window.open('','_blank');
+  if(preview){
+    preview.document.open();
+    preview.document.write('<!doctype html><html><head><meta charset="UTF-8"><title>訂購單 PNG 預覽</title></head><body style="font-family:Arial,sans-serif;text-align:center;padding:32px;color:#555">訂購單 PNG 預覽載入中…</body></html>');
+    preview.document.close();
+  }else{
+    toast('訂購單會正常下載；預覽視窗遭瀏覽器阻擋，請允許此網站開啟彈出式視窗');
+  }
   const base=orderDownloadFileName(order);
   const entries=[];
   for(const item of captured){const isBike=String(item.fileName).includes('腳踏車');entries.push({name:`${base}_${isBike?'2腳踏車訂購單':'1寢具訂購單'}.png`,blob:await orderCanvasBlob(item.canvas)});}
   entries.sort((a,b)=>a.name.localeCompare(b.name,'zh-Hant'));
   if(entries.length===1) downloadGeneratedBlob(entries[0].name,entries[0].blob);
   else downloadGeneratedBlob(`${base}_訂購單.zip`,await createOrderZip(entries));
+  if(preview && !preview.closed){
+    const imageUrls=entries.map(entry=>({name:entry.name,url:URL.createObjectURL(entry.blob)}));
+    if(imageUrls.length===1){
+      preview.location.replace(imageUrls[0].url);
+    }else{
+      preview.document.open();
+      preview.document.write(`<!doctype html><html><head><meta charset="UTF-8"><title>訂購單 PNG 預覽</title><style>body{margin:0;padding:24px;background:#e9ecef;font-family:"Microsoft JhengHei",sans-serif}section{max-width:1400px;margin:0 auto 28px;background:#fff;padding:16px;box-shadow:0 2px 10px #0002}h2{font-size:18px;margin:0 0 12px;color:#333}img{display:block;width:100%;height:auto}</style></head><body>${imageUrls.map(item=>`<section><h2>${esc(item.name)}</h2><img src="${item.url}" alt="${esc(item.name)}"></section>`).join('')}</body></html>`);
+      preview.document.close();
+    }
+    preview.focus();
+  }
   toast(entries.length>1?'已下載 ZIP：1寢具訂購單、2腳踏車訂購單':'已下載訂購單');
 };
 
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.18.10 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.18.11 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
