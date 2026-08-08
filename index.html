@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.2</title>
+  <title>FOR-e寢具訂購 V4.18.3</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -201,6 +201,20 @@
     .summary-chip.warn{background:#4a3c25;color:#e2bd72;border-color:#b38e4e}
     .summary-chip.bad{background:#4a302b;color:#d98a78;border-color:#a96155}
     .summary-chip.ok{background:#31402f;color:#a8c69f;border-color:#87a979}
+    .orders-list-table th,.orders-list-table td,.record-table th,.record-table td,.accounting-detail-table th,.accounting-detail-table td{text-align:left}
+    .select-col{width:28px!important;min-width:28px!important;max-width:28px!important;padding-left:5px!important;padding-right:5px!important;text-align:left!important}
+    .select-col input[type="checkbox"]{width:14px;height:14px;min-height:0;margin:0;display:block}
+    .person-name{font-size:15px!important;font-weight:900!important;color:#fff0df!important;line-height:1.45!important}
+    .dept-staff-col{width:7.5em!important;white-space:normal!important}
+    .entry-date-col{width:7.2em!important}
+    .nationality-col{width:5.5em!important}
+    .record-table .items-cell{width:27%}
+    .accounting-detail-table .order-person-cell{width:13em!important}
+    .accounting-detail-table .items-cell{width:22%!important}
+    .accounting-detail-table .money-col{width:7.5em!important}
+    .plain-item-line{display:block;line-height:1.5;margin:1px 0;white-space:normal;overflow-wrap:anywhere}
+    .batch-account-meta{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;color:#ead9c5;font-size:13px}
+    .batch-account-meta b{color:#ffd49b}
 
     .account-batch{padding:0;overflow:hidden}
     .account-batch summary{list-style:none;cursor:pointer;padding:14px 16px;border-bottom:1px solid var(--line)}
@@ -450,6 +464,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.18.3', date:'2026/08/08', title:'三頁欄位與會計批次顯示調整', items:['寢具訂購縮小勾選欄，新增部門／海外並放大雇主與工人姓名','訂購紀錄的入境日與國籍分欄，部門／承辦依文字縮窄，品項欄加寬','三個主要清單的欄位內容統一靠左對齊','會計對帳狀況、對帳人及請款日改為每批次只顯示一次','會計對帳金額移至購買品項前，購買品項改為無外框純文字，海外承辦改為部門／承辦']},
   {version:'V4.18.2', date:'2026/08/08', title:'訂購單資訊層級與列表免橫向拖曳', items:['訂購單編號改為次要資訊，不再搶過客戶與工人資料','訂購單客戶名稱與工人名稱統一使用相同字級','主要清單表格改為頁面寬度內自動分配，內容可換行顯示','購買品項允許自然換行，避免撐寬整張表格','會計對帳的海外承辦移至倒數第二欄、操作按鈕之前']},
   {version:'V4.18.1', date:'2026/08/08', title:'列表資訊欄合併與內容自適應欄寬', items:['寢具訂購、訂購紀錄、會計對帳將訂購單號、雇主與工人合併在同一欄','列表改為依內容自動決定欄寬，減少不必要的大面積空白','日期、金額、狀態與操作欄盡量維持精簡寬度，品項欄保留可讀空間','窄螢幕維持表格區域橫向滑動，不影響上方文字導覽與搜尋']},
   {version:'V4.18', date:'2026/08/08', title:'左側功能改為上方文字切換', items:['取消左側功能欄，所有功能改至頁面上方以純文字分頁切換','目前功能以底線與淡色背景標示，不使用 ICON','桌機橫向排列，窄螢幕可左右滑動切換，不擠成多列','保留原有各頁功能、搜尋、資料與列印邏輯']},
@@ -1391,7 +1406,7 @@ function render(){
     <div class="app">
       <header class="app-header">
         <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.2 Supabase 公開共用版</small></div></div>
+          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.3 Supabase 公開共用版</small></div></div>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
@@ -1453,19 +1468,20 @@ function renderOrders(root){
       ${orders.length ? `
       <div class="table-wrap"><table class="adaptive-table orders-list-table">
         <thead><tr>
-          <th class="fit-col center"><input type="checkbox" id="selectAllOrders"></th>
-          <th>訂購單 / 雇主 / 工人</th><th class="fit-col">入境日 / 國籍</th><th class="fit-col">訂購日</th><th>購買品項</th><th>目前狀態</th><th class="right fit-col">訂購金額</th><th class="fit-col">操作</th>
+          <th class="select-col"><input type="checkbox" id="selectAllOrders"></th>
+          <th>訂購單 / 雇主 / 工人</th><th class="dept-staff-col">部門 / 海外</th><th class="fit-col">入境日 / 國籍</th><th class="fit-col">訂購日</th><th>購買品項</th><th>目前狀態</th><th class="fit-col">訂購金額</th><th class="fit-col">操作</th>
         </tr></thead>
         <tbody>
           ${orders.map(o=>`
             <tr>
-              <td class="center fit-col"><input type="checkbox" class="orderCheck" value="${esc(o.id)}"></td>
-              <td class="order-person-cell"><div class="order-no-line"><b>${esc(o.orderNo)}</b></div><div class="employer-line">${esc(o.employer||'-')}</div><div class="worker-line">${o.isStockOrder?'庫存訂購':(isSpecialOnlyOrder(o)?'特殊訂購項目':`工人：${esc(orderWorkers(o).join('、')||'-')}`)}</div></td>
+              <td class="select-col"><input type="checkbox" class="orderCheck" value="${esc(o.id)}"></td>
+              <td class="order-person-cell"><div class="order-no-line"><b>${esc(o.orderNo)}</b></div><div class="employer-line person-name">${esc(o.employer||'-')}</div><div class="worker-line person-name">${o.isStockOrder?'庫存訂購':(isSpecialOnlyOrder(o)?'特殊訂購項目':`工人：${esc(orderWorkers(o).join('、')||'-')}`)}</div></td>
+              <td class="dept-staff-col">${esc(o.dept||'-')}<br><span class="muted">${esc(o.overseasStaff||o.staff||'-')}</span></td>
               <td class="fit-col">${(o.isStockOrder||isSpecialOnlyOrder(o))?'<span class="muted">不適用</span>':`${esc(entryDateDisplay(o)||'-')}<br><span class="muted">${esc(nationalityDisplay(o)||'-')}</span>`}</td>
               <td class="fit-col">${orderRowDateSummary(o)}</td>
               <td class="items-cell"><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
               <td class="current-status-cell status-cell">${statusPills(o)}</td>
-              <td class="right fit-col">${orderAmountBreakdownHTML(o)}</td>
+              <td class="fit-col">${orderAmountBreakdownHTML(o)}</td>
               <td class="fit-col"><div class="actions">
                 <button class="small" data-act="view" data-id="${esc(o.id)}">查看</button>
                 <button class="small" data-act="edit" data-id="${esc(o.id)}" ${can('orderWrite')?'':'disabled'}>修改</button>
@@ -2106,7 +2122,7 @@ function renderRecords(root){
     <div class="toolbar"><div class="toolbar-left"><input id="recordsSearch" type="search" autocomplete="off" spellcheck="false" placeholder="搜尋訂購單 / 部門 / 承辦 / 雇主 / 工人 / 品項" value="${esc(state.filters.records||'')}"><label class="checkline"><input type="checkbox" id="hideClosedRecords" ${hideClosed?'checked':''}><strong>隱藏對帳完成 / 帳務錯誤</strong></label></div><div class="toolbar-right">${exportDateFilterHTML()}<button id="exportRecordsBtn">匯出詳細 CSV</button></div></div>
     <div class="card plain">
       <div class="card-title"><h2>訂購紀錄</h2><span class="subtle">點選訂購單號即可查看；其他操作請進入訂單後使用</span></div>
-      ${orders.length ? `<div class="table-wrap"><table class="record-table adaptive-table"><thead><tr><th>訂購單 / 雇主 / 工人</th><th class="fit-col">部門 / 承辦</th><th class="fit-col">入境日 / 國籍</th><th>訂購／異動品項</th><th>退貨狀況</th><th class="right fit-col">金額</th><th>目前狀態</th></tr></thead><tbody>${orders.map(o=>workerRecordHTML(o)).join('')}</tbody></table></div>` : `<div class="empty">尚無訂購紀錄。</div>`}
+      ${orders.length ? `<div class="table-wrap"><table class="record-table adaptive-table"><thead><tr><th>訂購單 / 雇主 / 工人</th><th class="dept-staff-col">部門 / 承辦</th><th class="entry-date-col">入境日</th><th class="nationality-col">國籍</th><th class="items-cell">訂購／異動品項</th><th>退貨狀況</th><th class="fit-col">金額</th><th>目前狀態</th></tr></thead><tbody>${orders.map(o=>workerRecordHTML(o)).join('')}</tbody></table></div>` : `<div class="empty">尚無訂購紀錄。</div>`}
     </div>`;
   bindStableSearchInput('recordsSearch','records',renderRecords,root);
   $('#hideClosedRecords')?.addEventListener('change',e=>{state.filters.hideClosed=e.target.checked;save();renderRecords(root);});
@@ -2118,12 +2134,13 @@ function workerRecordHTML(o){
   const specialOnly = isSpecialOnlyOrder(o);
   const workerText = o.isStockOrder ? '<span class="muted">庫存訂購</span>' : (specialOnly ? '<span class="muted">特殊訂購項目</span>' : esc((orderWorkers(o).join('、') || o.worker || '-')));
   return `<tr>
-    <td class="order-person-cell"><div class="order-no-line"><button class="link-btn" data-record-act="view" data-id="${esc(o.id)}">${esc(o.orderNo||'-')}</button></div><div class="employer-line">${esc(o.employer||'-')}</div><div class="worker-line">${o.isStockOrder?'庫存訂購':(specialOnly?'特殊訂購項目':`工人：${workerText}`)}</div></td>
-    <td class="fit-col">${esc(o.dept||'-')}<br><span class="muted">${esc(o.staff||'-')}</span></td>
-    <td class="fit-col">${(o.isStockOrder||specialOnly)?'<span class="muted">不適用</span>':`${esc(entryDateDisplay(o)||'-')}<br><span class="pill">${esc(nationalityDisplay(o)||'-')}</span>`}</td>
+    <td class="order-person-cell"><div class="order-no-line"><button class="link-btn" data-record-act="view" data-id="${esc(o.id)}">${esc(o.orderNo||'-')}</button></div><div class="employer-line person-name">${esc(o.employer||'-')}</div><div class="worker-line person-name">${o.isStockOrder?'庫存訂購':(specialOnly?'特殊訂購項目':`工人：${workerText}`)}</div></td>
+    <td class="dept-staff-col">${esc(o.dept||'-')}<br><span class="muted">${esc(o.staff||'-')}</span></td>
+    <td class="entry-date-col">${(o.isStockOrder||specialOnly)?'<span class="muted">不適用</span>':esc(entryDateDisplay(o)||'-')}</td>
+    <td class="nationality-col">${(o.isStockOrder||specialOnly)?'<span class="muted">-</span>':esc(nationalityDisplay(o)||'-')}</td>
     <td class="items-cell"><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
     <td>${returnSummary(o)}</td>
-    <td class="right fit-col">${orderAmountBreakdownHTML(o)}</td>
+    <td class="fit-col">${orderAmountBreakdownHTML(o)}</td>
     <td class="status-cell">${statusPills(o)}</td>
   </tr>`;
 }
@@ -2691,24 +2708,25 @@ function printAccountingBatchDetail(batch){
   if(!orders.length) return toast('此批次沒有可列印的訂單');
   openPrintWindow(accountingBatchPrintHTML(batch,orders));
 }
-function lineSummaryByKey(o, key, cls=''){
-  const rows=orderedLines(o.items||[]).filter(l=>(key==='orderQty' || isGeneralItem(l.code)) && (key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]))>0).map(l=>{ const qty=key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]); return `<span class="summary-chip ${cls}">${esc(itemLabel(l.code))} ${qty}</span>`; });
+function lineSummaryByKey(o, key, cls='', plain=false){
+  const rows=orderedLines(o.items||[]).filter(l=>(key==='orderQty' || isGeneralItem(l.code)) && (key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]))>0).map(l=>{ const qty=key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]); return plain?`<span class="plain-item-line">${esc(itemLabel(l.code))} ${qty}</span>`:`<span class="summary-chip ${cls}">${esc(itemLabel(l.code))} ${qty}</span>`; });
   return rows.length ? rows.join('') : '<span class="muted">-</span>';
 }
 function accountingBatchHTML(batch, orders){
   const total = orders.reduce((s,o)=>s+accountingAmount(o),0);
   const status = orders.every(o=>o.accountingStatus==='對帳完成') ? '對帳完成' : (orders.some(o=>o.accountingStatus==='帳務錯誤') ? '帳務錯誤' : '待對帳');
   const accountBySummary = Array.from(new Set(orders.map(o=>o.accountingBy).filter(Boolean))).join('、') || '-';
+  const billingDateSummary = Array.from(new Set(orders.map(o=>dateSlash(o.billingDate)).filter(Boolean))).join('、') || '-';
   return `<details class="card account-batch" open>
     <summary>
       <div class="card-title" style="margin:0">
-        <div><h2>${esc(batch)}</h2><div class="batch-hero">${orders.length} 筆｜對帳總金額 ${money(total)} <span>狀態 ${esc(status)}｜對帳人 ${esc(accountBySummary)}</span></div><div class="batch-toggle">點此可展開 / 收起批次明細</div></div>
+        <div><h2>${esc(batch)}</h2><div class="batch-hero">${orders.length} 筆｜對帳總金額 ${money(total)}</div><div class="batch-account-meta"><span>對帳狀況：<b>${esc(status)}</b></span><span>對帳人：<b>${esc(accountBySummary)}</b></span><span>請款日：<b>${esc(billingDateSummary)}</b></span></div><div class="batch-toggle">點此可展開 / 收起批次明細</div></div>
         <div class="actions"><button onclick="event.stopPropagation()" class="accounting-action" data-download-batch-detail="${esc(batch)}">下載全部訂單明細</button><button onclick="event.stopPropagation()" data-print-batch-detail="${esc(batch)}">列印批次明細</button><button onclick="event.stopPropagation()" data-error-batch="${esc(batch)}" ${can('accounting')?'':'disabled'}>帳務錯誤通知</button><button onclick="event.stopPropagation()" class="primary" data-confirm-batch="${esc(batch)}" ${can('accounting')?'':'disabled'}>整批確認帳款</button></div>
       </div>
     </summary>
     <div class="batch-body">
       <div class="scroll-x"><table class="accounting-detail-table adaptive-table"><thead><tr>
-        <th>訂購單 / 雇主 / 工人</th><th>支付對象</th><th>訂購日</th><th>請款日</th><th>購買品項</th><th>拿庫存</th><th>退貨入庫</th><th>加買</th><th class="right">原金額</th><th class="right">調整</th><th class="right">對帳金額</th><th>狀態</th><th>對帳人</th><th>備註 / 錯誤</th><th>海外承辦</th><th>操作</th>
+        <th>訂購單 / 雇主 / 工人</th><th>支付對象</th><th>訂購日</th><th class="money-col">對帳金額</th><th class="items-cell">購買品項</th><th>拿庫存</th><th>退貨入庫</th><th>加買</th><th>原金額</th><th>調整</th><th>備註 / 錯誤</th><th class="dept-staff-col">部門 / 承辦</th><th>操作</th>
       </tr></thead><tbody>
         ${orders.map(o=>accountingOrderRow(o)).join('')}
       </tbody></table></div>
@@ -2718,21 +2736,18 @@ function accountingBatchHTML(batch, orders){
 function accountingOrderRow(o){
   const err=o.errorNotice?`<div><span class="summary-chip bad">${esc(o.errorNotice.type)}｜${esc(o.errorNotice.note||'')}</span></div>`:'';
   return `<tr>
-    <td class="order-person-cell"><div class="order-no-line"><button class="link-btn" data-account-view="${esc(o.id)}">${esc(o.orderNo)}</button></div><div class="employer-line">${esc(o.employer||'-')}</div><div class="worker-line">${o.isStockOrder?'庫存訂購':(isSpecialOnlyOrder(o)?'特殊訂購項目':`工人：${esc(orderWorkers(o).join('、')||'-')}`)}</div></td>
+    <td class="order-person-cell"><div class="order-no-line"><button class="link-btn" data-account-view="${esc(o.id)}">${esc(o.orderNo)}</button></div><div class="employer-line person-name">${esc(o.employer||'-')}</div><div class="worker-line person-name">${o.isStockOrder?'庫存訂購':(isSpecialOnlyOrder(o)?'特殊訂購項目':`工人：${esc(orderWorkers(o).join('、')||'-')}`)}</div></td>
     <td class="fit-col">${esc(paymentTargetLabel(effectivePaymentTarget(o)))}</td>
     <td class="fit-col">${esc(dateSlash(o.orderDate)||'-')}</td>
-    <td class="fit-col">${esc(dateSlash(o.billingDate)||'-')}</td>
-    <td class="items-cell">${lineSummaryByKey(o,'orderQty')}</td>
+    <td class="money-col"><b>${money(accountingAmount(o))}</b></td>
+    <td class="items-cell">${lineSummaryByKey(o,'orderQty','',true)}</td>
     <td>${lineSummaryByKey(o,'useStockQty','warn')}</td>
     <td>${lineSummaryByKey(o,'returnQty','bad')}</td>
     <td>${lineSummaryByKey(o,'addQty','ok')}</td>
-    <td class="right fit-col">${orderAmountBreakdownHTML(o)}</td>
-    <td class="right fit-col">${num(o.accountingAdjust||0) ? money(o.accountingAdjust) : '<span class="muted">-</span>'}</td>
-    <td class="right fit-col"><b>${money(accountingAmount(o))}</b></td>
-    <td class="status-cell">${esc(o.accountingStatus||'待對帳')}</td>
-    <td class="fit-col">${o.accountingBy?esc(o.accountingBy):'<span class="muted">-</span>'}</td>
+    <td class="fit-col">${orderAmountBreakdownHTML(o)}</td>
+    <td class="fit-col">${num(o.accountingAdjust||0) ? money(o.accountingAdjust) : '<span class="muted">-</span>'}</td>
     <td>${o.accountingNote?esc(o.accountingNote):'<span class="muted">無</span>'}${err}</td>
-    <td>${esc(o.overseasStaff || o.staff || '-')}</td>
+    <td class="dept-staff-col">${esc(o.dept||'-')}<br><span class="muted">${esc(o.overseasStaff || o.staff || '-')}</span></td>
     <td class="fit-col"><div class="actions">
       <button class="small" data-account-edit="${esc(o.id)}" ${can('accounting')?'':'disabled'}>修改</button>
       <button class="small" data-account-adjust="${esc(o.id)}" ${can('accounting')?'':'disabled'}>調整</button>
