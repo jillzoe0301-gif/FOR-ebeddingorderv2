@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.11</title>
+  <title>FOR-e寢具訂購 V4.18.12</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -179,6 +179,8 @@
     .adaptive-table{width:100%;min-width:0;table-layout:fixed}
     .adaptive-table th,.adaptive-table td{width:auto;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
     .adaptive-table .fit-col{white-space:normal;width:auto}
+    .orders-list-table .entry-nationality-col{width:10em!important;min-width:10em!important;max-width:10em!important;white-space:nowrap!important}
+    .orders-list-table .order-date-compact-col{width:8em!important;min-width:8em!important;max-width:8em!important;white-space:nowrap!important}
     .adaptive-table .order-person-cell{min-width:0;max-width:none;white-space:normal}
     .adaptive-table .order-person-cell .order-no-line{margin-bottom:4px}
     .adaptive-table .order-person-cell .employer-line{font-weight:850;line-height:1.35}
@@ -492,6 +494,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.18.12', date:'2026/08/08', title:'寢具訂購日期與國籍欄寬調整', items:['寢具訂購的入境日／國籍欄縮為文字外多約兩個字寬','訂購日欄縮為日期文字外多約兩個字寬']},
   {version:'V4.18.11', date:'2026/08/08', title:'訂購單預覽與姓名去重修正', items:['下載訂購單時先建立預覽頁，避免 PNG 產生後才開啟而被瀏覽器阻擋','同一工人姓名在訂購單上只顯示一次，品項與數量仍完整保留']},
   {version:'V4.18.10', date:'2026/08/08', title:'每位工人獨立簽收單與下載後開啟', items:['一鍵列印改為每位工人各自一張簽收單','訂購單 PNG 下載完成後自動開啟預覽']},
   {version:'V4.18.9', date:'2026/08/08', title:'目前狀況欄位精準縮寬', items:['寢具訂購與訂購紀錄的目前狀況表頭及內容同步固定為文字寬度','移除表格剩餘空間對目前狀況欄位的拉伸']},
@@ -1446,7 +1449,7 @@ function render(){
     <div class="app">
       <header class="app-header">
         <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.11 Supabase 公開共用版</small></div></div>
+          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.12 Supabase 公開共用版</small></div></div>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
@@ -1509,7 +1512,7 @@ function renderOrders(root){
       <div class="table-wrap"><table class="adaptive-table orders-list-table">
         <thead><tr>
           <th class="select-col"><input type="checkbox" id="selectAllOrders"></th>
-          <th class="dept-staff-col">部門 / 承辦</th><th class="current-status-col">目前狀況</th><th>訂購單 / 雇主 / 工人</th><th class="fit-col">入境日 / 國籍</th><th class="fit-col">訂購日</th><th>購買品項</th><th class="fit-col">訂購金額</th><th class="fit-col">操作</th>
+          <th class="dept-staff-col">部門 / 承辦</th><th class="current-status-col">目前狀況</th><th>訂購單 / 雇主 / 工人</th><th class="entry-nationality-col">入境日 / 國籍</th><th class="order-date-compact-col">訂購日</th><th>購買品項</th><th class="fit-col">訂購金額</th><th class="fit-col">操作</th>
         </tr></thead>
         <tbody>
           ${orders.map(o=>`
@@ -1518,8 +1521,8 @@ function renderOrders(root){
               <td class="dept-staff-col">${esc(o.dept||'-')}<br><span class="muted">${esc(o.overseasStaff||o.staff||'-')}</span></td>
               <td class="current-status-cell status-cell">${statusPills(o)}</td>
               <td class="order-person-cell"><div class="order-no-line"><b>${esc(o.orderNo)}</b></div><div class="employer-line person-name">${esc(o.employer||'-')}</div><div class="worker-line person-name">${o.isStockOrder?'庫存訂購':(isSpecialOnlyOrder(o)?'特殊訂購項目':`工人：${esc(orderWorkers(o).join('、')||'-')}`)}</div></td>
-              <td class="fit-col">${(o.isStockOrder||isSpecialOnlyOrder(o))?'<span class="muted">不適用</span>':`${esc(entryDateDisplay(o)||'-')}<br><span class="muted">${esc(nationalityDisplay(o)||'-')}</span>`}</td>
-              <td class="fit-col">${orderRowDateSummary(o)}</td>
+              <td class="entry-nationality-col">${(o.isStockOrder||isSpecialOnlyOrder(o))?'<span class="muted">不適用</span>':`${esc(entryDateDisplay(o)||'-')}<br><span class="muted">${esc(nationalityDisplay(o)||'-')}</span>`}</td>
+              <td class="order-date-compact-col">${orderRowDateSummary(o)}</td>
               <td class="items-cell"><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
               <td class="fit-col prominent-amount">${orderAmountBreakdownHTML(o)}</td>
               <td class="fit-col"><div class="actions">
@@ -3001,9 +3004,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.11｜訂購單預覽與姓名去重修正</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.12｜寢具訂購日期與國籍欄寬調整</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.11 修正下載訂購單後 PNG 預覽未開啟，並讓同一工人姓名在訂購單上只顯示一次。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.12 將寢具訂購的入境日／國籍與訂購日欄位縮為文字外多約兩個字寬。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -3896,7 +3899,7 @@ downloadOrderImage=async function(orderId){
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.18.11 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.18.12 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
