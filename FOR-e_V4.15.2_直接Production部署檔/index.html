@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.1</title>
+  <title>FOR-e寢具訂購 V4.15.2</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -52,22 +52,17 @@
     input[readonly]{background:#3a322b;color:#c9bba9}
     textarea{min-height:62px;resize:vertical;line-height:1.45}
     label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:650}
-    .app{display:block;min-height:100vh;width:100%;max-width:100%;overflow-x:hidden}
-    .app-header{position:sticky;top:0;z-index:12;background:rgba(47,39,32,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(20,14,10,.2)}
-    .brandbar{min-height:66px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:8px 24px}
-    .brand{display:flex;align-items:center;gap:10px;color:#fff2e0;min-width:0}
-    .brand img{width:46px;height:46px;flex:0 0 46px;border-radius:12px;object-fit:cover;object-position:center;border:0;box-shadow:0 6px 16px rgba(22,16,12,.25);background:transparent}
+    .app{display:flex;min-height:100vh;width:100%;max-width:100%;overflow-x:hidden}
+    .sidebar{width:238px;background:rgba(47,39,32,.94);border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh;overflow:auto;backdrop-filter:blur(8px)}
+    .brand{display:flex;align-items:center;gap:11px;margin:4px 5px 20px;color:#fff2e0;min-width:0}
+    .brand img{width:54px;height:54px;flex:0 0 54px;border-radius:14px;object-fit:cover;object-position:center;border:0;box-shadow:0 8px 20px rgba(22,16,12,.28);background:transparent}
     .brand-copy{min-width:0}
-    .brand strong{display:block;font-size:17px;font-weight:900;letter-spacing:.2px;line-height:1.2;white-space:nowrap}
-    .brand small{display:block;font-size:10px;color:var(--muted);font-weight:500;margin-top:3px;line-height:1.3;white-space:nowrap}
-    .top-nav-wrap{border-top:1px solid rgba(90,76,64,.72);overflow:hidden}
-    .nav{display:flex;align-items:stretch;gap:4px;overflow-x:auto;overflow-y:hidden;padding:0 20px;scrollbar-width:thin;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
-    .nav button{flex:0 0 auto;position:relative;border:0;border-radius:0;padding:13px 16px 12px;background:transparent;box-shadow:none;color:#d9cbbb;font-size:14px;font-weight:750;text-align:center;white-space:nowrap}
-    .nav button:hover{background:rgba(196,151,103,.09);color:#fff1df}
-    .nav button.active{background:rgba(196,151,103,.14);color:#ffd6a4;font-weight:900}
-    .nav button.active::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:3px;border-radius:999px 999px 0 0;background:#d6a66f}
-    .main{min-width:0;width:100%;max-width:100%;overflow-x:hidden}
-    .topbar{display:none}
+    .brand strong{display:block;font-size:18px;font-weight:900;letter-spacing:.25px;line-height:1.25;white-space:nowrap}
+    .brand small{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:4px;line-height:1.35}
+    .nav button{width:100%;text-align:left;margin:5px 0;border:1px solid transparent;border-radius:14px;padding:12px 13px;background:transparent;box-shadow:none;color:#ddcfbd}
+    .nav button.active{background:linear-gradient(180deg,#c49767,#8b613f);color:#211813;border-color:#ddb789;font-weight:900}
+    .main{flex:1;min-width:0;max-width:100%;overflow-x:hidden}
+    .topbar{height:68px;background:rgba(52,44,37,.9);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:5;backdrop-filter:blur(10px)}
     .topbar h1{font-size:21px;margin:0;color:#fff0df}
     .rolebar{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px}
     .rolebar select{width:125px;padding:7px 9px}
@@ -175,19 +170,10 @@
     .form-row-wide{grid-column:1/-1}
     .delivery-long{min-width:260px;white-space:normal;line-height:1.5}
     .record-table td{vertical-align:middle}
-    .adaptive-table{width:max-content;min-width:100%;table-layout:auto}
-    .adaptive-table th,.adaptive-table td{width:auto}
-    .adaptive-table .fit-col{white-space:nowrap;width:1%}
-    .adaptive-table .order-person-cell{min-width:210px;max-width:310px;white-space:normal}
-    .adaptive-table .order-person-cell .order-no-line{margin-bottom:4px}
-    .adaptive-table .order-person-cell .employer-line{font-weight:850;line-height:1.35}
-    .adaptive-table .order-person-cell .worker-line{margin-top:3px;color:var(--muted);font-size:12px;line-height:1.45;white-space:normal;overflow-wrap:anywhere}
-    .adaptive-table .items-cell{min-width:190px;max-width:360px;white-space:normal}
-    .adaptive-table .status-cell{min-width:110px;max-width:210px;white-space:normal}
     .compact-items{max-width:none;white-space:normal;overflow:visible;text-overflow:clip;display:block;line-height:1.55}
     .kind-badge{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:12px;background:#4a3c25;color:#f0d5ac;margin-top:3px}
     .order-row-summary{line-height:1.65;color:#d8c7b3;white-space:nowrap}
-    .accounting-detail-table{min-width:100%}
+    .accounting-detail-table{min-width:1320px}
     .accounting-detail-table td{vertical-align:middle}
     .summary-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;background:#42382f;color:#eadbca;font-size:12px;padding:3px 8px;margin:2px 3px 2px 0;white-space:nowrap}
     .summary-chip.warn{background:#4a3c25;color:#e2bd72;border-color:#b38e4e}
@@ -268,8 +254,8 @@
     .danger-panel{border-color:#8d554d;background:rgba(115,55,47,.17)}
     .danger-panel h3{color:#efad9f}
     .settings-anchor-spacer{height:1px}
-    @media(max-width:1100px){.grid,.grid.six{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}.brandbar{padding-left:18px;padding-right:18px}.nav{padding-left:14px;padding-right:14px}.settings-backup-grid{grid-template-columns:1fr}}
-    @media(max-width:760px){.brandbar{min-height:58px;padding:7px 14px;gap:10px}.brand img{width:40px;height:40px;flex-basis:40px}.brand strong{font-size:15px}.brand small{font-size:9px}.rolebar{font-size:11px;gap:6px}.version-badge{padding:5px 8px;font-size:10px}.nav{padding:0 8px;gap:0}.nav button{padding:12px 13px 11px;font-size:13px}.nav button.active::after{left:11px;right:11px}.content{padding:14px}.grid,.grid.two,.grid.three,.grid.six{grid-template-columns:1fr}.stat-grid{grid-template-columns:1fr}.record-head{display:block}.record-total{text-align:left;margin-top:10px}.record-meta{grid-template-columns:1fr}.table-wrap{overflow:auto;overscroll-behavior:contain}.toolbar input,.toolbar select{width:100%}.toolbar-left,.toolbar-right{width:100%}.toolbar-left>*{flex:1 1 180px}.settings-intro{display:block}.settings-sync-card{margin-top:14px;min-width:0}.settings-form-grid{grid-template-columns:1fr}.settings-section-head{display:block}.settings-section-head>button{margin-top:12px}.settings-actions{justify-content:stretch}.settings-actions button{flex:1}.settings-nav a{flex:1 1 145px;justify-content:center}}
+    @media(max-width:1100px){.grid,.grid.six{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}.sidebar{width:210px}.settings-backup-grid{grid-template-columns:1fr}}
+    @media(max-width:760px){.app{display:block}.sidebar{position:relative;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line)}.brand{justify-content:center}.nav{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}.topbar{position:relative;top:auto}.content{padding:14px}.grid,.grid.two,.grid.three,.grid.six{grid-template-columns:1fr}.stat-grid{grid-template-columns:1fr}.record-head{display:block}.record-total{text-align:left;margin-top:10px}.record-meta{grid-template-columns:1fr}.table-wrap{overflow:auto;overscroll-behavior:contain}.toolbar input,.toolbar select{width:100%}.toolbar-left,.toolbar-right{width:100%}.toolbar-left>*{flex:1 1 180px}.settings-intro{display:block}.settings-sync-card{margin-top:14px;min-width:0}.settings-form-grid{grid-template-columns:1fr}.settings-section-head{display:block}.settings-section-head>button{margin-top:12px}.settings-actions{justify-content:stretch}.settings-actions button{flex:1}.settings-nav a{flex:1 1 145px;justify-content:center}}
     .auth-shell{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 20% 0%,#3b3027 0,#241f1a 42%,#201c18 100%)}
     .auth-card{width:min(440px,100%);background:linear-gradient(180deg,rgba(58,49,41,.99),rgba(47,40,34,.99));border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:28px}
     .auth-card h1{margin:0 0 7px;color:#fff0df;font-size:26px}.auth-card .auth-subtitle{color:var(--muted);line-height:1.6;margin-bottom:22px}
@@ -282,7 +268,7 @@
     .sync-dot.error{background:#d98a78;box-shadow:0 0 0 3px rgba(217,138,120,.12)}
     .sync-label{color:var(--muted);font-size:12px;white-space:nowrap}
     .system-message{padding:36px;text-align:center;color:var(--muted)}
-    @media print{.app-header,.topbar,.toolbar,.no-print{display:none!important}.content{padding:0}.card{box-shadow:none;border:0;background:#fff;color:#111}}
+    @media print{.sidebar,.topbar,.toolbar,.no-print{display:none!important}.content{padding:0}.card{box-shadow:none;border:0;background:#fff;color:#111}}
   
   </style>
 </head>
@@ -442,12 +428,6 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
-  {version:'V4.18.1', date:'2026/08/08', title:'列表資訊欄合併與內容自適應欄寬', items:['寢具訂購、訂購紀錄、會計對帳將訂購單號、雇主與工人合併在同一欄','列表改為依內容自動決定欄寬，減少不必要的大面積空白','日期、金額、狀態與操作欄盡量維持精簡寬度，品項欄保留可讀空間','窄螢幕維持表格區域橫向滑動，不影響上方文字導覽與搜尋']},
-  {version:'V4.18', date:'2026/08/08', title:'左側功能改為上方文字切換', items:['取消左側功能欄，所有功能改至頁面上方以純文字分頁切換','目前功能以底線與淡色背景標示，不使用 ICON','桌機橫向排列，窄螢幕可左右滑動切換，不擠成多列','保留原有各頁功能、搜尋、資料與列印邏輯']},
-  {version:'V4.17.1', date:'2026/08/06', title:'最上排搜尋欄輸入與中文選字修正', items:['修正寢具訂購最上排搜尋欄輸入後立即重建整個畫面，造成游標與焦點消失的問題','中文注音組字期間不執行搜尋，完成選字後立即以最終文字搜尋','英文、數字、貼上、清除與 Enter 均可正常搜尋，搜尋後會保留游標位置','訂購紀錄與會計對帳最上排搜尋欄同步套用相同修正']},
-  {version:'V4.17', date:'2026/07/31', title:'會計批次可列印明細與廠商含稅價', items:['每一個會計對帳批次新增 A4 橫式列印明細，依雇主、訂購單、工人與品項逐項顯示','批次 CSV 維持品項橫向，改為每位工人各一列，清楚對應各工人的訂購項目、數量與金額','資料設定中的廠商訂購價明確標示為未稅，新增依 5% 自動計算的含稅價欄位','含稅價僅供對照，既有訂單與歷史資料不受影響']},
-  {version:'V4.16.1', date:'2026/07/30', title:'批次明細橫向品項與支付對象簡化', items:['會計批次明細新增訂購日與支付對象','同一筆訂單固定一列，訂購品項改為橫向欄位','每個品項分別顯示數量與金額，最右側保留原金額、調整及對帳金額','會計對帳畫面的支付對象只顯示簡潔結果，不再附帶訂購品項明細']},
-  {version:'V4.16', date:'2026/07/30', title:'會計批次全部訂單明細下載', items:['每一個會計對帳批次新增橫向「下載全部訂單明細」','同一批次整合為單一 CSV，同一訂單一列並將品項橫向展開','明細包含訂購單號、國籍、入境日、品項、數量、單價與金額','會計調整另列一筆，最下方顯示整批對帳總金額']},
   {version:'V4.15.2', date:'2026/07/30', title:'腳踏車廠商地址格線與列印空白頁修正', items:['廠商地址欄位增加高度並改為欄內自動換行，下載圖片與列印版皆不再超出格線','一鍵列印移除腳踏車頁重複的強制換頁規則，避免寢具單與腳踏車單之間產生空白頁','合併列印時取消腳踏車單內層 A4 最小高度，避免頁面高度重複計算','列印順序維持寢具訂購單、腳踏車訂購單、四國語言綜合簽收單']},
   {version:'V4.15.1', date:'2026/07/30', title:'腳踏車訂購單格線與資訊欄位修正', items:['表格採固定欄寬與完整換行，所有內容固定於格線內','品名欄放大，品名與規格分欄清楚顯示','送貨地址移到送貨資訊上方，送達時間移至下方與收貨聯絡人並列','品項表格移除工人姓名、國籍與入境日，改依腳踏車品項彙總數量','客戶名稱、訂購工人、國籍與入境日整合在同一個資訊欄位']},
   {version:'V4.15', date:'2026/07/30', title:'品項隱藏、四國翻譯與腳踏車送貨資訊', items:['資料設定中的停用品項預設隱藏，可切換顯示；歷史訂單仍完整保留','四國簽收單改以品項名稱對應翻譯，補齊 T 型衣櫥並可在品項設定中修改四國翻譯','腳踏車訂購單縮小廠商資訊、放大送貨資訊','腳踏車訂購單可另行設定送達日期時間、收貨聯絡人與送貨地址，未填時沿用一般訂單送貨資料']},
@@ -1106,7 +1086,6 @@ function $all(sel, root=document){ return Array.from(root.querySelectorAll(sel))
 function esc(v){ return String(v ?? '').replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
 function num(v){ const n = Number(v); return isFinite(n) ? n : 0; }
 function money(v){ return 'NT$' + Math.round(num(v)).toLocaleString('zh-TW'); }
-function vendorTaxIncludedPrice(v){ return Math.round(num(v)*1.05); }
 function today(){ const d=new Date(); return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0'); }
 function todayInput(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dateSlash(v){ if(!v) return ''; return String(v).replaceAll('-','/'); }
@@ -1312,67 +1291,6 @@ function toast(msg){
   setTimeout(()=>t.classList.remove('show'),2200);
 }
 
-function bindStableSearchInput(inputId, filterKey, renderFn, root){
-  const input=$('#'+inputId);
-  if(!input) return;
-  let isComposing=false;
-  let renderTimer=null;
-  let skipNextInput=false;
-  const runSearch=(immediate=false)=>{
-    if(isComposing) return;
-    const value=input.value;
-    state.filters[filterKey]=value;
-    clearTimeout(renderTimer);
-    const execute=()=>{
-      if(isComposing) return;
-      const start=input.selectionStart ?? value.length;
-      const end=input.selectionEnd ?? start;
-      save();
-      renderFn(root);
-      requestAnimationFrame(()=>{
-        const next=$('#'+inputId);
-        if(!next) return;
-        next.focus({preventScroll:true});
-        const length=next.value.length;
-        try{ next.setSelectionRange(Math.min(start,length),Math.min(end,length)); }catch(_error){}
-      });
-    };
-    if(immediate) execute();
-    else renderTimer=setTimeout(execute,180);
-  };
-  input.addEventListener('compositionstart',()=>{
-    isComposing=true;
-    clearTimeout(renderTimer);
-  });
-  input.addEventListener('compositionupdate',()=>{ isComposing=true; });
-  input.addEventListener('compositionend',()=>{
-    isComposing=false;
-    skipNextInput=true;
-    runSearch(true);
-    setTimeout(()=>{ skipNextInput=false; },0);
-  });
-  input.addEventListener('input',event=>{
-    if(isComposing || event.isComposing || skipNextInput) return;
-    runSearch(false);
-  });
-  input.addEventListener('keydown',event=>{
-    if(event.key==='Enter'){
-      isComposing=false;
-      runSearch(true);
-    }else if(event.key==='Escape'){
-      event.currentTarget.value='';
-      isComposing=false;
-      runSearch(true);
-    }
-  });
-  input.addEventListener('paste',()=>{ isComposing=false; });
-  input.addEventListener('blur',()=>{
-    isComposing=false;
-    state.filters[filterKey]=input.value;
-    save();
-  });
-}
-
 function pageAllowed(){ return true; }
 function render(){
   const visiblePages = pages;
@@ -1380,26 +1298,24 @@ function render(){
   const page = visiblePages.find(p=>p.id===state.currentPage) || visiblePages[0];
   $('#app').innerHTML = `
     <div class="app">
-      <header class="app-header">
-        <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.1 Supabase 公開共用版</small></div></div>
+      <aside class="sidebar">
+        <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.15.2 Supabase 公開共用版</small></div></div>
+        <nav class="nav">
+          ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}">${p.label}</button>`).join('')}
+        </nav>
+      </aside>
+      <main class="main">
+        <div class="topbar">
+          <h1>${page.label}</h1>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
           </div>
         </div>
-        <div class="top-nav-wrap">
-          <nav class="nav" aria-label="功能切換">
-            ${visiblePages.map(p=>`<button class="${p.id===state.currentPage?'active':''}" data-page="${p.id}" aria-current="${p.id===state.currentPage?'page':'false'}">${p.label}</button>`).join('')}
-          </nav>
-        </div>
-      </header>
-      <main class="main">
         <section class="content" id="content"></section>
       </main>
     </div>`;
   $all('[data-page]').forEach(btn=>btn.addEventListener('click',()=>{state.currentPage=btn.dataset.page;save();render();}));
-  const activeNav=$('[data-page].active'); if(activeNav) requestAnimationFrame(()=>activeNav.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'}));
   renderPage();
 }
 function renderPage(){
@@ -1429,7 +1345,7 @@ function renderOrders(root){
     <div class="toolbar">
       <div class="toolbar-left">
         <button class="primary" id="newOrderBtn" ${can('orderWrite')?'':'disabled'}>＋新增訂購</button>
-        <input id="orderSearch" type="search" autocomplete="off" spellcheck="false" placeholder="搜尋訂購單 / 雇主 / 工人 / 品項" value="${esc(state.filters.orders||'')}">
+        <input id="orderSearch" placeholder="搜尋訂購單 / 雇主 / 工人 / 品項" value="${esc(state.filters.orders||'')}">
         <select id="statusFilter"><option>全部</option>${statusOptions.map(s=>`<option ${state.filters.status===s?'selected':''}>${s}</option>`).join('')}</select>
       </div>
       <div class="toolbar-right">
@@ -1442,22 +1358,23 @@ function renderOrders(root){
     <div class="card plain">
       <div class="card-title"><h2>訂購資料</h2><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end"><span class="subtle">已轉入會計對帳的資料會從此清單移除；完整狀態請點「查看」</span><span class="version-badge">更新日期 ${esc(versionNotes[0].date)}｜${esc(versionNotes[0].version)}</span></div></div>
       ${orders.length ? `
-      <div class="table-wrap"><table class="adaptive-table orders-list-table">
+      <div class="table-wrap"><table>
         <thead><tr>
-          <th class="fit-col center"><input type="checkbox" id="selectAllOrders"></th>
-          <th>訂購單 / 雇主 / 工人</th><th class="fit-col">入境日 / 國籍</th><th class="fit-col">訂購日</th><th>購買品項</th><th>目前狀態</th><th class="right fit-col">訂購金額</th><th class="fit-col">操作</th>
+          <th class="nowrap center"><input type="checkbox" id="selectAllOrders"></th>
+          <th>訂購單</th><th>雇主 / 對象</th><th class="nowrap">入境日</th><th class="nowrap">訂購日</th><th>購買品項</th><th class="nowrap">目前狀態</th><th class="right nowrap">訂購金額</th><th class="nowrap">操作</th>
         </tr></thead>
         <tbody>
           ${orders.map(o=>`
             <tr>
-              <td class="center fit-col"><input type="checkbox" class="orderCheck" value="${esc(o.id)}"></td>
-              <td class="order-person-cell"><div class="order-no-line"><b>${esc(o.orderNo)}</b></div><div class="employer-line">${esc(o.employer||'-')}</div><div class="worker-line">${o.isStockOrder?'庫存訂購':(isSpecialOnlyOrder(o)?'特殊訂購項目':`工人：${esc(orderWorkers(o).join('、')||'-')}`)}</div></td>
-              <td class="fit-col">${(o.isStockOrder||isSpecialOnlyOrder(o))?'<span class="muted">不適用</span>':`${esc(entryDateDisplay(o)||'-')}<br><span class="muted">${esc(nationalityDisplay(o)||'-')}</span>`}</td>
-              <td class="fit-col">${orderRowDateSummary(o)}</td>
-              <td class="items-cell"><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
-              <td class="current-status-cell status-cell">${statusPills(o)}</td>
-              <td class="right fit-col">${orderAmountBreakdownHTML(o)}</td>
-              <td class="fit-col"><div class="actions">
+              <td class="center"><input type="checkbox" class="orderCheck" value="${esc(o.id)}"></td>
+              <td><b>${esc(o.orderNo)}</b></td>
+              <td><b>${esc(o.employer||'-')}</b><br>${o.isStockOrder?'<span class="muted">庫存訂購</span>':esc(orderWorkers(o).join('、')||'-')}</td>
+              <td>${(o.isStockOrder||isSpecialOnlyOrder(o))?'<span class="muted">不適用</span>':`${esc(entryDateDisplay(o)||'-')}<br><span class="muted">${esc(nationalityDisplay(o)||'-')}</span>`}</td>
+              <td>${orderRowDateSummary(o)}</td>
+              <td><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
+              <td class="current-status-cell">${statusPills(o)}</td>
+              <td class="right nowrap">${orderAmountBreakdownHTML(o)}</td>
+              <td class="nowrap"><div class="actions">
                 <button class="small" data-act="view" data-id="${esc(o.id)}">查看</button>
                 <button class="small" data-act="edit" data-id="${esc(o.id)}" ${can('orderWrite')?'':'disabled'}>修改</button>
                 <button class="small" data-act="image" data-id="${esc(o.id)}" ${can('orderPrint')?'':'disabled'}>${downloadOrderButtonLabel(o)}</button>
@@ -1470,7 +1387,7 @@ function renderOrders(root){
       </table></div>` : `<div class="empty">目前沒有訂購資料，請先新增第一筆。</div>`}
     </div>`;
   $('#newOrderBtn')?.addEventListener('click',()=>openOrderModal());
-  bindStableSearchInput('orderSearch','orders',renderOrders,root);
+  $('#orderSearch')?.addEventListener('input', e=>{state.filters.orders=e.target.value;save();renderOrders(root);});
   $('#statusFilter')?.addEventListener('change', e=>{state.filters.status=e.target.value;save();renderOrders(root);});
   $('#selectAllOrders')?.addEventListener('change', e=>$all('.orderCheck').forEach(c=>c.checked=e.target.checked));
   $('#applyReceiveBtn')?.addEventListener('click', applyBatchReceiveDate);
@@ -2094,12 +2011,12 @@ function renderRecords(root){
     return hit && show;
   }).sort((a,b)=>String(b.orderDate||'').localeCompare(String(a.orderDate||'')) || String(b.orderNo||'').localeCompare(String(a.orderNo||'')));
   root.innerHTML = `
-    <div class="toolbar"><div class="toolbar-left"><input id="recordsSearch" type="search" autocomplete="off" spellcheck="false" placeholder="搜尋訂購單 / 部門 / 承辦 / 雇主 / 工人 / 品項" value="${esc(state.filters.records||'')}"><label class="checkline"><input type="checkbox" id="hideClosedRecords" ${hideClosed?'checked':''}><strong>隱藏對帳完成 / 帳務錯誤</strong></label></div><div class="toolbar-right">${exportDateFilterHTML()}<button id="exportRecordsBtn">匯出詳細 CSV</button></div></div>
+    <div class="toolbar"><div class="toolbar-left"><input id="recordsSearch" placeholder="搜尋訂購單 / 部門 / 承辦 / 雇主 / 工人 / 品項" value="${esc(state.filters.records||'')}"><label class="checkline"><input type="checkbox" id="hideClosedRecords" ${hideClosed?'checked':''}><strong>隱藏對帳完成 / 帳務錯誤</strong></label></div><div class="toolbar-right">${exportDateFilterHTML()}<button id="exportRecordsBtn">匯出詳細 CSV</button></div></div>
     <div class="card plain">
       <div class="card-title"><h2>訂購紀錄</h2><span class="subtle">點選訂購單號即可查看；其他操作請進入訂單後使用</span></div>
-      ${orders.length ? `<div class="table-wrap"><table class="record-table adaptive-table"><thead><tr><th>訂購單 / 雇主 / 工人</th><th class="fit-col">部門 / 承辦</th><th class="fit-col">入境日 / 國籍</th><th>訂購／異動品項</th><th>退貨狀況</th><th class="right fit-col">金額</th><th>目前狀態</th></tr></thead><tbody>${orders.map(o=>workerRecordHTML(o)).join('')}</tbody></table></div>` : `<div class="empty">尚無訂購紀錄。</div>`}
+      ${orders.length ? `<div class="table-wrap"><table class="record-table"><thead><tr><th>訂購單</th><th>部門 / 承辦</th><th>雇主 / 工人</th><th>入境日 / 國籍</th><th>訂購／異動品項</th><th>退貨狀況</th><th class="right">金額</th><th>目前狀態</th></tr></thead><tbody>${orders.map(o=>workerRecordHTML(o)).join('')}</tbody></table></div>` : `<div class="empty">尚無訂購紀錄。</div>`}
     </div>`;
-  bindStableSearchInput('recordsSearch','records',renderRecords,root);
+  $('#recordsSearch')?.addEventListener('input',e=>{state.filters.records=e.target.value;save();renderRecords(root);});
   $('#hideClosedRecords')?.addEventListener('change',e=>{state.filters.hideClosed=e.target.checked;save();renderRecords(root);});
   $('#exportRecordsBtn')?.addEventListener('click', exportRecordsCSV);
   bindExportDateFilter(renderRecords, root);
@@ -2109,13 +2026,14 @@ function workerRecordHTML(o){
   const specialOnly = isSpecialOnlyOrder(o);
   const workerText = o.isStockOrder ? '<span class="muted">庫存訂購</span>' : (specialOnly ? '<span class="muted">特殊訂購項目</span>' : esc((orderWorkers(o).join('、') || o.worker || '-')));
   return `<tr>
-    <td class="order-person-cell"><div class="order-no-line"><button class="link-btn" data-record-act="view" data-id="${esc(o.id)}">${esc(o.orderNo||'-')}</button></div><div class="employer-line">${esc(o.employer||'-')}</div><div class="worker-line">${o.isStockOrder?'庫存訂購':(specialOnly?'特殊訂購項目':`工人：${workerText}`)}</div></td>
-    <td class="fit-col">${esc(o.dept||'-')}<br><span class="muted">${esc(o.staff||'-')}</span></td>
-    <td class="fit-col">${(o.isStockOrder||specialOnly)?'<span class="muted">不適用</span>':`${esc(entryDateDisplay(o)||'-')}<br><span class="pill">${esc(nationalityDisplay(o)||'-')}</span>`}</td>
-    <td class="items-cell"><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
+    <td><button class="link-btn" data-record-act="view" data-id="${esc(o.id)}">${esc(o.orderNo||'-')}</button></td>
+    <td>${esc(o.dept||'-')}<br><span class="muted">${esc(o.staff||'-')}</span></td>
+    <td><b>${esc(o.employer||'-')}</b><br>${workerText}</td>
+    <td>${(o.isStockOrder||specialOnly)?'<span class="muted">不適用</span>':`${esc(entryDateDisplay(o)||'-')}<br><span class="pill">${esc(nationalityDisplay(o)||'-')}</span>`}</td>
+    <td><div class="compact-items">${purchaseItemsHTML(o)}</div></td>
     <td>${returnSummary(o)}</td>
-    <td class="right fit-col">${orderAmountBreakdownHTML(o)}</td>
-    <td class="status-cell">${statusPills(o)}</td>
+    <td class="right">${orderAmountBreakdownHTML(o)}</td>
+    <td>${statusPills(o)}</td>
   </tr>`;
 }
 function openReturnToStockModal(orderId){
@@ -2421,9 +2339,9 @@ function renderInventory(root){
     <div class="card plain">
       <div class="card-title"><h2>目前庫存</h2><span class="subtle">庫存 = 期初庫存 + 已收貨的訂庫存 - 拿庫存 + 手動調整；特殊訂購項目不列入庫存管理</span></div>
       <div class="table-wrap"><table>
-        <thead><tr><th>品項</th><th>規格</th><th>單位</th><th class="right">廠商訂購價（未稅）</th><th class="right">含稅價（自動）</th><th class="right">工人訂購價</th><th class="right">期初</th><th class="right">目前庫存</th><th>快速調整</th><th class="nowrap">操作</th></tr></thead>
+        <thead><tr><th>品項</th><th>規格</th><th>單位</th><th class="right">廠商訂購價</th><th class="right">工人訂購價</th><th class="right">期初</th><th class="right">目前庫存</th><th>快速調整</th><th class="nowrap">操作</th></tr></thead>
         <tbody>${items.map(i=>`<tr>
-          <td><b>${esc(i.name)}</b><br><span class="muted">${esc(i.code)}</span></td><td>${esc(i.spec||'')}</td><td>${esc(i.unit||'')}</td><td class="right">${money(i.vendorPrice ?? i.price)}</td><td class="right">${money(vendorTaxIncludedPrice(i.vendorPrice ?? i.price))}</td><td class="right">${money(i.price)}</td><td class="right">${num(i.openingStock)}</td><td class="right"><b>${currentStock(i.code)}</b></td>
+          <td><b>${esc(i.name)}</b><br><span class="muted">${esc(i.code)}</span></td><td>${esc(i.spec||'')}</td><td>${esc(i.unit||'')}</td><td class="right">${money(i.vendorPrice ?? i.price)}</td><td class="right">${money(i.price)}</td><td class="right">${num(i.openingStock)}</td><td class="right"><b>${currentStock(i.code)}</b></td>
           <td><div style="display:flex;gap:6px;min-width:220px"><input type="number" class="stockAdjQty" data-code="${esc(i.code)}" placeholder="+入 / -出"><input class="stockAdjNote" data-code="${esc(i.code)}" placeholder="備註"></div></td>
           <td><div class="actions"><button class="small" data-edit-item="${esc(i.code)}" ${can('stockWrite')?'':'disabled'}>修改庫存</button><button class="small" data-adj-item="${esc(i.code)}" ${can('stockWrite')?'':'disabled'}>新增調整</button></div></td>
         </tr>`).join('')}</tbody>
@@ -2462,8 +2380,7 @@ function openItemModal(code){
       <div><label>品名</label><input id="i_name" value="${esc(item.name||'')}"></div>
       <div><label>規格</label><input id="i_spec" value="${esc(item.spec||'')}"></div>
       <div><label>單位</label><input id="i_unit" value="${esc(item.unit||'')}"></div>
-      <div><label>廠商訂購價（未稅）</label><input type="number" id="i_vendorPrice" value="${num(item.vendorPrice ?? item.price)}" placeholder="向廠商訂購的未稅價格"></div>
-      <div><label>含稅價（自動）</label><input type="number" id="i_vendorTaxPrice" value="${vendorTaxIncludedPrice(item.vendorPrice ?? item.price)}" readonly><div class="mini-note" style="margin-top:5px">依未稅價 × 1.05 自動計算，四捨五入至整數。</div></div>
+      <div><label>廠商訂購價</label><input type="number" id="i_vendorPrice" value="${num(item.vendorPrice ?? item.price)}" placeholder="向廠商訂購的價格"></div>
       <div><label>工人訂購價</label><input type="number" id="i_price" value="${num(item.price)}" placeholder="工人簽收/請款價格"></div>
       <div><label>訂購項目類型</label><select id="i_orderType"><option value="general" ${itemOrderType(item)==='general'?'selected':''}>一般訂購項目</option><option value="special" ${itemOrderType(item)==='special'?'selected':''}>特殊訂購項目</option></select><div class="mini-note" style="margin-top:5px">特殊項目不綁定工人，且不提供拿庫存、加買、退貨。</div></div>
       <div><label>期初庫存</label><input type="number" id="i_openingStock" value="${num(item.openingStock)}"></div>
@@ -2485,11 +2402,9 @@ function openItemModal(code){
         const defaults=translationDefaultsByItemName($('#i_name',modal)?.value||'');
         [['i_tr_id','印尼'],['i_tr_th','泰國'],['i_tr_en','菲律賓'],['i_tr_vi','越南']].forEach(([id,key])=>{ const input=$('#'+id,modal); if(input && !input.value.trim() && defaults[key]) input.value=defaults[key]; });
       };
-      const updateVendorTaxPrice=()=>{ const input=$('#i_vendorTaxPrice',modal); if(input) input.value=vendorTaxIncludedPrice($('#i_vendorPrice',modal)?.value); };
       $('#i_orderType',modal)?.addEventListener('change',updateItemTypeFields);
       $('#i_name',modal)?.addEventListener('blur',applyNameTranslations);
-      $('#i_vendorPrice',modal)?.addEventListener('input',updateVendorTaxPrice);
-      updateItemTypeFields(); updateVendorTaxPrice();
+      updateItemTypeFields();
       modal.querySelector('#cancelModalBtn').addEventListener('click',closeModal);
       modal.querySelector('#saveItemBtn').addEventListener('click',()=>{
         const oldCode=code||'';
@@ -2504,7 +2419,7 @@ function openItemModal(code){
           if(oldCode!==next.code) migrateItemCodeReferences(oldCode,next.code);
           state.settings.items[idx]=Object.assign({},state.settings.items[idx],next);
         }else state.settings.items.push(next);
-        audit(idx>=0?'修改品項':'新增品項','品項',next.code,next.name,`${oldCode&&oldCode!==next.code?`代碼 ${oldCode}→${next.code}｜`:''}類型 ${itemOrderTypeLabel(next)}｜廠商未稅價 ${money(next.vendorPrice)}｜含稅價 ${money(vendorTaxIncludedPrice(next.vendorPrice))}｜工人訂購價 ${money(next.price)}`,beforeItem);
+        audit(idx>=0?'修改品項':'新增品項','品項',next.code,next.name,`${oldCode&&oldCode!==next.code?`代碼 ${oldCode}→${next.code}｜`:''}類型 ${itemOrderTypeLabel(next)}｜廠商訂購價 ${money(next.vendorPrice)}｜工人訂購價 ${money(next.price)}`,beforeItem);
         save(); closeModal(); toast('品項已儲存'); render();
       });
     }
@@ -2526,12 +2441,10 @@ function renderAccounting(root){
   const overviewTotal = allRows.reduce((s,o)=>s+accountingAmount(o),0);
   root.innerHTML = `
     <div class="accounting-overview"><div class="big-stat"><span>對帳批次</span><b>${batches.length}</b></div><div class="big-stat"><span>對帳筆數</span><b>${allRows.length}</b></div><div class="big-stat"><span>對帳總金額</span><b>${money(overviewTotal)}</b></div></div>
-    <div class="toolbar"><div class="toolbar-left"><input id="accountingSearch" type="search" autocomplete="off" spellcheck="false" placeholder="搜尋批次 / 訂購單 / 訂購日 / 雇主 / 工人 / 品項" value="${esc(state.filters.accounting||'')}"><span class="subtle">批次可展開 / 收起；明細顯示訂購日與請款日。</span></div><div class="toolbar-right">${exportDateFilterHTML()}<button id="exportAccountingBtn">匯出對帳 CSV</button></div></div>
+    <div class="toolbar"><div class="toolbar-left"><input id="accountingSearch" placeholder="搜尋批次 / 訂購單 / 訂購日 / 雇主 / 工人 / 品項" value="${esc(state.filters.accounting||'')}"><span class="subtle">批次可展開 / 收起；明細顯示訂購日與請款日。</span></div><div class="toolbar-right">${exportDateFilterHTML()}<button id="exportAccountingBtn">匯出對帳 CSV</button></div></div>
     ${batches.length ? batches.map(([batch,orders])=>accountingBatchHTML(batch,orders)).join('') : `<div class="empty">尚未有符合條件的請款批次。請先在「寢具訂購」勾選資料後按「請款 / 轉會計對帳」。</div>`}`;
-  bindStableSearchInput('accountingSearch','accounting',renderAccounting,root);
+  $('#accountingSearch')?.addEventListener('input', e=>{state.filters.accounting=e.target.value;save();renderAccounting(root);});
   $('#exportAccountingBtn')?.addEventListener('click', exportAccountingCSV);
-  $all('[data-download-batch-detail]').forEach(btn=>btn.addEventListener('click',()=>downloadAccountingBatchDetail(btn.dataset.downloadBatchDetail)));
-  $all('[data-print-batch-detail]').forEach(btn=>btn.addEventListener('click',()=>printAccountingBatchDetail(btn.dataset.printBatchDetail)));
   bindExportDateFilter(renderAccounting, root);
   $all('[data-confirm-batch]').forEach(btn=>btn.addEventListener('click',()=>confirmAccountingBatch(btn.dataset.confirmBatch)));
   $all('[data-error-batch]').forEach(btn=>btn.addEventListener('click',()=>openAccountingErrorModal(btn.dataset.errorBatch)));
@@ -2542,146 +2455,6 @@ function renderAccounting(root){
   $all('[data-account-view]').forEach(btn=>btn.addEventListener('click',()=>openRecordDetailModal(btn.dataset.accountView)));
 }
 function accountingAmount(o){ return orderAmount(o) + num(o.accountingAdjust || 0); }
-function accountingBatchFileName(batch){ return String(batch||'會計批次').replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_'); }
-function accountingOrderDetailRows(order){
-  const rows=[];
-  const covered=new Map();
-  const add=(worker,nationality,entryDate,line,qtyOverride=null)=>{
-    const qty=qtyOverride===null?lineQty(line):Math.max(0,num(qtyOverride));
-    if(qty<=0) return;
-    const item=getItem(line.code);
-    const unitPrice=num(line.price ?? item.price);
-    rows.push({
-      order,
-      worker:worker||'-',
-      nationality:nationality||'',
-      entryDate:entryDate||'',
-      code:line.code,
-      itemName:item.name||line.code,
-      spec:item.spec||'',
-      unit:item.unit||'',
-      qty,
-      unitPrice,
-      amount:qty*unitPrice,
-      paymentTarget:paymentTargetLabel(resolvedLinePaymentTarget(order,line))
-    });
-  };
-  if(order.isStockOrder){
-    orderedLines(order.items||[]).forEach(line=>add('訂庫存','','',line));
-    return rows;
-  }
-  if(Array.isArray(order.workerGroups) && order.workerGroups.length){
-    order.workerGroups.forEach(group=>{
-      orderedLines(group.items||[]).forEach(line=>{
-        const qty=lineQty(line);
-        if(qty<=0) return;
-        add(group.name||order.worker||'未指定工人',group.nationality||order.nationality||'',group.entryDate||order.entryDate||'',line,qty);
-        covered.set(line.code,(covered.get(line.code)||0)+qty);
-      });
-    });
-    orderedLines(order.items||[]).forEach(line=>{
-      const qty=lineQty(line);
-      if(qty<=0) return;
-      if(isSpecialItem(line.code)) return add('不綁定工人','','',line,qty);
-      const diff=Math.max(0,qty-(covered.get(line.code)||0));
-      if(diff>0) add(order.worker||'未指定工人',order.nationality||'',order.entryDate||'',line,diff);
-    });
-    return rows;
-  }
-  orderedLines(order.items||[]).forEach(line=>add(order.worker||'未指定工人',order.nationality||'',order.entryDate||'',line));
-  return rows;
-}
-function accountingBatchHorizontalItemCodes(orders){
-  const used=new Set();
-  (orders||[]).forEach(order=>accountingOrderDetailRows(order).forEach(row=>used.add(row.code)));
-  const result=[];
-  (state.settings.items||[]).forEach(item=>{ if(used.has(item.code)){ result.push(item.code); used.delete(item.code); } });
-  used.forEach(code=>result.push(code));
-  return result;
-}
-function accountingOrderWorkerSummary(order){
-  if(order.isStockOrder) return '訂庫存';
-  const names=orderWorkers(order);
-  return names.length?names.join('、'):(order.worker||'-');
-}
-function accountingOrderNationalitySummary(order){
-  if(order.isStockOrder) return '';
-  const values=(Array.isArray(order.workerGroups)&&order.workerGroups.length)?order.workerGroups.map(group=>group.nationality||order.nationality||'').filter(Boolean):[order.nationality||''].filter(Boolean);
-  return [...new Set(values)].join('、');
-}
-function accountingOrderEntryDateSummary(order){
-  if(order.isStockOrder) return '';
-  const values=(Array.isArray(order.workerGroups)&&order.workerGroups.length)?order.workerGroups.map(group=>group.entryDate||order.entryDate||'').filter(Boolean):[order.entryDate||''].filter(Boolean);
-  return [...new Set(values.map(dateSlash))].join('、');
-}
-function accountingWorkerHorizontalRows(order,itemCodes){
-  const detailRows=accountingOrderDetailRows(order);
-  const groups=new Map();
-  detailRows.forEach(detail=>{
-    const key=[detail.worker,detail.nationality,detail.entryDate].join('||');
-    if(!groups.has(key)) groups.set(key,{worker:detail.worker,nationality:detail.nationality,entryDate:detail.entryDate,itemMap:new Map(),targets:new Set()});
-    const group=groups.get(key);
-    const value=group.itemMap.get(detail.code)||{qty:0,amount:0};
-    value.qty+=detail.qty; value.amount+=detail.amount;
-    group.itemMap.set(detail.code,value);
-    group.targets.add(detail.paymentTarget);
-  });
-  if(!groups.size){
-    groups.set('empty',{worker:accountingOrderWorkerSummary(order),nationality:accountingOrderNationalitySummary(order),entryDate:accountingOrderEntryDateSummary(order),itemMap:new Map(),targets:new Set([paymentTargetLabel(effectivePaymentTarget(order))])});
-  }
-  return Array.from(groups.values()).map(group=>({...group,paymentTarget:group.targets.size===1?Array.from(group.targets)[0]:'分項支付'}));
-}
-function downloadAccountingBatchDetail(batch){
-  const orders=state.orders.filter(order=>order.accountingBatch===batch).sort((a,b)=>String(a.orderNo||'').localeCompare(String(b.orderNo||''),'zh-Hant'));
-  if(!orders.length) return toast('此批次沒有可下載的訂單');
-  const itemCodes=accountingBatchHorizontalItemCodes(orders);
-  const headers=['對帳批次','訂購單號','訂購日','雇主','工人','國籍','入境日','支付對象'];
-  itemCodes.forEach(code=>{ const name=itemLabel(code)||code; headers.push(`${name}｜數量`,`${name}｜金額`); });
-  headers.push('原金額','調整金額','對帳金額','會計狀態','對帳人','備註');
-  const rows=[headers];
-  const batchItemTotals=new Map(itemCodes.map(code=>[code,{qty:0,amount:0}]));
-  orders.forEach(order=>{
-    const workerRows=accountingWorkerHorizontalRows(order,itemCodes);
-    workerRows.forEach((workerRow,index)=>{
-      const row=[order.accountingBatch||'',order.orderNo||'',dateSlash(order.orderDate)||'',order.employer||'',workerRow.worker,workerRow.nationality,dateSlash(workerRow.entryDate)||'',workerRow.paymentTarget];
-      itemCodes.forEach(code=>{
-        const value=workerRow.itemMap.get(code)||{qty:0,amount:0};
-        row.push(value.qty||'',value.amount||'');
-        const total=batchItemTotals.get(code); total.qty+=value.qty; total.amount+=value.amount;
-      });
-      row.push(index===0?orderAmount(order):'',index===0?num(order.accountingAdjust||0):'',index===0?accountingAmount(order):'',index===0?(order.accountingStatus||'待對帳'):'',index===0?(order.accountingBy||''):'',index===0?(order.accountingNote||order.note||''):'');
-      rows.push(row);
-    });
-  });
-  const totalRow=['','批次總計','','','','','',''];
-  itemCodes.forEach(code=>{ const value=batchItemTotals.get(code)||{qty:0,amount:0}; totalRow.push(value.qty||'',value.amount||''); });
-  totalRow.push(orders.reduce((sum,order)=>sum+orderAmount(order),0),orders.reduce((sum,order)=>sum+num(order.accountingAdjust||0),0),orders.reduce((sum,order)=>sum+accountingAmount(order),0),'','','');
-  rows.push(totalRow);
-  downloadCSV(`${accountingBatchFileName(batch)}_全部訂單明細_工人橫向.csv`,rows);
-  toast(`已下載 ${batch} 工人橫向明細`);
-}
-function accountingBatchPrintHTML(batch,orders){
-  const batchTotal=orders.reduce((sum,order)=>sum+accountingAmount(order),0);
-  const orderSections=orders.map(order=>{
-    const details=accountingOrderDetailRows(order);
-    const rows=details.length?details.map(detail=>`<tr><td>${esc(detail.worker)}</td><td>${esc(detail.nationality||'-')}</td><td>${esc(dateSlash(detail.entryDate)||'-')}</td><td><b>${esc(detail.itemName)}</b></td><td>${esc(detail.spec||'-')}</td><td class="num">${detail.qty}</td><td>${esc(detail.unit||'-')}</td><td class="num">${money(detail.unitPrice)}</td><td class="num">${money(detail.amount)}</td><td>${esc(detail.paymentTarget)}</td></tr>`).join(''):`<tr><td colspan="10" class="muted">此訂單沒有可列出的品項</td></tr>`;
-    return `<tbody class="order-group"><tr class="order-head"><td colspan="10"><b>${esc(order.orderNo||'')}</b>｜訂購日 ${esc(dateSlash(order.orderDate)||'-')}｜雇主 ${esc(order.employer||'-')}｜支付對象 ${esc(paymentTargetLabel(effectivePaymentTarget(order)))}</td></tr>${rows}<tr class="order-total"><td colspan="6">訂單小計</td><td colspan="2">原金額 ${money(orderAmount(order))}</td><td>調整 ${money(num(order.accountingAdjust||0))}</td><td>對帳 ${money(accountingAmount(order))}</td></tr></tbody>`;
-  }).join('');
-  return `<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><title>${esc(batch)} 會計對帳明細</title><style>
-    @page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;color:#222;background:#fff}button{padding:7px 12px;margin-bottom:8px}.sheet{width:100%}h1{font-size:22px;margin:0 0 5px;text-align:center}.meta{display:flex;justify-content:center;gap:28px;margin-bottom:10px;font-size:13px}.meta b{font-size:15px}.note{font-size:11px;color:#666;margin:5px 0 8px}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px}thead{display:table-header-group}th,td{border:1px solid #555;padding:4px 5px;vertical-align:top;overflow-wrap:anywhere}th{background:#ece7df;font-weight:800;text-align:center}.num{text-align:right;white-space:nowrap}.order-head td{background:#f5f0e9;font-size:11px}.order-total td{background:#faf7f2;font-weight:800}.batch-total{margin-top:10px;text-align:right;font-size:17px;font-weight:900}.muted{color:#777;text-align:center}.order-group{break-inside:avoid-page}@media print{button{display:none}}
-  </style></head><body><button onclick="window.print()">列印 A4 橫式批次明細</button><div class="sheet"><h1>會計對帳批次明細</h1><div class="meta"><span>批次：<b>${esc(batch)}</b></span><span>訂單：<b>${orders.length}</b> 筆</span><span>批次總額：<b>${money(batchTotal)}</b></span></div><div class="note">明細依訂購單、雇主、工人與品項逐項列示；表頭跨頁重複。</div><table><thead><tr><th style="width:10%">工人</th><th style="width:6%">國籍</th><th style="width:8%">入境日</th><th style="width:16%">訂購品項</th><th style="width:18%">規格</th><th style="width:5%">數量</th><th style="width:5%">單位</th><th style="width:8%">單價</th><th style="width:8%">金額</th><th style="width:10%">支付對象</th></tr></thead>${orderSections}</table><div class="batch-total">批次對帳總金額：${money(batchTotal)}</div></div></body></html>`;
-}
-function openPrintWindow(html){
-  const win=window.open('','_blank');
-  if(!win){ toast('瀏覽器已封鎖列印視窗，請允許彈出式視窗'); return null; }
-  win.document.open(); win.document.write(html); win.document.close();
-  return win;
-}
-function printAccountingBatchDetail(batch){
-  const orders=state.orders.filter(order=>order.accountingBatch===batch).sort((a,b)=>String(a.orderNo||'').localeCompare(String(b.orderNo||''),'zh-Hant'));
-  if(!orders.length) return toast('此批次沒有可列印的訂單');
-  openPrintWindow(accountingBatchPrintHTML(batch,orders));
-}
 function lineSummaryByKey(o, key, cls=''){
   const rows=orderedLines(o.items||[]).filter(l=>(key==='orderQty' || isGeneralItem(l.code)) && (key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]))>0).map(l=>{ const qty=key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]); return `<span class="summary-chip ${cls}">${esc(itemLabel(l.code))} ${qty}</span>`; });
   return rows.length ? rows.join('') : '<span class="muted">-</span>';
@@ -2694,12 +2467,12 @@ function accountingBatchHTML(batch, orders){
     <summary>
       <div class="card-title" style="margin:0">
         <div><h2>${esc(batch)}</h2><div class="batch-hero">${orders.length} 筆｜對帳總金額 ${money(total)} <span>狀態 ${esc(status)}｜對帳人 ${esc(accountBySummary)}</span></div><div class="batch-toggle">點此可展開 / 收起批次明細</div></div>
-        <div class="actions"><button onclick="event.stopPropagation()" class="accounting-action" data-download-batch-detail="${esc(batch)}">下載全部訂單明細</button><button onclick="event.stopPropagation()" data-print-batch-detail="${esc(batch)}">列印批次明細</button><button onclick="event.stopPropagation()" data-error-batch="${esc(batch)}" ${can('accounting')?'':'disabled'}>帳務錯誤通知</button><button onclick="event.stopPropagation()" class="primary" data-confirm-batch="${esc(batch)}" ${can('accounting')?'':'disabled'}>整批確認帳款</button></div>
+        <div class="actions"><button onclick="event.stopPropagation()" data-error-batch="${esc(batch)}" ${can('accounting')?'':'disabled'}>帳務錯誤通知</button><button onclick="event.stopPropagation()" class="primary" data-confirm-batch="${esc(batch)}" ${can('accounting')?'':'disabled'}>整批確認帳款</button></div>
       </div>
     </summary>
     <div class="batch-body">
-      <div class="scroll-x"><table class="accounting-detail-table adaptive-table"><thead><tr>
-        <th>訂購單 / 雇主 / 工人</th><th class="fit-col">支付對象</th><th class="fit-col">訂購日</th><th class="fit-col">請款日</th><th class="fit-col">海外承辦</th><th>購買品項</th><th>拿庫存</th><th>退貨入庫</th><th>加買</th><th class="right fit-col">原金額</th><th class="right fit-col">調整</th><th class="right fit-col">對帳金額</th><th>狀態</th><th class="fit-col">對帳人</th><th>備註 / 錯誤</th><th class="fit-col">操作</th>
+      <div class="scroll-x"><table class="accounting-detail-table"><thead><tr>
+        <th>訂購單</th><th>雇主 / 工人</th><th>支付對象</th><th>訂購日</th><th>請款日</th><th>海外承辦</th><th>購買品項</th><th>拿庫存</th><th>退貨入庫</th><th>加買</th><th class="right">原金額</th><th class="right">調整</th><th class="right">對帳金額</th><th>狀態</th><th>對帳人</th><th>備註 / 錯誤</th><th class="nowrap">操作</th>
       </tr></thead><tbody>
         ${orders.map(o=>accountingOrderRow(o)).join('')}
       </tbody></table></div>
@@ -2709,22 +2482,23 @@ function accountingBatchHTML(batch, orders){
 function accountingOrderRow(o){
   const err=o.errorNotice?`<div><span class="summary-chip bad">${esc(o.errorNotice.type)}｜${esc(o.errorNotice.note||'')}</span></div>`:'';
   return `<tr>
-    <td class="order-person-cell"><div class="order-no-line"><button class="link-btn" data-account-view="${esc(o.id)}">${esc(o.orderNo)}</button></div><div class="employer-line">${esc(o.employer||'-')}</div><div class="worker-line">${o.isStockOrder?'庫存訂購':(isSpecialOnlyOrder(o)?'特殊訂購項目':`工人：${esc(orderWorkers(o).join('、')||'-')}`)}</div></td>
-    <td class="fit-col">${esc(paymentTargetLabel(effectivePaymentTarget(o)))}</td>
-    <td class="fit-col">${esc(dateSlash(o.orderDate)||'-')}</td>
-    <td class="fit-col">${esc(dateSlash(o.billingDate)||'-')}</td>
-    <td class="fit-col">${esc(o.overseasStaff || o.staff || '-')}</td>
-    <td class="items-cell">${lineSummaryByKey(o,'orderQty')}</td>
+    <td><button class="link-btn" data-account-view="${esc(o.id)}">${esc(o.orderNo)}</button></td>
+    <td><b>${esc(o.employer||'-')}</b><br>${o.isStockOrder?'<span class="muted">庫存訂購</span>':esc(orderWorkers(o).join('、')||'-')}</td>
+    <td>${esc(paymentTargetLabel(effectivePaymentTarget(o)))}<br><span class="muted">${esc(paymentBreakdownText(o))}</span></td>
+    <td>${esc(dateSlash(o.orderDate)||'-')}</td>
+    <td>${esc(dateSlash(o.billingDate)||'-')}</td>
+    <td>${esc(o.overseasStaff || o.staff || '-')}</td>
+    <td>${lineSummaryByKey(o,'orderQty')}</td>
     <td>${lineSummaryByKey(o,'useStockQty','warn')}</td>
     <td>${lineSummaryByKey(o,'returnQty','bad')}</td>
     <td>${lineSummaryByKey(o,'addQty','ok')}</td>
-    <td class="right fit-col">${orderAmountBreakdownHTML(o)}</td>
-    <td class="right fit-col">${num(o.accountingAdjust||0) ? money(o.accountingAdjust) : '<span class="muted">-</span>'}</td>
-    <td class="right fit-col"><b>${money(accountingAmount(o))}</b></td>
-    <td class="status-cell">${esc(o.accountingStatus||'待對帳')}</td>
-    <td class="fit-col">${o.accountingBy?esc(o.accountingBy):'<span class="muted">-</span>'}</td>
+    <td class="right nowrap">${orderAmountBreakdownHTML(o)}</td>
+    <td class="right nowrap">${num(o.accountingAdjust||0) ? money(o.accountingAdjust) : '<span class="muted">-</span>'}</td>
+    <td class="right nowrap"><b>${money(accountingAmount(o))}</b></td>
+    <td>${esc(o.accountingStatus||'待對帳')}</td>
+    <td>${o.accountingBy?esc(o.accountingBy):'<span class="muted">-</span>'}</td>
     <td>${o.accountingNote?esc(o.accountingNote):'<span class="muted">無</span>'}${err}</td>
-    <td class="fit-col"><div class="actions">
+    <td class="nowrap"><div class="actions">
       <button class="small" data-account-edit="${esc(o.id)}" ${can('accounting')?'':'disabled'}>修改</button>
       <button class="small" data-account-adjust="${esc(o.id)}" ${can('accounting')?'':'disabled'}>調整</button>
       <button class="small" data-account-note="${esc(o.id)}" ${can('accounting')?'':'disabled'}>備註</button>
@@ -2929,9 +2703,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.16.1｜批次明細橫向品項與支付對象簡化</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.15.2｜腳踏車地址格線與列印空白頁修正</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.16.1 批次明細新增訂購日與支付對象，訂購項目改為橫向欄位；會計對帳支付對象只顯示簡潔結果。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.15.2 修正腳踏車廠商地址超出格線，並移除一鍵列印中重複換頁造成的空白頁。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -3049,7 +2823,7 @@ function renderSettings(root){
       <section class="card plain settings-section" id="settings-items">
         <div class="settings-section-head"><div class="settings-heading"><div class="settings-step">6</div><div><h2>品項、價格與顯示順序</h2><p>停用品項預設隱藏，但既有訂單與歷史資料仍會完整保留；使用上移／下移調整啟用品項順序。</p></div></div><div class="actions"><button id="toggleInactiveItemsBtn">${state.filters.showInactiveItems?'隱藏停用項目':`顯示停用項目 (${inactiveItemCount})`}</button><button id="settingsAddItemBtn">＋新增品項</button></div></div>
         <div class="mini-note" style="margin-bottom:9px">停用只會從新訂購、庫存與此清單預設畫面隱藏，不會刪除或改動之前已下單的資料。</div>
-        <div class="table-wrap"><table><thead><tr><th class="center">順序</th><th>代碼</th><th>品名</th><th>訂購類型</th><th>規格</th><th>單位</th><th class="right">廠商訂購價（未稅）</th><th class="right">含稅價（自動）</th><th class="right">工人訂購價</th><th class="right">期初庫存</th><th>狀態</th><th>操作</th></tr></thead><tbody>${visibleSettingItems.map((i,idx)=>`<tr><td><div class="actions" style="justify-content:center"><button class="small" data-item-move="up" data-item-code="${esc(i.code)}" ${idx===0?'disabled':''} title="上移">↑</button><button class="small" data-item-move="down" data-item-code="${esc(i.code)}" ${idx===visibleSettingItems.length-1?'disabled':''} title="下移">↓</button></div></td><td>${esc(i.code)}</td><td><b>${esc(i.name)}</b></td><td><span class="pill ${itemOrderType(i)==='special'?'warn':'ok'}">${esc(itemOrderTypeLabel(i))}</span></td><td>${esc(i.spec)}</td><td>${esc(i.unit)}</td><td class="right">${money(i.vendorPrice ?? i.price)}</td><td class="right">${money(vendorTaxIncludedPrice(i.vendorPrice ?? i.price))}</td><td class="right">${money(i.price)}</td><td class="right">${isSpecialItem(i)?'<span class="muted">不適用</span>':num(i.openingStock)}</td><td>${i.active!==false?'啟用':'停用'}</td><td><button class="small" data-settings-edit-item="${esc(i.code)}">修改</button></td></tr>`).join('') || `<tr><td colspan="12" class="center muted">目前沒有啟用品項；可按「顯示停用項目」重新啟用。</td></tr>`}</tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th class="center">順序</th><th>代碼</th><th>品名</th><th>訂購類型</th><th>規格</th><th>單位</th><th class="right">廠商訂購價</th><th class="right">工人訂購價</th><th class="right">期初庫存</th><th>狀態</th><th>操作</th></tr></thead><tbody>${visibleSettingItems.map((i,idx)=>`<tr><td><div class="actions" style="justify-content:center"><button class="small" data-item-move="up" data-item-code="${esc(i.code)}" ${idx===0?'disabled':''} title="上移">↑</button><button class="small" data-item-move="down" data-item-code="${esc(i.code)}" ${idx===visibleSettingItems.length-1?'disabled':''} title="下移">↓</button></div></td><td>${esc(i.code)}</td><td><b>${esc(i.name)}</b></td><td><span class="pill ${itemOrderType(i)==='special'?'warn':'ok'}">${esc(itemOrderTypeLabel(i))}</span></td><td>${esc(i.spec)}</td><td>${esc(i.unit)}</td><td class="right">${money(i.vendorPrice ?? i.price)}</td><td class="right">${money(i.price)}</td><td class="right">${isSpecialItem(i)?'<span class="muted">不適用</span>':num(i.openingStock)}</td><td>${i.active!==false?'啟用':'停用'}</td><td><button class="small" data-settings-edit-item="${esc(i.code)}">修改</button></td></tr>`).join('') || `<tr><td colspan="11" class="center muted">目前沒有啟用品項；可按「顯示停用項目」重新啟用。</td></tr>`}</tbody></table></div>
       </section>
 
       <section class="card settings-section" id="settings-backup">
@@ -3804,7 +3578,7 @@ downloadOrderImage=async function(orderId){
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.16.1 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.15.2 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
