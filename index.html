@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.4</title>
+  <title>FOR-e寢具訂購 V4.18.5</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -71,7 +71,7 @@
     .topbar h1{font-size:21px;margin:0;color:#fff0df}
     .rolebar{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px}
     .rolebar select{width:125px;padding:7px 9px}
-    .content{padding:24px;width:100%;max-width:1680px;min-width:0;margin:0 auto}
+    .content{padding:24px;width:100%;max-width:none;min-width:0;margin:0}
     .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
     .toolbar-left,.toolbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .toolbar input,.toolbar select{width:180px}
@@ -89,6 +89,7 @@
     .matrix-cell .order-qty{font-size:18px;line-height:1;font-weight:950;color:#fff0df}
     .matrix-cell .amount{font-weight:900;color:#ffd49b}
     .matrix-cell .return-line{color:#ffb3a2;font-weight:900}
+    .matrix-cell .stock-line{color:#a8d19a;font-weight:900}
     .matrix-cell .remaining-line{color:#b9d8ad;font-weight:900}
     .return-detail-block{border:1px solid rgba(201,105,84,.7);background:linear-gradient(180deg,rgba(92,48,39,.48),rgba(64,39,34,.55));border-radius:14px;padding:12px;margin:12px 0}
     .return-detail-block .section-title{color:#ffc1b2;margin-top:0}
@@ -187,15 +188,13 @@
     .compact-items{max-width:none;white-space:normal;overflow:visible;text-overflow:clip;display:block;line-height:1.55}
     .kind-badge{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:12px;background:#4a3c25;color:#f0d5ac;margin-top:3px}
     .order-row-summary{line-height:1.65;color:#d8c7b3;white-space:nowrap}
-    .accounting-detail-table{min-width:100%}
+    .accounting-detail-table{width:100%;min-width:100%;table-layout:fixed}
     .accounting-detail-table td{vertical-align:middle}
     .summary-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;background:#42382f;color:#eadbca;font-size:12px;padding:3px 8px;margin:2px 3px 2px 0;white-space:normal;overflow-wrap:anywhere}
     .orders-list-table th,.orders-list-table td,.record-table th,.record-table td{padding:8px 7px;font-size:13px}
     .orders-list-table .actions,.accounting-detail-table .actions{gap:4px}
     .orders-list-table .actions button,.accounting-detail-table .actions button{padding:5px 7px;font-size:11px}
     .accounting-detail-table th,.accounting-detail-table td{padding:6px 5px;font-size:11px;line-height:1.35}
-    .accounting-detail-table .order-person-cell{width:12%}
-    .accounting-detail-table .items-cell{width:10%}
     .accounting-detail-table .actions{flex-direction:column;align-items:stretch}
     .accounting-detail-table .actions button{width:100%}
     .summary-chip.warn{background:#4a3c25;color:#e2bd72;border-color:#b38e4e}
@@ -209,14 +208,25 @@
     .entry-date-col{width:7.2em!important}
     .nationality-col{width:5.5em!important}
     .record-table .items-cell{width:27%}
-    .accounting-detail-table .order-person-cell{width:17em!important;padding-right:14px!important}
-    .accounting-detail-table .payment-target-col{width:7.5em!important;padding-left:14px!important}
-    .accounting-detail-table .items-cell{width:22%!important}
-    .accounting-detail-table .money-col{width:8em!important}
+    .accounting-detail-table .order-person-cell{width:19%!important;padding-right:12px!important;white-space:nowrap!important}
+    .accounting-detail-table .order-person-cell *{white-space:nowrap!important;overflow-wrap:normal!important;word-break:keep-all!important}
+    .accounting-detail-table .payment-target-col{width:6.5%!important;padding-left:10px!important}
+    .accounting-detail-table .order-date-col{width:6.5%!important}
+    .accounting-detail-table .money-col{width:7.5%!important}
+    .accounting-detail-table .account-item-col{width:7%!important}
+    .accounting-detail-table .original-col{width:6.5%!important}
+    .accounting-detail-table .adjust-col{width:5%!important}
+    .accounting-detail-table .note-col{width:7.5%!important}
+    .accounting-detail-table .dept-staff-col{width:6.5%!important}
+    .accounting-detail-table .action-col{width:6%!important}
+    .accounting-detail-table .font-plus-two{font-size:13px!important}
     .plain-item-line{display:block;line-height:1.5;margin:1px 0;white-space:normal;overflow-wrap:anywhere}
     .plain-item-line.stock{color:#a8d19a;font-weight:850}
     .plain-item-line.return{color:#f09a88;font-weight:850}
     .plain-item-line.add{color:#f0c67d;font-weight:850}
+    .returned-item{text-decoration:line-through;text-decoration-thickness:2px;color:#d3c4b4}
+    .return-count{color:#f09a88;font-weight:900;margin-left:5px;white-space:nowrap}
+    .return-plain{display:block;color:#f09a88;font-weight:850;line-height:1.5;margin:1px 0}
     .accounting-amount{display:inline-block;color:#ffe08f;font-size:14px;font-weight:950;line-height:1.35}
     .batch-account-meta{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;color:#ead9c5;font-size:13px}
     .batch-account-meta b{color:#ffd49b}
@@ -476,6 +486,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.18.5', date:'2026/08/08', title:'滿版表格與退貨顯示簡化', items:['所有分頁表格改為滿版顯示','會計訂購單／雇主／工人加寬且不換行，四個品項欄統一寬度','會計指定欄位文字放大 2pt','拿庫存只顯示綠色品項文字；全數退貨改為品項刪除線加退貨數量','退貨工人、品項與數量取消外框']},
   {version:'V4.18.4', date:'2026/08/08', title:'會計欄寬、品項文字與支付對象簡化', items:['會計對帳加寬訂購單／雇主／工人欄位，並與支付對象保留間距','對帳金額改用醒目金黃色顯示','所有主要分頁的訂購項目取消外框，拿庫存以綠色、退貨以紅色區分','支付對象僅顯示工人、仲介、雇主']},
   {version:'V4.18.3', date:'2026/08/08', title:'三頁欄位與會計批次顯示調整', items:['寢具訂購縮小勾選欄，新增部門／海外並放大雇主與工人姓名','訂購紀錄的入境日與國籍分欄，部門／承辦依文字縮窄，品項欄加寬','三個主要清單的欄位內容統一靠左對齊','會計對帳狀況、對帳人及請款日改為每批次只顯示一次','會計對帳金額移至購買品項前，購買品項改為無外框純文字，海外承辦改為部門／承辦']},
   {version:'V4.18.2', date:'2026/08/08', title:'訂購單資訊層級與列表免橫向拖曳', items:['訂購單編號改為次要資訊，不再搶過客戶與工人資料','訂購單客戶名稱與工人名稱統一使用相同字級','主要清單表格改為頁面寬度內自動分配，內容可換行顯示','購買品項允許自然換行，避免撐寬整張表格','會計對帳的海外承辦移至倒數第二欄、操作按鈕之前']},
@@ -499,7 +510,7 @@ const versionNotes = [
   {version:'V4.12.2', date:'2026/07/13', title:'訂購明細隱藏支付對象', items:['訂購紀錄列表移除支付對象欄位','點選訂購單號開啟的訂單明細移除支付對象欄位','後台支付對象規則、會計對帳與 CSV 維持不變']},
   {version:'V4.12.1', date:'2026/07/13', title:'列印邊界、操作按鈕與支付規則備註', items:['A4 訂購單與簽收單固定上下左右 1 公分邊界，表格文字可換行避免裁切','LINE 按鈕套用官方綠色，請款轉對帳按鈕改為醒目金橘色','工人 × 訂購項目的原訂購數量只顯示數字，無異動時不再重複顯示目前有效','支付對象自動規則新增可輸入與修改的備註欄位']},
   {version:'V4.12', date:'2026/07/13', title:'一鍵列印、一般下載與可編輯支付規則', items:['訂購單與簽收單可在同一視窗一鍵連續列印','訂購單圖片下載恢復內容版面，不再強制套入 A4 畫布','支付對象只顯示簡潔結果，不再附帶規則明細','資料設定新增支付對象規則管理，可新增、修改、停用及設定品項範圍']},
-  {version:'V4.11.1', date:'2026/07/13', title:'退貨入庫明細與修改修正', items:['訂購明細新增獨立退貨入庫資訊區塊，依工人與品項顯示','完全退貨品項不再只顯示購買，會標示已全數退貨入庫','退貨入庫按鈕可重新開啟既有退貨並修改品項、數量與備註','修改一般訂購資料時保留退貨數量，不再因儲存而清除']},
+  {version:'V4.11.1', date:'2026/07/13', title:'退貨入庫明細與修改修正', items:['訂購明細新增獨立退貨入庫資訊區塊，依工人與品項顯示','完全退貨品項於購買清單中保留退貨提示','退貨入庫按鈕可重新開啟既有退貨並修改品項、數量與備註','修改一般訂購資料時保留退貨數量，不再因儲存而清除']},
   {version:'V4.11', date:'2026/07/13', title:'多人姓名、工人別異動、支付規則與 A4 列印', items:['訂購單超過兩位工人仍完整顯示全部姓名','退貨入庫與加買依工人逐筆記錄並於訂購單、明細及紀錄顯示','訂購單、簽收單與下載版統一採 A4 直式版面','依雇主及指定品項自動判斷仲介公司、雇主或工人支付']},
   {version:'V4.10.3', date:'2026/07/13', title:'LOGO 滿版與上方夾子完整顯示', items:['系統左上角 LOGO 放大顯示，減少圖示四周留白','重新調整圖示構圖，上方夾子完整保留、不再被裁切','網站分頁、我的最愛與手機主畫面圖示同步更新為同一版本']},
   {version:'V4.10.2', date:'2026/07/13', title:'系統 LOGO 白框移除與網站圖示更新', items:['系統左上角 LOGO 改用最新深棕色 Order 圖示','移除 LOGO 外圍白色邊框及淺色背景，讓圖示直接融入系統側欄','網站分頁、我的最愛與手機主畫面圖示同步更新，並使用版本化檔名降低快取問題']},
@@ -1273,7 +1284,7 @@ function returnRemainingQty(line){ return Math.max(0, returnBaseQty(line)-num(li
 function returnStatusText(line){
   const base=returnBaseQty(line), returned=num(line?.returnQty);
   if(returned<=0) return '未退貨';
-  if(base>0 && returned>=base) return '已全數退貨入庫';
+  if(base>0 && returned>=base) return `退${returned}`;
   return `部分退貨，現有 ${returnRemainingQty(line)}`;
 }
 function hasReturn(order){ return orderWorkerGroups(order).some(g=>(g.items||[]).some(l=>isGeneralItem(l.code)&&num(l.returnQty)>0)) || (order.items||[]).some(l=>isGeneralItem(l.code)&&num(l.returnQty)>0); }
@@ -1299,11 +1310,15 @@ function purchaseItemsHTML(order){
     if(orderQty>0){
       const returned=isGeneralItem(l.code)?num(l.returnQty):0;
       const fullReturned=returned>0 && lineQty(l)<=0;
-      const label = fullReturned ? `已全數退貨 ${itemLabel(l.code)} ${returned}` : (isAddBuyOrder ? `加購 ${itemLabel(l.code)} ${orderQty}` : `${itemLabel(l.code)} ${orderQty}`);
-      rows.push(`<span class="plain-item-line ${fullReturned?'return':(isAddBuyOrder?'add':'')}">${esc(label)}</span>`);
+      if(fullReturned){
+        rows.push(`<span class="plain-item-line"><span class="returned-item">${esc(itemLabel(l.code))} ${orderQty}</span><span class="return-count">退${returned}</span></span>`);
+      }else{
+        const label = isAddBuyOrder ? `加購 ${itemLabel(l.code)} ${orderQty}` : `${itemLabel(l.code)} ${orderQty}`;
+        rows.push(`<span class="plain-item-line ${isAddBuyOrder?'add':''}">${esc(label)}</span>`);
+      }
     }
     if(isGeneralItem(l.code) && num(l.useStockQty)>0){
-      const label = isAddBuyOrder ? `加購拿庫存 ${itemLabel(l.code)} ${num(l.useStockQty)}` : `拿庫存 ${itemLabel(l.code)} ${num(l.useStockQty)}`;
+      const label = `${itemLabel(l.code)} ${num(l.useStockQty)}`;
       rows.push(`<span class="plain-item-line stock">${esc(label)}</span>`);
     }
     if(isGeneralItem(l.code) && num(l.addQty)>0){
@@ -1419,7 +1434,7 @@ function render(){
     <div class="app">
       <header class="app-header">
         <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.4 Supabase 公開共用版</small></div></div>
+          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.5 Supabase 公開共用版</small></div></div>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
@@ -2356,7 +2371,7 @@ function matrixLineCell(l){
   const parts=[];
   const ordered=num(l.orderQty), stock=num(l.useStockQty), added=num(l.addQty), returned=num(l.returnQty);
   if(ordered>0) parts.push(`<span class="order-qty">${ordered}</span>`);
-  if(stock>0) parts.push(`<span>拿庫存 ${stock}</span>`);
+  if(stock>0) parts.push(`<span class="stock-line">${stock}</span>`);
   if(added>0) parts.push(`<span>加買 ${added}</span>`);
   if(returned>0) parts.push(`<span class="return-line">退貨入庫 ${returned}</span>`);
   if(stock>0 || added>0 || returned>0) parts.push(`<span class="remaining-line">目前有效 ${lineQty(l)}</span>`);
@@ -2440,7 +2455,7 @@ function workerChangeDetails(o){
 function returnDetailHTML(o){
   const rows=workerChangeDetails(o).filter(r=>r.type==='退貨入庫');
   if(!rows.length) return '';
-  return `<div class="return-detail-block"><div class="section-title">退貨入庫資訊</div><div class="mini-note" style="margin-bottom:8px">以下為目前有效的退貨資料；可按下方「修改退貨入庫」重新選擇工人、品項或數量。</div><div class="scroll-x"><table class="change-table"><thead><tr><th>工人</th><th>退貨品項</th><th>退貨數量</th><th>退貨日期</th><th>退貨備註</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc(r.worker)}</b></td><td><b>${esc(r.item)}</b></td><td><span class="pill bad">退貨入庫 ${r.qty}</span></td><td>${esc(dateSlash(r.updatedAt)||'-')}</td><td>${esc(r.note||'-')}</td></tr>`).join('')}</tbody></table></div></div>`;
+  return `<div class="return-detail-block"><div class="section-title">退貨入庫資訊</div><div class="mini-note" style="margin-bottom:8px">以下為目前有效的退貨資料；可按下方「修改退貨入庫」重新選擇工人、品項或數量。</div><div class="scroll-x"><table class="change-table"><thead><tr><th>工人</th><th>退貨品項</th><th>退貨數量</th><th>退貨日期</th><th>退貨備註</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc(r.worker)}</b></td><td><b>${esc(r.item)}</b></td><td><span class="return-plain">退${r.qty}</span></td><td>${esc(dateSlash(r.updatedAt)||'-')}</td><td>${esc(r.note||'-')}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 
 function workerChangeHTML(o){
@@ -2450,7 +2465,7 @@ function workerChangeHTML(o){
 }
 function returnSummary(o){
   const rows=workerChangeDetails(o).filter(r=>r.type==='退貨入庫');
-  return rows.length ? rows.map(r=>`<span class="pill bad">${esc(r.worker)}｜${esc(r.item)} 退${r.qty}</span>`).join('') : '<span class="muted">無退貨</span>';
+  return rows.length ? rows.map(r=>`<span class="return-plain">${esc(r.worker)}｜${esc(r.item)} 退${r.qty}</span>`).join('') : '<span class="muted">無退貨</span>';
 }
 
 function renderInventory(root){
@@ -2722,9 +2737,15 @@ function printAccountingBatchDetail(batch){
   openPrintWindow(accountingBatchPrintHTML(batch,orders));
 }
 function lineSummaryByKey(o, key, cls=''){
-  const labelPrefix=key==='useStockQty'?'拿庫存 ':key==='returnQty'?'退貨 ':key==='addQty'?'加買 ':'';
+  const labelPrefix=key==='useStockQty'?'':key==='returnQty'?'退':key==='addQty'?'加買 ':'';
   const textClass=key==='useStockQty'?'stock':key==='returnQty'?'return':key==='addQty'?'add':cls;
-  const rows=orderedLines(o.items||[]).filter(l=>(key==='orderQty' || isGeneralItem(l.code)) && (key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]))>0).map(l=>{ const qty=key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]); return `<span class="plain-item-line ${textClass}">${esc(labelPrefix+itemLabel(l.code)+' '+qty)}</span>`; });
+  const rows=orderedLines(o.items||[]).filter(l=>(key==='orderQty' || isGeneralItem(l.code)) && (key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]))>0).map(l=>{
+    const qty=key==='orderQty'&&isSpecialItem(l.code)?lineQty(l):num(l[key]);
+    const returned=num(l.returnQty), fullReturned=key==='orderQty'&&returned>0&&lineQty(l)<=0;
+    if(fullReturned) return `<span class="plain-item-line"><span class="returned-item">${esc(itemLabel(l.code))} ${qty}</span><span class="return-count">退${returned}</span></span>`;
+    if(key==='returnQty') return `<span class="plain-item-line ${textClass}">${esc(itemLabel(l.code))}<span class="return-count">退${qty}</span></span>`;
+    return `<span class="plain-item-line ${textClass}">${esc(labelPrefix+itemLabel(l.code)+' '+qty)}</span>`;
+  });
   return rows.length ? rows.join('') : '<span class="muted">-</span>';
 }
 function accountingBatchHTML(batch, orders){
@@ -2741,7 +2762,7 @@ function accountingBatchHTML(batch, orders){
     </summary>
     <div class="batch-body">
       <div class="scroll-x"><table class="accounting-detail-table adaptive-table"><thead><tr>
-        <th>訂購單 / 雇主 / 工人</th><th class="payment-target-col">支付對象</th><th>訂購日</th><th class="money-col">對帳金額</th><th class="items-cell">購買品項</th><th>拿庫存</th><th>退貨入庫</th><th>加買</th><th>原金額</th><th>調整</th><th>備註 / 錯誤</th><th class="dept-staff-col">部門 / 承辦</th><th>操作</th>
+        <th>訂購單 / 雇主 / 工人</th><th class="payment-target-col font-plus-two">支付對象</th><th class="order-date-col font-plus-two">訂購日</th><th class="money-col">對帳金額</th><th class="account-item-col font-plus-two">購買品項</th><th class="account-item-col font-plus-two">拿庫存</th><th class="account-item-col font-plus-two">退貨入庫</th><th class="account-item-col font-plus-two">加買</th><th class="original-col font-plus-two">原金額</th><th class="adjust-col font-plus-two">調整</th><th class="note-col font-plus-two">備註 / 錯誤</th><th class="dept-staff-col font-plus-two">部門 / 承辦</th><th class="action-col">操作</th>
       </tr></thead><tbody>
         ${orders.map(o=>accountingOrderRow(o)).join('')}
       </tbody></table></div>
@@ -2752,18 +2773,18 @@ function accountingOrderRow(o){
   const err=o.errorNotice?`<div><span class="summary-chip bad">${esc(o.errorNotice.type)}｜${esc(o.errorNotice.note||'')}</span></div>`:'';
   return `<tr>
     <td class="order-person-cell"><div class="order-no-line"><button class="link-btn" data-account-view="${esc(o.id)}">${esc(o.orderNo)}</button></div><div class="employer-line person-name">${esc(o.employer||'-')}</div><div class="worker-line person-name">${o.isStockOrder?'庫存訂購':(isSpecialOnlyOrder(o)?'特殊訂購項目':`工人：${esc(orderWorkers(o).join('、')||'-')}`)}</div></td>
-    <td class="fit-col payment-target-col">${esc(paymentTargetDisplay(o))}</td>
-    <td class="fit-col">${esc(dateSlash(o.orderDate)||'-')}</td>
+    <td class="fit-col payment-target-col font-plus-two">${esc(paymentTargetDisplay(o))}</td>
+    <td class="fit-col order-date-col font-plus-two">${esc(dateSlash(o.orderDate)||'-')}</td>
     <td class="money-col"><span class="accounting-amount">${money(accountingAmount(o))}</span></td>
-    <td class="items-cell">${lineSummaryByKey(o,'orderQty')}</td>
-    <td>${lineSummaryByKey(o,'useStockQty','warn')}</td>
-    <td>${lineSummaryByKey(o,'returnQty','bad')}</td>
-    <td>${lineSummaryByKey(o,'addQty','ok')}</td>
-    <td class="fit-col">${orderAmountBreakdownHTML(o)}</td>
-    <td class="fit-col">${num(o.accountingAdjust||0) ? money(o.accountingAdjust) : '<span class="muted">-</span>'}</td>
-    <td>${o.accountingNote?esc(o.accountingNote):'<span class="muted">無</span>'}${err}</td>
-    <td class="dept-staff-col">${esc(o.dept||'-')}<br><span class="muted">${esc(o.overseasStaff || o.staff || '-')}</span></td>
-    <td class="fit-col"><div class="actions">
+    <td class="account-item-col font-plus-two">${lineSummaryByKey(o,'orderQty')}</td>
+    <td class="account-item-col font-plus-two">${lineSummaryByKey(o,'useStockQty','warn')}</td>
+    <td class="account-item-col font-plus-two">${lineSummaryByKey(o,'returnQty','bad')}</td>
+    <td class="account-item-col font-plus-two">${lineSummaryByKey(o,'addQty','ok')}</td>
+    <td class="fit-col original-col font-plus-two">${orderAmountBreakdownHTML(o)}</td>
+    <td class="fit-col adjust-col font-plus-two">${num(o.accountingAdjust||0) ? money(o.accountingAdjust) : '<span class="muted">-</span>'}</td>
+    <td class="note-col font-plus-two">${o.accountingNote?esc(o.accountingNote):'<span class="muted">無</span>'}${err}</td>
+    <td class="dept-staff-col font-plus-two">${esc(o.dept||'-')}<br><span class="muted">${esc(o.overseasStaff || o.staff || '-')}</span></td>
+    <td class="fit-col action-col"><div class="actions">
       <button class="small" data-account-edit="${esc(o.id)}" ${can('accounting')?'':'disabled'}>修改</button>
       <button class="small" data-account-adjust="${esc(o.id)}" ${can('accounting')?'':'disabled'}>調整</button>
       <button class="small" data-account-note="${esc(o.id)}" ${can('accounting')?'':'disabled'}>備註</button>
@@ -2968,9 +2989,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.4｜會計欄寬、品項文字與支付對象簡化</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.5｜滿版表格與退貨顯示簡化</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.4 會計欄位更易閱讀，對帳金額更醒目；品項統一取消外框，並以文字顏色區分拿庫存與退貨。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.5 表格統一滿版顯示；會計主要欄位加寬與放大，拿庫存及退貨改為更精簡的純文字格式。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -3843,7 +3864,7 @@ downloadOrderImage=async function(orderId){
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.18.4 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.18.5 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
