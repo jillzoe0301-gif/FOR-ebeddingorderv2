@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.14</title>
+  <title>FOR-e寢具訂購 V4.18.15</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -508,6 +508,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.18.15', date:'2026/09/18', title:'已有對帳人即視為完成對帳', items:['只要批次已有對帳人，即判定為已完成對帳','該批次自動歸入已對帳區並顯示已對帳','既有資料不需重新按整批對帳即可正確分類']},
   {version:'V4.18.14', date:'2026/09/18', title:'會計對帳分區與整批狀態同步修正', items:['會計對帳分為尚未對帳區及已對帳區','整批確認帳款後同步更新每筆會計狀態、訂單狀態、對帳日期與對帳人','已完成與未完成批次使用不同色彩、標章與區塊明顯區分']},
   {version:'V4.18.13', date:'2026/08/08', title:'不同工人品項標示購買姓名', items:['不同工人的訂購品項不一致時，在各品項下方顯示實際購買工人姓名','工人訂購內容相同時維持簡潔，不重複標示姓名','列印版、下載 PNG 與腳踏車訂購單同步套用']},
   {version:'V4.18.12', date:'2026/08/08', title:'寢具訂購日期與國籍欄寬調整', items:['寢具訂購的入境日／國籍欄縮為文字外多約兩個字寬','訂購日欄縮為日期文字外多約兩個字寬']},
@@ -1480,7 +1481,7 @@ function render(){
     <div class="app">
       <header class="app-header">
         <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.14 Supabase 公開共用版</small></div></div>
+          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.15 Supabase 公開共用版</small></div></div>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
@@ -2645,8 +2646,8 @@ function renderAccounting(root){
   $all('[data-account-view]').forEach(btn=>btn.addEventListener('click',()=>openRecordDetailModal(btn.dataset.accountView)));
 }
 function accountingAmount(o){ return orderAmount(o) + num(o.accountingAdjust || 0); }
-function accountingOrderIsCompleted(o){ return ['對帳完成','已對帳'].includes(o?.accountingStatus) || (o?.status==='對帳完成' && !!o?.accountingBy && !!o?.accountingDate); }
-function accountingBatchIsCompleted(orders){ return !!orders.length && orders.every(accountingOrderIsCompleted); }
+function accountingOrderIsCompleted(o){ return !!String(o?.accountingBy||'').trim() || ['對帳完成','已對帳'].includes(o?.accountingStatus); }
+function accountingBatchIsCompleted(orders){ return !!orders.length && (orders.some(o=>!!String(o?.accountingBy||'').trim()) || orders.every(accountingOrderIsCompleted)); }
 function accountingBatchFileName(batch){ return String(batch||'會計批次').replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_'); }
 function accountingOrderDetailRows(order){
   const rows=[];
@@ -3044,9 +3045,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.14｜會計對帳分區與狀態同步修正</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.15｜已有對帳人即視為完成對帳</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.14 將會計批次分為尚未對帳與已對帳兩區，並修正整批對帳後狀態同步。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.15 只要已有對帳人，即直接視為完成對帳並歸入已對帳區。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -3943,7 +3944,7 @@ downloadOrderImage=async function(orderId){
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.18.14 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.18.15 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
