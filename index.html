@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.13</title>
+  <title>FOR-e寢具訂購 V4.18.14</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -243,6 +243,20 @@
     .account-batch summary::-webkit-details-marker{display:none}
     .account-batch[open] summary{background:rgba(255,255,255,.025)}
     .account-batch .batch-body{padding:0 14px 14px}
+    .accounting-zone{margin-top:18px;border-radius:18px;padding:14px;border:1px solid var(--line)}
+    .accounting-zone.pending{background:rgba(219,143,73,.07);border-color:#9b6739}
+    .accounting-zone.completed{background:rgba(103,156,92,.08);border-color:#66865f}
+    .accounting-zone-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:2px 2px 10px;border-bottom:1px solid rgba(255,255,255,.12)}
+    .accounting-zone-head h2{margin:0;font-size:21px}
+    .accounting-zone.pending .accounting-zone-head h2{color:#ffd39b}
+    .accounting-zone.completed .accounting-zone-head h2{color:#b9e2ad}
+    .accounting-zone-count{font-weight:900;border-radius:999px;padding:5px 11px;background:rgba(0,0,0,.22)}
+    .accounting-zone-empty{padding:20px;text-align:center;color:var(--muted)}
+    .account-batch.batch-pending{border-color:#9b6739;box-shadow:0 0 0 1px rgba(219,143,73,.12)}
+    .account-batch.batch-completed{border-color:#66865f;background:linear-gradient(180deg,rgba(65,91,59,.55),rgba(47,58,44,.72))}
+    .accounting-status-badge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 10px;margin-left:8px;font-size:13px;font-weight:950;vertical-align:middle}
+    .accounting-status-badge.pending{background:#6b482d;color:#ffd39b;border:1px solid #b47a44}
+    .accounting-status-badge.completed{background:#35523a;color:#c8efbe;border:1px solid #79a271}
     .batch-toggle{font-size:12px;color:var(--muted);margin-top:4px}
     .toiletry-list{font-size:12px;line-height:1.45;margin-top:4px;color:inherit}
 
@@ -494,6 +508,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.18.14', date:'2026/09/18', title:'會計對帳分區與整批狀態同步修正', items:['會計對帳分為尚未對帳區及已對帳區','整批確認帳款後同步更新每筆會計狀態、訂單狀態、對帳日期與對帳人','已完成與未完成批次使用不同色彩、標章與區塊明顯區分']},
   {version:'V4.18.13', date:'2026/08/08', title:'不同工人品項標示購買姓名', items:['不同工人的訂購品項不一致時，在各品項下方顯示實際購買工人姓名','工人訂購內容相同時維持簡潔，不重複標示姓名','列印版、下載 PNG 與腳踏車訂購單同步套用']},
   {version:'V4.18.12', date:'2026/08/08', title:'寢具訂購日期與國籍欄寬調整', items:['寢具訂購的入境日／國籍欄縮為文字外多約兩個字寬','訂購日欄縮為日期文字外多約兩個字寬']},
   {version:'V4.18.11', date:'2026/08/08', title:'訂購單預覽與姓名去重修正', items:['下載訂購單時先建立預覽頁，避免 PNG 產生後才開啟而被瀏覽器阻擋','同一工人姓名在訂購單上只顯示一次，品項與數量仍完整保留']},
@@ -1465,7 +1480,7 @@ function render(){
     <div class="app">
       <header class="app-header">
         <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.13 Supabase 公開共用版</small></div></div>
+          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.14 Supabase 公開共用版</small></div></div>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
@@ -2609,10 +2624,13 @@ function renderAccounting(root){
   const batches = Object.entries(grouped).sort((a,b)=>b[0].localeCompare(a[0]));
   const allRows = batches.flatMap(([,orders])=>orders);
   const overviewTotal = allRows.reduce((s,o)=>s+accountingAmount(o),0);
+  const completedBatches = batches.filter(([,orders])=>accountingBatchIsCompleted(orders));
+  const pendingBatches = batches.filter(([,orders])=>!accountingBatchIsCompleted(orders));
+  const zoneHTML=(kind,title,list)=>`<section class="accounting-zone ${kind}"><div class="accounting-zone-head"><h2>${title}</h2><span class="accounting-zone-count">${list.length} 批</span></div>${list.length?list.map(([batch,orders])=>accountingBatchHTML(batch,orders)).join(''):`<div class="accounting-zone-empty">目前沒有${title}資料</div>`}</section>`;
   root.innerHTML = `
     <div class="accounting-overview"><div class="big-stat"><span>對帳批次</span><b>${batches.length}</b></div><div class="big-stat"><span>對帳筆數</span><b>${allRows.length}</b></div><div class="big-stat"><span>對帳總金額</span><b>${money(overviewTotal)}</b></div></div>
     <div class="toolbar"><div class="toolbar-left"><input id="accountingSearch" type="search" autocomplete="off" spellcheck="false" placeholder="搜尋批次 / 訂購單 / 訂購日 / 雇主 / 工人 / 品項" value="${esc(state.filters.accounting||'')}"><span class="subtle">批次可展開 / 收起；明細顯示訂購日與請款日。</span></div><div class="toolbar-right">${exportDateFilterHTML()}<button id="exportAccountingBtn">匯出對帳 CSV</button></div></div>
-    ${batches.length ? batches.map(([batch,orders])=>accountingBatchHTML(batch,orders)).join('') : `<div class="empty">尚未有符合條件的請款批次。請先在「寢具訂購」勾選資料後按「請款 / 轉會計對帳」。</div>`}`;
+    ${batches.length ? `${zoneHTML('pending','尚未對帳區',pendingBatches)}${zoneHTML('completed','已對帳區',completedBatches)}` : `<div class="empty">尚未有符合條件的請款批次。請先在「寢具訂購」勾選資料後按「請款 / 轉會計對帳」。</div>`}`;
   bindStableSearchInput('accountingSearch','accounting',renderAccounting,root);
   $('#exportAccountingBtn')?.addEventListener('click', exportAccountingCSV);
   $all('[data-download-batch-detail]').forEach(btn=>btn.addEventListener('click',()=>downloadAccountingBatchDetail(btn.dataset.downloadBatchDetail)));
@@ -2627,6 +2645,8 @@ function renderAccounting(root){
   $all('[data-account-view]').forEach(btn=>btn.addEventListener('click',()=>openRecordDetailModal(btn.dataset.accountView)));
 }
 function accountingAmount(o){ return orderAmount(o) + num(o.accountingAdjust || 0); }
+function accountingOrderIsCompleted(o){ return ['對帳完成','已對帳'].includes(o?.accountingStatus) || (o?.status==='對帳完成' && !!o?.accountingBy && !!o?.accountingDate); }
+function accountingBatchIsCompleted(orders){ return !!orders.length && orders.every(accountingOrderIsCompleted); }
 function accountingBatchFileName(batch){ return String(batch||'會計批次').replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_'); }
 function accountingOrderDetailRows(order){
   const rows=[];
@@ -2781,14 +2801,15 @@ function lineSummaryByKey(o, key, cls=''){
 }
 function accountingBatchHTML(batch, orders){
   const total = orders.reduce((s,o)=>s+accountingAmount(o),0);
-  const status = orders.every(o=>o.accountingStatus==='對帳完成') ? '對帳完成' : (orders.some(o=>o.accountingStatus==='帳務錯誤') ? '帳務錯誤' : '待對帳');
+  const completed = accountingBatchIsCompleted(orders);
+  const status = completed ? '已對帳' : (orders.some(o=>o.accountingStatus==='帳務錯誤') ? '帳務錯誤' : '尚未對帳');
   const accountBySummary = Array.from(new Set(orders.map(o=>o.accountingBy).filter(Boolean))).join('、') || '-';
   const billingDateSummary = Array.from(new Set(orders.map(o=>dateSlash(o.billingDate)).filter(Boolean))).join('、') || '-';
-  return `<details class="card account-batch" open>
+  return `<details class="card account-batch ${completed?'batch-completed':'batch-pending'}" ${completed?'':'open'}>
     <summary>
       <div class="card-title" style="margin:0">
-        <div><h2>${esc(batch)}</h2><div class="batch-hero">${orders.length} 筆｜對帳總金額 ${money(total)}</div><div class="batch-account-meta"><span>對帳狀況：<b>${esc(status)}</b></span><span>對帳人：<b>${esc(accountBySummary)}</b></span><span>請款日：<b>${esc(billingDateSummary)}</b></span></div><div class="batch-toggle">點此可展開 / 收起批次明細</div></div>
-        <div class="actions"><button onclick="event.stopPropagation()" class="accounting-action" data-download-batch-detail="${esc(batch)}">下載全部訂單明細</button><button onclick="event.stopPropagation()" data-print-batch-detail="${esc(batch)}">列印批次明細</button><button onclick="event.stopPropagation()" data-error-batch="${esc(batch)}" ${can('accounting')?'':'disabled'}>帳務錯誤通知</button><button onclick="event.stopPropagation()" class="primary" data-confirm-batch="${esc(batch)}" ${can('accounting')?'':'disabled'}>整批確認帳款</button></div>
+        <div><h2>${esc(batch)}<span class="accounting-status-badge ${completed?'completed':'pending'}">${esc(status)}</span></h2><div class="batch-hero">${orders.length} 筆｜對帳總金額 ${money(total)}</div><div class="batch-account-meta"><span>對帳狀況：<b>${esc(status)}</b></span><span>對帳人：<b>${esc(accountBySummary)}</b></span><span>請款日：<b>${esc(billingDateSummary)}</b></span></div><div class="batch-toggle">點此可展開 / 收起批次明細</div></div>
+        <div class="actions"><button onclick="event.stopPropagation()" class="accounting-action" data-download-batch-detail="${esc(batch)}">下載全部訂單明細</button><button onclick="event.stopPropagation()" data-print-batch-detail="${esc(batch)}">列印批次明細</button><button onclick="event.stopPropagation()" data-error-batch="${esc(batch)}" ${can('accounting')&&!completed?'':'disabled'}>帳務錯誤通知</button><button onclick="event.stopPropagation()" class="primary" data-confirm-batch="${esc(batch)}" ${can('accounting')&&!completed?'':'disabled'}>${completed?'已完成對帳':'整批確認帳款'}</button></div>
       </div>
     </summary>
     <div class="batch-body">
@@ -2836,8 +2857,11 @@ function confirmAccountingBatch(batch){
 請輸入對帳人：`, defaultBy);
   if(by===null) return;
   if(!String(by).trim()) return toast('請輸入對帳人');
-  orders.forEach(o=>{ o.accountingStatus='對帳完成'; o.accountingDate=todayInput(); o.accountingBy=String(by).trim(); o.status='對帳完成'; });
-  save(); toast('對帳完成'); render();
+  const accountingBy=String(by).trim();
+  const accountingDate=todayInput();
+  orders.forEach(o=>{ o.accountingStatus='對帳完成'; o.accountingDate=accountingDate; o.accountingBy=accountingBy; o.status='對帳完成'; });
+  audit('整批確認帳款','會計批次',batch,batch,`${orders.length} 筆｜${money(total)}｜對帳人 ${accountingBy}`);
+  save(); render(); toast('整批對帳完成，已移至「已對帳區」');
 }
 function openAccountingEditModal(orderId, focusAdjust=false){
   const o=state.orders.find(x=>x.id===orderId); if(!o) return;
@@ -3020,9 +3044,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.13｜不同工人品項標示購買姓名</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.14｜會計對帳分區與狀態同步修正</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.13 會在不同工人訂購品項不一致時，於各品項下方標示實際購買工人姓名。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.14 將會計批次分為尚未對帳與已對帳兩區，並修正整批對帳後狀態同步。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -3919,7 +3943,7 @@ downloadOrderImage=async function(orderId){
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.18.13 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.18.14 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }

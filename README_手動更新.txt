@@ -1,4 +1,4 @@
-FOR-e 寢具訂購系統 V4.18.13
+FOR-e 寢具訂購系統 V4.18.14
 GitHub 手動覆蓋更新包
 
 本版內容：
@@ -15,16 +15,16 @@ D. GitHub main 更新後，由 Vercel 自動部署即可。
 如果使用 Codespaces，可執行：
 
 cd /workspaces/FOR-ebeddingorderv2
-unzip -o 'FOR-e_Bedding_Order_V4.18.13_GitHub_Manual_Update.zip'
+unzip -o 'FOR-e_Bedding_Order_V4.18.14_GitHub_Manual_Update.zip'
 npm ci
 npm run build
 git add -A
-git commit -m "Update V4.18.13 worker names by ordered item"
+git commit -m "Update V4.18.14 accounting reconciliation sections and status sync"
 git pull --rebase origin main
 git push origin main
 
 正確版本：
-package.json = 4.18.13
+package.json = 4.18.14
 build = vite build
 
 注意：
