@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.15</title>
+  <title>FOR-e寢具訂購 V4.18.16</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -508,6 +508,7 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
+  {version:'V4.18.16', date:'2026/09/23', title:'修正修改收貨聯絡人造成資料遭覆蓋', items:['儲存收貨聯絡人前先重新取得 Supabase 最新完整資料，只合併聯絡人異動','每次同步前再次核對遠端 revision，防止 Restore 後的舊分頁覆蓋資料','若送出資料無故少了既有訂單，安全防護會直接停止同步並要求重新整理']},
   {version:'V4.18.15', date:'2026/09/18', title:'已有對帳人即視為完成對帳', items:['只要批次已有對帳人，即判定為已完成對帳','該批次自動歸入已對帳區並顯示已對帳','既有資料不需重新按整批對帳即可正確分類']},
   {version:'V4.18.14', date:'2026/09/18', title:'會計對帳分區與整批狀態同步修正', items:['會計對帳分為尚未對帳區及已對帳區','整批確認帳款後同步更新每筆會計狀態、訂單狀態、對帳日期與對帳人','已完成與未完成批次使用不同色彩、標章與區塊明顯區分']},
   {version:'V4.18.13', date:'2026/08/08', title:'不同工人品項標示購買姓名', items:['不同工人的訂購品項不一致時，在各品項下方顯示實際購買工人姓名','工人訂購內容相同時維持簡潔，不重複標示姓名','列印版、下載 PNG 與腳踏車訂購單同步套用']},
@@ -888,6 +889,7 @@ let remoteSaving = false;
 let remoteSaveQueued = false;
 let remoteConflict = false;
 let stateChannel = null;
+let allowRemoteOrderRemovalOnce = false;
 
 function loadState(){
   try{
@@ -909,6 +911,18 @@ function sharedStatePayload(){
   };
 }
 function sharedJSON(){ return JSON.stringify(sharedStatePayload()); }
+function orderIds(payload){
+  return new Set((Array.isArray(payload?.orders)?payload.orders:[]).map(o=>String(o?.id||'')).filter(Boolean));
+}
+function deletedOrderIds(payload){
+  return new Set((Array.isArray(payload?.deletedOrders)?payload.deletedOrders:[]).map(d=>String(d?.order?.id||'')).filter(Boolean));
+}
+function unexplainedMissingOrders(remotePayload, nextPayload){
+  const nextIds=orderIds(nextPayload);
+  const deletedIds=deletedOrderIds(nextPayload);
+  return (Array.isArray(remotePayload?.orders)?remotePayload.orders:[])
+    .filter(o=>o?.id && !nextIds.has(String(o.id)) && !deletedIds.has(String(o.id)));
+}
 function setSyncStatus(status, label){
   const dot = document.querySelector('#syncDot');
   const text = document.querySelector('#syncLabel');
@@ -928,8 +942,9 @@ async function loadRemoteState(){
   if(error) throw error;
   applyRemoteState(data?.data || {}, data?.revision || 0);
 }
-function scheduleRemoteSave(){
+function scheduleRemoteSave(options={}){
   if(!supabase || remoteConflict) return;
+  if(options.allowOrderRemoval) allowRemoteOrderRemovalOnce = true;
   const nextJSON = sharedJSON();
   if(nextJSON === lastSharedJSON) return;
   clearTimeout(remoteSaveTimer);
@@ -943,8 +958,26 @@ async function persistRemoteState(){
   remoteSaving = true;
   setSyncStatus('saving','同步中');
   try{
+    const {data:liveRow, error:liveError} = await supabase.from('app_state').select('data, revision').eq('id', APP_STATE_ID).single();
+    if(liveError) throw liveError;
+    const liveRevision=Number(liveRow?.revision||0);
+    if(liveRevision!==Number(remoteRevision||0)){
+      remoteConflict=true;
+      remoteRevision=liveRevision;
+      setSyncStatus('error','資料已更新，請重新整理');
+      alert('Supabase 已有較新的資料。為避免舊分頁覆蓋資料，本次變更已停止寫入；請重新整理後再操作。');
+      return;
+    }
+    const nextPayload=JSON.parse(nextJSON);
+    const missingOrders=unexplainedMissingOrders(liveRow?.data||{},nextPayload);
+    if(missingOrders.length && !allowRemoteOrderRemovalOnce){
+      remoteConflict=true;
+      setSyncStatus('error','已阻止異常覆蓋');
+      alert(`安全防護已阻止這次同步：送出的資料比 Supabase 少 ${missingOrders.length} 筆訂單。請重新整理頁面確認資料；系統沒有覆蓋遠端資料。`);
+      return;
+    }
     const {data, error} = await supabase.rpc('save_bedding_state', {
-      p_data: JSON.parse(nextJSON),
+      p_data: nextPayload,
       p_expected_revision: remoteRevision,
       p_client_id: CLIENT_ID
     });
@@ -964,6 +997,7 @@ async function persistRemoteState(){
     setSyncStatus('error','同步失敗');
     toast('Supabase 同步失敗，資料暫存在此瀏覽器');
   }finally{
+    allowRemoteOrderRemovalOnce = false;
     remoteSaving = false;
     if(remoteSaveQueued){ remoteSaveQueued = false; scheduleRemoteSave(); }
   }
@@ -1166,9 +1200,9 @@ function normalizeState(s){
   if(!pages.find(p=>p.id===s.currentPage)) s.currentPage = 'orders';
   return s;
 }
-function save(){
+function save(options={}){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  scheduleRemoteSave();
+  scheduleRemoteSave(options);
 }
 function nowStamp(){
   const d=new Date();
@@ -1481,7 +1515,7 @@ function render(){
     <div class="app">
       <header class="app-header">
         <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.15 Supabase 公開共用版</small></div></div>
+          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.16 Supabase 公開共用版</small></div></div>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
@@ -3045,9 +3079,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.15｜已有對帳人即視為完成對帳</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.16｜修正聯絡人儲存覆蓋資料</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.15 只要已有對帳人，即直接視為完成對帳並歸入已對帳區。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.16 儲存收貨聯絡人前會以 Supabase 最新資料為基礎，並阻止訂單異常縮減覆蓋。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -3311,7 +3345,7 @@ function importJSON(e){
 }
 function clearAllData(){
   if(!confirm('確定要清空全部訂購、庫存調整與設定？')) return;
-  state=defaultState(); save(); toast('已清空'); render();
+  state=defaultState(); save({allowOrderRemoval:true}); toast('已清空'); render();
 }
 function loadDemoData(){
   const o=createBlankOrder();
@@ -3358,7 +3392,7 @@ function openDeliveryContactModal(id){
     }
   });
 }
-function saveDeliveryContactFromModal(id,modal){
+async function saveDeliveryContactFromModal(id,modal){
   const data={
     id:id||uid('CONTACT'),
     name:$('#contact_name',modal).value.trim(),
@@ -3369,6 +3403,20 @@ function saveDeliveryContactFromModal(id,modal){
     active:$('#contact_active',modal).value==='true'
   };
   if(!data.name) return toast('請輸入收貨聯絡人姓名');
+  if(supabase){
+    try{
+      setSyncStatus('saving','確認最新資料');
+      const {data:liveRow,error}=await supabase.from('app_state').select('data, revision').eq('id',APP_STATE_ID).single();
+      if(error) throw error;
+      // Contact edits change settings only. Rebase onto the newest remote snapshot
+      // so a stale tab cannot overwrite orders recovered by a database restore.
+      applyRemoteState(liveRow?.data||{},liveRow?.revision||0);
+    }catch(err){
+      console.error(err);
+      setSyncStatus('error','無法確認最新資料');
+      return toast('無法取得 Supabase 最新資料，已停止儲存聯絡人以保護訂單');
+    }
+  }
   state.settings.contacts=Array.isArray(state.settings.contacts)?state.settings.contacts:[];
   const idx=state.settings.contacts.findIndex(c=>c.id===id);
   const before=idx>=0?JSON.parse(JSON.stringify(state.settings.contacts[idx])):null;
@@ -3376,10 +3424,24 @@ function saveDeliveryContactFromModal(id,modal){
   audit(idx>=0?'修改收貨聯絡人':'新增收貨聯絡人','收貨聯絡人',data.id,data.name,`${contactDisplay(data)}｜${data.deliveryPlace||''}`,before);
   save(); toast('收貨聯絡人已儲存'); closeModal(); renderSettings($('#content'));
 }
-function deleteDeliveryContact(id){
-  const contact=(state.settings.contacts||[]).find(c=>c.id===id);
+async function deleteDeliveryContact(id){
+  let contact=(state.settings.contacts||[]).find(c=>c.id===id);
   if(!contact) return;
   if(!confirm(`確定刪除收貨聯絡人「${contactDisplay(contact)}」？`)) return;
+  if(supabase){
+    try{
+      setSyncStatus('saving','確認最新資料');
+      const {data:liveRow,error}=await supabase.from('app_state').select('data, revision').eq('id',APP_STATE_ID).single();
+      if(error) throw error;
+      applyRemoteState(liveRow?.data||{},liveRow?.revision||0);
+      contact=(state.settings.contacts||[]).find(c=>c.id===id);
+      if(!contact) return toast('此聯絡人已被其他使用者刪除');
+    }catch(err){
+      console.error(err);
+      setSyncStatus('error','無法確認最新資料');
+      return toast('無法取得 Supabase 最新資料，已停止刪除聯絡人以保護訂單');
+    }
+  }
   state.settings.contacts=(state.settings.contacts||[]).filter(c=>c.id!==id);
   audit('刪除收貨聯絡人','收貨聯絡人',id,contact.name,'已從資料設定移除',contact);
   save(); toast('收貨聯絡人已刪除'); renderSettings($('#content'));
@@ -3944,7 +4006,7 @@ downloadOrderImage=async function(orderId){
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.18.15 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.18.16 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
