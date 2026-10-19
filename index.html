@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.17</title>
+  <title>FOR-e寢具訂購 V4.18.18</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -134,7 +134,39 @@
     .modal-body{padding:14px;max-height:80vh;max-width:100%;min-width:0;overflow:auto;overscroll-behavior:contain}
     .modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:10px 16px;border-top:1px solid var(--line);background:#302821}
     .item-table input{padding:4px 5px;border-radius:8px;min-width:48px;min-height:28px}
-    .item-table td,.item-table th{font-size:12px;padding:5px 4px;line-height:1.25}
+    .item-table td,.item-table th{font-size:12px;padding:8px 7px;line-height:1.35}
+    .order-entry-table{table-layout:fixed}
+    .order-entry-table th:nth-child(1){width:29%}
+    .order-entry-table th:nth-child(2){width:8%}
+    .order-entry-table th:nth-child(3){width:12%}
+    .order-entry-table th:nth-child(4),.order-entry-table th:nth-child(5){width:17%}
+    .order-entry-table th:nth-child(6){width:17%}
+    .order-entry-table tbody tr{transition:background .18s ease,box-shadow .18s ease}
+    .order-entry-table tbody tr.has-qty td{background:rgba(196,151,103,.12)}
+    .order-entry-table tbody tr.has-qty td:first-child{box-shadow:inset 3px 0 #d6a66f}
+    .order-entry-table .item-name{font-size:13px;color:#fff1df}
+    .order-entry-table .item-spec{display:block;margin-top:3px;color:var(--muted)}
+    .qty-stepper{display:grid;grid-template-columns:30px minmax(42px,56px) 30px;align-items:center;justify-content:start;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#302821;width:max-content;max-width:100%}
+    .qty-stepper button{width:30px;height:32px;min-height:32px;padding:0;border:0;border-radius:0;background:#463b32;color:#f4dfc4;font-size:18px;font-weight:900;box-shadow:none}
+    .qty-stepper button:hover{background:#5a493a}
+    .qty-stepper input{width:100%;min-width:42px;height:32px;min-height:32px;padding:3px 2px;border:0;border-left:1px solid var(--line);border-right:1px solid var(--line);border-radius:0;background:#382f28;text-align:center;font-weight:900;color:#fff3e4;box-shadow:none}
+    .qty-stepper input:focus{box-shadow:inset 0 0 0 2px var(--accent);border-color:var(--line)}
+    .qty-stepper input::-webkit-inner-spin-button,.qty-stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+    .entry-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:10px 0 8px;padding:9px 10px;border:1px solid rgba(196,151,103,.35);border-radius:12px;background:rgba(196,151,103,.07)}
+    .entry-toolbar-actions{display:flex;gap:7px;flex-wrap:wrap}
+    .entry-toolbar .preset-btn{border-color:rgba(196,151,103,.62);color:#f3d2aa;background:#493a2d;font-weight:800}
+    .entry-summary{display:flex;align-items:center;gap:7px;flex-wrap:wrap;color:#d8c8b6;font-size:12px}
+    .entry-summary strong{color:#ffd39d;font-size:14px}
+    .entry-summary .summary-dot{opacity:.55}
+    .worker-card{border-color:rgba(196,151,103,.36);background:linear-gradient(180deg,rgba(68,56,46,.72),rgba(48,41,34,.72))}
+    .worker-card-head h4{color:#fff0df}
+    .order-entry-hint{display:flex;align-items:center;gap:7px;color:#bdae9d;font-size:12px;margin-top:7px}
+    .order-entry-hint::before{content:"";width:7px;height:7px;border-radius:50%;background:#d6a66f;box-shadow:0 0 0 4px rgba(214,166,111,.12)}
+    @media(max-width:760px){
+      .order-entry-table{min-width:760px}
+      .entry-toolbar{align-items:flex-start}
+      .entry-summary{width:100%}
+    }
     .right{text-align:right}
     .center{text-align:center}
     .muted{color:var(--muted)}
@@ -508,7 +540,8 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
-  {version:'V4.18.17', date:'2026/10/14', title:'修正拿庫存退貨未顯示', items:['退貨標示不再只依附一般訂購數量','拿庫存或加買品項退貨後，清單同步顯示退貨品項與數量','部分退貨保留原訂購、拿庫存及加買資訊，並另列紅色退貨數量','全數退貨時，各來源品項均以刪除線明確標示']},
+  {version:'V4.18.18', date:'2026/10/19', title:'訂購數量輸入介面簡約優化', items:['訂購與拿庫存改為減號、數量、加號的直覺輸入方式','一般訂購畫面隱藏退貨與加買欄位，既有資料完整保留並改由專用功能操作','每位工人可一鍵套用基本寢具或清空數量','有數量的品項自動反亮，並即時計算已選品項、總件數與小計','按 Enter 可依序往下填寫同一數量欄位，提升大量輸入效率']},
+  {version:'V4.18.18', date:'2026/10/14', title:'修正拿庫存退貨未顯示', items:['退貨標示不再只依附一般訂購數量','拿庫存或加買品項退貨後，清單同步顯示退貨品項與數量','部分退貨保留原訂購、拿庫存及加買資訊，並另列紅色退貨數量','全數退貨時，各來源品項均以刪除線明確標示']},
   {version:'V4.18.16', date:'2026/09/23', title:'修正修改收貨聯絡人造成資料遭覆蓋', items:['儲存收貨聯絡人前先重新取得 Supabase 最新完整資料，只合併聯絡人異動','每次同步前再次核對遠端 revision，防止 Restore 後的舊分頁覆蓋資料','若送出資料無故少了既有訂單，安全防護會直接停止同步並要求重新整理']},
   {version:'V4.18.15', date:'2026/09/18', title:'已有對帳人即視為完成對帳', items:['只要批次已有對帳人，即判定為已完成對帳','該批次自動歸入已對帳區並顯示已對帳','既有資料不需重新按整批對帳即可正確分類']},
   {version:'V4.18.14', date:'2026/09/18', title:'會計對帳分區與整批狀態同步修正', items:['會計對帳分為尚未對帳區及已對帳區','整批確認帳款後同步更新每筆會計狀態、訂單狀態、對帳日期與對帳人','已完成與未完成批次使用不同色彩、標章與區塊明顯區分']},
@@ -1518,7 +1551,7 @@ function render(){
     <div class="app">
       <header class="app-header">
         <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.17 Supabase 公開共用版</small></div></div>
+          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.18 Supabase 公開共用版</small></div></div>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
@@ -1718,8 +1751,21 @@ function openOrderModal(orderId){
       updateOrderNoPreview(modal, !!existing, order.id);
       updateInvoiceTitlePreview(modal);
       applyEmployerPaymentRule(modal);
+      bindOrderEntryUX(modal);
       ['input','change','blur'].forEach(evt=>modal.querySelector('#f_employer')?.addEventListener(evt,()=>applyEmployerPaymentRule(modal)));
-      modal.addEventListener('input',e=>{ if(e.target?.matches?.('.line-order,.line-add,.line-use-stock')) applyEmployerPaymentRule(modal); });
+      modal.addEventListener('input',e=>{
+        if(e.target?.matches?.('.line-order,.line-add,.line-use-stock,.line-price')){
+          applyEmployerPaymentRule(modal);
+          updateEntrySummary(e.target.closest('.worker-card'));
+        }
+      });
+      modal.addEventListener('keydown',e=>{
+        if(e.key!=='Enter' || !e.target?.matches?.('.line-order,.line-use-stock')) return;
+        e.preventDefault();
+        const inputs=$all(e.target.matches('.line-order')?'.line-order':'.line-use-stock',e.target.closest('.worker-card'));
+        const next=inputs[inputs.indexOf(e.target)+1];
+        if(next){ next.focus(); next.select(); }
+      });
       modal.querySelector('#f_deliveryPlace')?.addEventListener('change',()=>updateDeliveryInputs(modal,true));
       modal.querySelector('#f_contact')?.addEventListener('change',()=>applyConfiguredContact(modal));
       modal.querySelector('#f_contact')?.addEventListener('blur',()=>applyConfiguredContact(modal));
@@ -1737,8 +1783,27 @@ function openOrderModal(orderId){
         group.nationality=$('#f_bulkNationality',modal)?.value || group.nationality;
         group.entryDate=$('#f_bulkEntryDate',modal)?.value || '';
         $('#workerCards',modal).insertAdjacentHTML('beforeend', workerGroupFormHTML(group, Date.now()));
+        bindOrderEntryUX(modal);
       });
       modal.addEventListener('click',e=>{
+        const step=e.target.closest('.qty-step');
+        if(step){
+          const input=step.parentElement?.querySelector('input[type="number"]');
+          if(input){
+            input.value=String(Math.max(0,num(input.value)+num(step.dataset.delta)));
+            input.dispatchEvent(new Event('input',{bubbles:true}));
+          }
+          return;
+        }
+        const basicBtn=e.target.closest('.card-basic-set');
+        if(basicBtn){ setBasicItemsForCard(basicBtn.closest('.worker-card')); toast('已套用基本寢具'); return; }
+        const clearBtn=e.target.closest('.card-clear-items');
+        if(clearBtn){
+          const card=clearBtn.closest('.worker-card');
+          $all('.line-order,.line-use-stock',card).forEach(input=>input.value='0');
+          updateEntrySummary(card);
+          return;
+        }
         const btn=e.target.closest('.remove-worker-card');
         if(!btn) return;
         btn.closest('.worker-card')?.remove();
@@ -1916,21 +1981,26 @@ function applyConfiguredContact(modal){
   if(selected.deliveryPlace && Array.from(place.options).some(opt=>opt.value===selected.deliveryPlace)) place.value=selected.deliveryPlace;
   if(selected.address) address.value=selected.address;
 }
+function qtyStepperHTML(className, value, label){
+  return `<div class="qty-stepper" role="group" aria-label="${esc(label)}">
+    <button type="button" class="qty-step" data-delta="-1" tabindex="-1" aria-label="減少${esc(label)}">−</button>
+    <input type="number" inputmode="numeric" step="1" min="0" class="${className}" value="${num(value)}" aria-label="${esc(label)}">
+    <button type="button" class="qty-step" data-delta="1" tabindex="-1" aria-label="增加${esc(label)}">＋</button>
+  </div>`;
+}
 function itemRowsHTML(items, filterFn=null, options={}){
   const activeItems = state.settings.items.filter(i=>i.active!==false && (!filterFn || filterFn(i)));
   const itemMap = new Map((items||[]).map(l=>[l.code,l]));
-  const showReturn=!!options.showReturn;
   return activeItems.map(item=>{
     const l = normalizeItemLine(itemMap.get(item.code) || {code:item.code,price:item.price});
     return `<tr data-code="${esc(item.code)}" data-return-note="${esc(l.returnNote||'')}" data-return-updated-at="${esc(l.returnUpdatedAt||'')}">
-      <td><b>${esc(item.name)}</b><br><span class="muted">${esc(item.spec||'')}</span></td>
+      <td><b class="item-name">${esc(item.name)}</b><span class="item-spec">${esc(item.spec||'')}</span></td>
       <td class="nowrap">${esc(item.unit||'')}</td>
-      <td><input type="number" step="1" class="line-price" value="${num(l.price)}"></td>
-      <td><input type="number" step="1" min="0" class="line-order" value="${num(l.orderQty)}"></td>
-      <td><input type="number" step="1" min="0" class="line-use-stock" value="${num(l.useStockQty)}"></td>
-      ${showReturn?`<td><input type="number" step="1" min="0" class="line-return" value="${num(l.returnQty)}" title="退貨入庫數量"></td>`:`<td class="hidden"><input type="hidden" class="line-return" value="${num(l.returnQty)}"></td>`}
-      <td><input type="number" step="1" min="0" class="line-add" value="${num(l.addQty)}"></td>
-      <td><input class="line-note" value="${esc(l.note||'')}"></td>
+      <td><input type="number" step="1" class="line-price" value="${num(l.price)}" aria-label="${esc(item.name)}單價"></td>
+      <td>${qtyStepperHTML('line-order',l.orderQty,`${item.name}訂購數量`)}</td>
+      <td>${qtyStepperHTML('line-use-stock',l.useStockQty,`${item.name}拿庫存數量`)}</td>
+      <td><input class="line-note" value="${esc(l.note||'')}" placeholder="選填" aria-label="${esc(item.name)}備註"></td>
+      <td class="hidden"><input type="hidden" class="line-return" value="${num(l.returnQty)}"><input type="hidden" class="line-add" value="${num(l.addQty)}"></td>
     </tr>`;
   }).join('');
 }
@@ -1943,8 +2013,51 @@ function workerGroupFormHTML(g, index){
       <div><label>國籍</label><select class="wg-nationality">${countryOptions.map(c=>`<option ${group.nationality===c?'selected':''}>${c}</option>`).join('')}</select></div>
       <div><label>入境日</label><input type="date" class="wg-entryDate" value="${esc(group.entryDate||'')}"></div>
     </div>
-    <div class="mini-note" style="margin-top:8px">退貨入庫可直接修改數量；退貨數量不可超過訂購＋拿庫存＋加買總數。</div><div class="table-wrap" style="margin-top:8px"><table class="item-table"><thead><tr><th>品項</th><th>單位</th><th>工人訂購價</th><th>訂購</th><th>拿庫存</th><th>退貨入庫</th><th>加買</th><th>備註</th></tr></thead><tbody>${itemRowsHTML(group.items, i=>isGeneralItem(i), {showReturn:true})}</tbody></table></div>
+    <div class="entry-toolbar">
+      <div class="entry-toolbar-actions">
+        <button type="button" class="small preset-btn card-basic-set">套用基本寢具</button>
+        <button type="button" class="small ghost card-clear-items">清空數量</button>
+      </div>
+      <div class="entry-summary" aria-live="polite"><span>已選 <strong data-summary-items>0</strong> 項</span><span class="summary-dot">•</span><span>共 <strong data-summary-qty>0</strong> 件</span><span class="summary-dot">•</span><span>小計 <strong data-summary-total>NT$0</strong></span></div>
+    </div>
+    <div class="order-entry-hint">只需填「訂購」或「拿庫存」；退貨與加買請回到訂單後使用專用功能。</div>
+    <div class="table-wrap" style="margin-top:8px"><table class="item-table order-entry-table"><thead><tr><th>品項</th><th>單位</th><th>單價</th><th>訂購數量</th><th>拿庫存</th><th>備註</th></tr></thead><tbody>${itemRowsHTML(group.items, i=>isGeneralItem(i))}</tbody></table></div>
   </div>`;
+}
+
+function updateEntrySummary(card){
+  if(!card) return;
+  let itemCount=0, qty=0, total=0;
+  $all('tr[data-code]',card).forEach(tr=>{
+    const orderQty=Math.max(0,num($('.line-order',tr)?.value));
+    const stockQty=Math.max(0,num($('.line-use-stock',tr)?.value));
+    const addQty=Math.max(0,num($('.line-add',tr)?.value));
+    const returnQty=Math.max(0,num($('.line-return',tr)?.value));
+    const effectiveQty=Math.max(0,orderQty+stockQty+addQty-returnQty);
+    tr.classList.toggle('has-qty',effectiveQty>0);
+    if(effectiveQty>0) itemCount++;
+    qty+=effectiveQty;
+    total+=effectiveQty*num($('.line-price',tr)?.value);
+  });
+  const itemsEl=$('[data-summary-items]',card);
+  const qtyEl=$('[data-summary-qty]',card);
+  const totalEl=$('[data-summary-total]',card);
+  if(itemsEl) itemsEl.textContent=String(itemCount);
+  if(qtyEl) qtyEl.textContent=String(qty);
+  if(totalEl) totalEl.textContent=money(total);
+}
+function setBasicItemsForCard(card){
+  const basic = {MATTRESS:1, QUILT:1, PILLOW:1, CLOSET:1, TOILETRIES:1};
+  $all('tr[data-code]',card).forEach(tr=>{
+    const input=$('.line-order',tr);
+    if(input) input.value=String(basic[tr.dataset.code]||0);
+    const stock=$('.line-use-stock',tr);
+    if(stock) stock.value='0';
+  });
+  updateEntrySummary(card);
+}
+function bindOrderEntryUX(modal){
+  $all('.worker-card',modal).forEach(updateEntrySummary);
 }
 
 function parseWorkerNames(value){
@@ -1971,6 +2084,7 @@ function bulkAddWorkers(modal){
     group.name=name; group.nationality=nationality; group.entryDate=entryDate;
     holder?.insertAdjacentHTML('beforeend',workerGroupFormHTML(group,Date.now()+index));
   });
+  bindOrderEntryUX(modal);
   if($('#f_bulkWorkerNames',modal)) $('#f_bulkWorkerNames',modal).value='';
   toast(`已一鍵新增 ${newNames.length} 位工人`);
 }
@@ -2001,6 +2115,7 @@ function copyFirstWorkerItemsToAll(modal){
     if($('.line-add',tr)) $('.line-add',tr).value=data.add;
     if($('.line-note',tr)) $('.line-note',tr).value=data.note;
   }));
+  cards.forEach(updateEntrySummary);
   toast(`已將第一位工人的購買品項套用其餘 ${cards.length-1} 位工人`);
 }
 
@@ -2018,8 +2133,8 @@ function specialItemRowsHTML(items){
       <td><b>${esc(item.name)}</b><br><span class="muted">${esc(item.spec||'')}｜不綁定工人，同張訂購單只填一次</span></td>
       <td class="nowrap">${esc(item.unit||'')}</td>
       <td><input type="number" step="1" class="line-price" value="${num(l.price)}"></td>
-      <td><input type="number" step="1" min="0" class="line-order" value="${num(l.orderQty)}"></td>
-      <td><input class="line-note" value="${esc(l.note||'')}"></td>
+      <td>${qtyStepperHTML('line-order',l.orderQty,`${item.name}訂購數量`)}</td>
+      <td><input class="line-note" value="${esc(l.note||'')}" placeholder="選填"></td>
     </tr>`;
   }).join('');
 }
@@ -2109,7 +2224,7 @@ function orderFormHTML(o){
         </div>
         <div class="mini-note" style="margin-top:8px">可一次建立多位工人並帶入共同國籍、入境日；自訂購買品項時，先填第一位工人，再按「第一位工人購買品項套用全部」。</div>
       </div>
-      <div class="subtle">一般訂購項目依每位工人填寫，可使用拿庫存、加買與退貨；可移除全部工人，只保留特殊訂購項目。</div>
+      <div class="subtle">一般訂購只填訂購數量或拿庫存；完成後如需退貨、加買，請從訂單的專用按鈕操作。</div>
       <div id="workerCards">${workerCards}</div>
     </div>
 
@@ -2139,6 +2254,7 @@ function applyBasicSet(modal){
     tr.querySelector('.line-add').value = 0;
     tr.querySelector('.line-use-stock').value = 0;
   });
+  $all('.worker-card',modal).forEach(updateEntrySummary);
   toast('已套用基本寢具');
 }
 function readLinesFromRoot(root){
@@ -3082,9 +3198,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.17｜修正拿庫存退貨未顯示</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.18｜修正拿庫存退貨未顯示</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.17 訂購、拿庫存及加買品項只要有退貨，都會在清單正確顯示退貨品項與數量。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.18 訂購、拿庫存及加買品項只要有退貨，都會在清單正確顯示退貨品項與數量。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -4009,7 +4125,7 @@ downloadOrderImage=async function(orderId){
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.18.17 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.18.18 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
