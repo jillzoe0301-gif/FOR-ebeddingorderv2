@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FOR-e寢具訂購 V4.18.18</title>
+  <title>FOR-e寢具訂購 V4.18.19</title>
   <meta name="theme-color" content="#c49767" />
   <link rel="icon" href="/favicon-v4103.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v4103-32x32.png" />
@@ -483,6 +483,7 @@ function paymentRuleMatchesItem(rule,item){
   return rule.mode==='include' ? hit : !hit;
 }
 function resolvedLinePaymentTarget(order,line){
+  if(order?.paymentTargetManual===true && paymentTargets.includes(order?.paymentTarget)) return order.paymentTarget;
   const rule=matchedEmployerPaymentRule(order?.employer);
   if(!rule) return order?.paymentTarget || '工人';
   return paymentRuleMatchesItem(rule,getItem(line?.code)) ? rule.target : rule.fallbackTarget;
@@ -491,6 +492,7 @@ function paymentRelevantLines(order){
   return orderedLines(order?.items||[]).filter(l=>lineQty(l)>0 || supplierQty(l)>0 || num(l.useStockQty)>0 || num(l.addQty)>0);
 }
 function effectivePaymentTarget(order){
+  if(order?.paymentTargetManual===true && paymentTargets.includes(order?.paymentTarget)) return order.paymentTarget;
   const rule=matchedEmployerPaymentRule(order?.employer);
   if(!rule) return order?.paymentTarget || '工人';
   const targets=[...new Set(paymentRelevantLines(order).map(l=>resolvedLinePaymentTarget(order,l)))];
@@ -540,8 +542,9 @@ function applyEmployerPaymentRule(modal){
 const statusOptions = ['已下單','已收貨','待請款','待對帳','對帳完成','帳務錯誤'];
 const accountingStatusOptions = ['待對帳','對帳完成','帳務錯誤'];
 const versionNotes = [
-  {version:'V4.18.18', date:'2026/10/19', title:'訂購數量輸入介面簡約優化', items:['訂購與拿庫存改為減號、數量、加號的直覺輸入方式','一般訂購畫面隱藏退貨與加買欄位，既有資料完整保留並改由專用功能操作','每位工人可一鍵套用基本寢具或清空數量','有數量的品項自動反亮，並即時計算已選品項、總件數與小計','按 Enter 可依序往下填寫同一數量欄位，提升大量輸入效率']},
-  {version:'V4.18.18', date:'2026/10/14', title:'修正拿庫存退貨未顯示', items:['退貨標示不再只依附一般訂購數量','拿庫存或加買品項退貨後，清單同步顯示退貨品項與數量','部分退貨保留原訂購、拿庫存及加買資訊，並另列紅色退貨數量','全數退貨時，各來源品項均以刪除線明確標示']},
+  {version:'V4.18.19', date:'2026/11/18', title:'支付對象列印一致性修正', items:['修正表單選擇仲介支付後，儲存時又被品項規則改回工人支付的問題','人工確認並儲存的支付對象優先於自動品項規則','訂購單表頭與品項支付對象統一使用最後儲存值']},
+  {version:'V4.18.19', date:'2026/10/19', title:'訂購數量輸入介面簡約優化', items:['訂購與拿庫存改為減號、數量、加號的直覺輸入方式','一般訂購畫面隱藏退貨與加買欄位，既有資料完整保留並改由專用功能操作','每位工人可一鍵套用基本寢具或清空數量','有數量的品項自動反亮，並即時計算已選品項、總件數與小計','按 Enter 可依序往下填寫同一數量欄位，提升大量輸入效率']},
+  {version:'V4.18.19', date:'2026/10/14', title:'修正拿庫存退貨未顯示', items:['退貨標示不再只依附一般訂購數量','拿庫存或加買品項退貨後，清單同步顯示退貨品項與數量','部分退貨保留原訂購、拿庫存及加買資訊，並另列紅色退貨數量','全數退貨時，各來源品項均以刪除線明確標示']},
   {version:'V4.18.16', date:'2026/09/23', title:'修正修改收貨聯絡人造成資料遭覆蓋', items:['儲存收貨聯絡人前先重新取得 Supabase 最新完整資料，只合併聯絡人異動','每次同步前再次核對遠端 revision，防止 Restore 後的舊分頁覆蓋資料','若送出資料無故少了既有訂單，安全防護會直接停止同步並要求重新整理']},
   {version:'V4.18.15', date:'2026/09/18', title:'已有對帳人即視為完成對帳', items:['只要批次已有對帳人，即判定為已完成對帳','該批次自動歸入已對帳區並顯示已對帳','既有資料不需重新按整批對帳即可正確分類']},
   {version:'V4.18.14', date:'2026/09/18', title:'會計對帳分區與整批狀態同步修正', items:['會計對帳分為尚未對帳區及已對帳區','整批確認帳款後同步更新每筆會計狀態、訂單狀態、對帳日期與對帳人','已完成與未完成批次使用不同色彩、標章與區塊明顯區分']},
@@ -1551,7 +1554,7 @@ function render(){
     <div class="app">
       <header class="app-header">
         <div class="brandbar">
-          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.18 Supabase 公開共用版</small></div></div>
+          <div class="brand"><img src="/brand-logo-v4103.png" alt="FOR-e 寢具訂購系統 LOGO"><div class="brand-copy"><strong>FOR-e 寢具訂購</strong><small>V4.18.19 Supabase 公開共用版</small></div></div>
           <div class="rolebar">
             <span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">已同步</span>
             <span class="version-badge">免登入｜全部功能</span>
@@ -2290,6 +2293,7 @@ function saveOrderFromModal(id, isExisting, modal){
   const fields = ['dept','staff','employer','orderDate','companyTitle','paymentTarget','deliveryDate','deliveryHour','deliveryPlace','contact','deliveryAddress','bicycleDeliveryDate','bicycleDeliveryHour','bicycleContact','bicycleDeliveryAddress','receivedDate','status','note'];
   const map = {dept:'f_dept',staff:'f_staff',employer:'f_employer',orderDate:'f_orderDate',companyTitle:'f_companyTitle',paymentTarget:'f_paymentTarget',deliveryDate:'f_deliveryDate',deliveryHour:'f_deliveryHour',deliveryPlace:'f_deliveryPlace',contact:'f_contact',deliveryAddress:'f_deliveryAddress',bicycleDeliveryDate:'f_bicycleDeliveryDate',bicycleDeliveryHour:'f_bicycleDeliveryHour',bicycleContact:'f_bicycleContact',bicycleDeliveryAddress:'f_bicycleDeliveryAddress',receivedDate:'f_receivedDate',status:'f_status',note:'f_note'};
   fields.forEach(k=>{ order[k] = modal.querySelector('#'+map[k])?.value || ''; });
+  order.paymentTargetManual = true;
   order.invoiceTitle = invoiceTitleFromSettings(order.companyTitle,state.settings);
   order.provideDate = order.orderDate;
   if(order.isStockOrder){
@@ -2316,7 +2320,6 @@ function saveOrderFromModal(id, isExisting, modal){
     order.items = mergeSpecialLines(aggregateWorkerItems(groups, oldItems), specialLines);
     order.returnedAt = groups.some(g=>(g.items||[]).some(l=>num(l.returnQty)>0)) ? (order.returnedAt||todayInput()) : '';
   }
-  if(matchedEmployerPaymentRule(order.employer)) order.paymentTarget = effectivePaymentTarget(order);
   if(!isExisting || !order.orderNo || String(order.orderNo).startsWith('BO')) order.orderNo = makeOrderNo(order.companyTitle, order.dept, order.orderDate, isExisting ? order.id : '');
   order.batchNo = '';
   order.workerEnglish = '';
@@ -3198,9 +3201,9 @@ function itemStatsHTML(orders=state.orders){
 function renderVersionInfo(root){
   root.innerHTML = `
     <div class="card plain">
-      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.18｜修正拿庫存退貨未顯示</span></div>
+      <div class="card-title"><h2>版本更新資訊</h2><span class="subtle">目前版本 V4.18.19｜修正拿庫存退貨未顯示</span></div>
       <div class="split">
-        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.18 訂購、拿庫存及加買品項只要有退貨，都會在清單正確顯示退貨品項與數量。</p></div>
+        <div class="card" style="margin:0"><h3>目前版本重點</h3><p class="mini-note">V4.18.19 訂購、拿庫存及加買品項只要有退貨，都會在清單正確顯示退貨品項與數量。</p></div>
         <div class="card" style="margin:0"><h3>資料提醒</h3><p class="mini-note">正式資料儲存在 Supabase，並會同步給其他開啟系統的人員。重大調整前仍建議下載備份 JSON。</p></div>
       </div>
     </div>
@@ -4125,7 +4128,7 @@ downloadOrderImage=async function(orderId){
 function renderConfigError(message=''){
   $('#app').innerHTML = `<div class="auth-shell"><div class="auth-card">
     <h1>FOR-e 寢具訂購</h1>
-    <div class="auth-subtitle">V4.18.18 Supabase 公開共用正式版</div>
+    <div class="auth-subtitle">V4.18.19 Supabase 公開共用正式版</div>
     <div class="auth-error">${esc(message || '尚未設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY，請先完成 .env.local 或 Vercel 環境變數。')}</div>
   </div></div>`;
 }
